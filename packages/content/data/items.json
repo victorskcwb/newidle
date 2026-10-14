@@ -1,0 +1,68 @@
+{
+  "items": [
+    {
+      "id": "ore_copper",
+      "nameKey": "item.ore_copper",
+      "type": "resource",
+      "rarity": "common",
+      "baseValue": 4,
+      "tradeable": true,
+      "icon": "items/ore_copper"
+    },
+    {
+      "id": "ore_tin",
+      "nameKey": "item.ore_tin",
+      "type": "resource",
+      "rarity": "common",
+      "baseValue": 4,
+      "tradeable": true,
+      "icon": "items/ore_tin"
+    },
+    {
+      "id": "bar_bronze",
+      "nameKey": "item.bar_bronze",
+      "type": "resource",
+      "rarity": "common",
+      "baseValue": 12,
+      "tradeable": true,
+      "icon": "items/bar_bronze"
+    },
+    {
+      "id": "dagger_bronze",
+      "nameKey": "item.dagger_bronze",
+      "type": "equipment",
+      "rarity": "common",
+      "baseValue": 20,
+      "tradeable": true,
+      "icon": "items/dagger_bronze",
+      "equip": {
+        "slot": "weapon",
+        "style": "melee",
+        "speedTicks": 4,
+        "requires": { "attack": 1 },
+        "bonuses": { "accuracy": 4, "strength": 3, "defMelee": 0, "defArchery": 0, "defArcana": 0 },
+        "sprite": "hero/weapon/dagger_bronze"
+      }
+    },
+    {
+      "id": "pickaxe_bronze",
+      "nameKey": "item.pickaxe_bronze",
+      "type": "tool",
+      "rarity": "common",
+      "baseValue": 10,
+      "tradeable": true,
+      "icon": "items/pickaxe_bronze",
+      "tool": { "type": "pickaxe", "speedBonusPpm": 0 }
+    },
+    {
+      "id": "hammer",
+      "nameKey": "item.hammer",
+      "type": "tool",
+      "rarity": "common",
+      "baseValue": 5,
+      "tradeable": true,
+      "icon": "items/hammer",
+      "tool": { "type": "hammer", "speedBonusPpm": 0 }
+    }
+  ]
+}
