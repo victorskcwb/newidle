@@ -3,3 +3,4 @@ dist
 .turbo
 pnpm-lock.yaml
 Valdren Idle — Prompt de desenvolvimento.md
+apps/server/src/db/migrations

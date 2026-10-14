@@ -9,3 +9,6 @@ coverage/
 playwright-report/
 test-results/
 tools/simulator/out/
+
+# Embedded Postgres data (dev without Docker)
+.pgdata/
