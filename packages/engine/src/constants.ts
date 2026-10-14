@@ -25,3 +25,11 @@ export const OFFLINE_CAP_TICKS = (12 * 3_600_000) / TICK_MS;
 export const OFFLINE_CAP_TICKS_SUBSCRIBER = (24 * 3_600_000) / TICK_MS;
 
 export const SECONDARY_SLOT_TOTAL_LEVEL = 50;
+
+/** Global tick 0 (2026-01-01T00:00:00Z). Global tick = floor((server now − epoch) / TICK_MS). */
+export const GAME_EPOCH_MS = 1_767_225_600_000;
+
+/** Global tick for a wall-clock time in ms. Callers pass the clock in; the engine never reads it. */
+export function tickAt(nowMs: number): number {
+  return Math.floor((nowMs - GAME_EPOCH_MS) / TICK_MS);
+}

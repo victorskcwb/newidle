@@ -1,5 +1,6 @@
 import { loadBundledContent, type ContentDb } from '@valdren/content';
 import {
+  GAME_EPOCH_MS,
   OFFLINE_CAP_TICKS,
   STEP_RESOLVE_MAX_TICKS,
   TICK_MS,
@@ -10,6 +11,7 @@ import {
   startAction,
   step,
   stopSlot,
+  tickAt,
   type BlockReason,
   type GameEvent,
   type OfflineSummary,
@@ -17,8 +19,6 @@ import {
   type StopCondition,
 } from '@valdren/engine';
 
-/** Global tick 0. Ticks are floor((now − epoch) / 600 ms). */
-const GAME_EPOCH_MS = Date.UTC(2026, 0, 1);
 /** The scene renders one tick behind the simulation to absorb latency (and, later, the network). */
 export const RENDER_DELAY_MS = TICK_MS;
 const SAVE_KEY = 'valdren.localSim.v1';
@@ -65,7 +65,7 @@ export class LocalSim {
   }
 
   nowTick(): number {
-    return Math.floor((Date.now() - GAME_EPOCH_MS) / TICK_MS) + this.offset;
+    return tickAt(Date.now()) + this.offset;
   }
 
   /** Wall-clock time (Date.now domain) at which an event of `tick` is shown in the scene. */
