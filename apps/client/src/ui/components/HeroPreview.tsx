@@ -22,7 +22,7 @@ export function HeroPreview({ appearance }: { appearance: Appearance }) {
         width: W,
         height: H,
         resolution: 4,
-        autoDensity: true,
+        autoDensity: false,
         backgroundAlpha: 0,
         antialias: false,
       })
