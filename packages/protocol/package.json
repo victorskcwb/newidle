@@ -11,6 +11,8 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@valdren/content": "workspace:*",
+    "@valdren/engine": "workspace:*",
     "zod": "4.6.7"
   }
 }
