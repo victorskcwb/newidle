@@ -11,6 +11,8 @@ import { appearanceSchema, characterNameSchema, CharacterService } from './servi
 import { InventoryService } from './services/inventory.ts';
 import { RateLimiter } from './services/rateLimit.ts';
 import { ShopService } from './services/shop.ts';
+import { SlotService } from './services/slots.ts';
+import { GameHub } from './ws/hub.ts';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -27,6 +29,7 @@ export interface AppDeps {
   now?: () => number;
   /** Requests per minute (section 8.2: 120 per IP, 60 per account). */
   limits?: { perIp: number; perAccount: number };
+  hub?: { checkpointTicks?: number; autoCheckpoint?: boolean };
 }
 
 export interface Services {
@@ -34,6 +37,8 @@ export interface Services {
   characters: CharacterService;
   inventory: InventoryService;
   shop: ShopService;
+  slots: SlotService;
+  hub: GameHub;
 }
 
 function parse<T>(schema: z.ZodType<T>, data: unknown): T {
@@ -62,6 +67,8 @@ export async function buildApp(
     characters: new CharacterService(db, content, now),
     inventory: new InventoryService(db),
     shop: undefined as unknown as ShopService,
+    slots: new SlotService(db, content, now),
+    hub: undefined as unknown as GameHub,
   };
   services.shop = new ShopService(services.inventory, content);
   const ipLimiter = new RateLimiter(limits.perIp, 60_000, now);
@@ -74,6 +81,22 @@ export async function buildApp(
   });
   await app.register(cookie);
   app.decorateRequest('auth', null);
+
+  services.hub = new GameHub({
+    db,
+    content,
+    auth: services.auth,
+    characters: services.characters,
+    slots: services.slots,
+    log: app.log,
+    now,
+    parseCookie: (header) => app.parseCookie(header),
+    sessionCookie: SESSION_COOKIE,
+    ...deps.hub,
+  });
+  services.hub.attach(app.server);
+  // preClose: upgraded sockets would otherwise keep the HTTP server from closing.
+  app.addHook('preClose', () => services.hub.close());
 
   app.addHook('onRequest', async (req) => {
     if (!ipLimiter.hit(`ip:${req.ip}`)) throw errors.rateLimited();
@@ -184,7 +207,11 @@ export async function buildApp(
       }),
       req.body,
     );
+    // Resolve the running slot first so the sale sees the up-to-date bank, then tell its clients.
+    for (const slot of await services.slots.slotIds(characterId))
+      await services.slots.resolve(characterId, slot);
     const coins = await services.shop.sell(characterId, body.itemId, body.qty);
+    await services.hub.externalChange(characterId);
     return { coins, bank: await services.characters.bank(characterId) };
   });
 

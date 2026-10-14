@@ -27,6 +27,10 @@ export const errors = {
   insufficientItems: (itemId: string) => new AppError(400, 'insufficientItems', { itemId }),
   unknownItem: (itemId: string) => new AppError(400, 'unknownItem', { itemId }),
   rateLimited: () => new AppError(429, 'rateLimited'),
+  /** details = the engine BlockReason (the client explains it: "Requer Mineração 15"). */
+  actionBlocked: (reason: unknown) => new AppError(400, 'actionBlocked', reason),
+  notImplemented: () => new AppError(501, 'notImplemented'),
+  badSequence: () => new AppError(400, 'badSequence'),
 };
 
 /** Postgres unique violation on a given constraint/index name. */
