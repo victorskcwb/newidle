@@ -76,5 +76,18 @@
   "stop.unknownAction": "Ação desconhecida",
   "time.hm": "{h} h {m} min",
   "time.ms": "{m} min {s} s",
-  "time.s": "{s} s"
+  "time.s": "{s} s",
+  "error.validation": "Dados inválidos. Confira os campos.",
+  "error.unauthorized": "Sua sessão expirou. Entre novamente.",
+  "error.invalidCredentials": "Email ou senha incorretos.",
+  "error.banned": "Esta conta está suspensa.",
+  "error.notFound": "Não encontrado.",
+  "error.noCharacter": "Crie seu herói primeiro.",
+  "error.emailTaken": "Já existe uma conta com este email.",
+  "error.nameTaken": "Este nome já está em uso.",
+  "error.characterExists": "Esta conta já tem um herói.",
+  "error.insufficientItems": "Você não tem itens suficientes.",
+  "error.unknownItem": "Item desconhecido.",
+  "error.rateLimited": "Muitas ações seguidas. Aguarde um instante.",
+  "error.internal": "Algo deu errado. Tente novamente."
 }

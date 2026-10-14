@@ -1,20 +1,39 @@
 import { loadBundledContent } from '@valdren/content';
-import Fastify from 'fastify';
+import { existsSync } from 'node:fs';
+import { buildApp } from './app.ts';
+import { loadConfig } from './config.ts';
+import { createDatabase, runMigrations } from './db/client.ts';
 
-/**
- * Server skeleton. Auth, Postgres (Drizzle), Redis and the WebSocket protocol come next
- * in milestone 1 (see docs/plan-marco-1.md).
- */
-const content = loadBundledContent();
-const app = Fastify({ logger: true });
+const envFile = new URL('../../../.env', import.meta.url);
+if (existsSync(envFile)) process.loadEnvFile(envFile);
 
-app.get('/health', async () => ({
-  ok: true,
-  content: { items: content.items.size, actions: content.actions.size },
-}));
+const config = loadConfig();
+const database = createDatabase(config.databaseUrl);
 
-const port = Number(process.env.PORT ?? 3000);
-app.listen({ port, host: '0.0.0.0' }).catch((err: unknown) => {
-  app.log.error(err);
-  process.exit(1);
-});
+/** In development the database may still be starting (pnpm dev starts both at once). */
+async function waitForDatabase(attempts = 60): Promise<void> {
+  for (let i = 1; ; i++) {
+    try {
+      await database.pool.query('SELECT 1');
+      return;
+    } catch (err) {
+      if (i >= attempts) throw err;
+      await new Promise((r) => setTimeout(r, 500));
+    }
+  }
+}
+
+await waitForDatabase();
+if (config.NODE_ENV !== 'production') await runMigrations(database.db);
+
+const { app } = await buildApp({ config, db: database.db, content: loadBundledContent() });
+
+const shutdown = async () => {
+  await app.close();
+  await database.close();
+  process.exit(0);
+};
+process.once('SIGINT', shutdown);
+process.once('SIGTERM', shutdown);
+
+await app.listen({ port: config.PORT, host: config.HOST });
