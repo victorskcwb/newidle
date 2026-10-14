@@ -38,6 +38,20 @@ Decisões que a especificação não cobria (ou deixava ambígua). Formato: o qu
 21. **Golpes de coleta:** número de golpes por ação = round(duração ÷ 750 ms); o quadro de impacto do último golpe cai exatamente no `ActionCompleted`. Golpes intermediários soltam poucas lascas; a conclusão solta a explosão maior e o item voando.
 22. **Página de teste sem servidor:** guarda o estado no `localStorage` e, ao voltar, resolve a lacuna como o servidor fará (≤ 1.500 ticks com `step`, acima disso com `resolveOffline`, limitada a 12 h). A época do tick global (1/1/2026 UTC) é provisória e só local; quem define a época é o servidor.
 
+## Banco, contas e inventário (2026-10-14)
+
+23. **Postgres embutido (`embedded-postgres`) em vez de exigir Docker.** O `pnpm dev` sobe um Postgres 18 real como processo filho (porta 5433, dados em `tools/dev-db/.pgdata`), e os testes de integração sobem outro, temporário. O Docker Compose continua disponível: basta definir `DATABASE_URL`. Sem Redis por enquanto: nada do marco 1 precisa dele ainda. _Seção 12.4 (`pnpm dev` a partir de um clone limpo)._
+24. **Postgres 18** (também no Compose), a versão que o embedded-postgres traz. Os UUID v7 são gerados na aplicação (`uuid`), então nada depende do `uuidv7()` nativo.
+25. **Serialização por personagem:** toda operação de inventário começa com `SELECT … FOR UPDATE` na linha do personagem. Duas requisições do mesmo personagem nunca intercalam; personagens diferentes não se bloqueiam. Dentro da transação, os itens são processados em ordem de id. _Restrição 9 (atomicidade, sem duplicação)._
+26. **Moedas no ledger usam `item_id = 'coins'`** e ficam em `characters.coins`. A checagem de consistência compara o ledger com `bank_items` e, para moedas, com `characters.coins`.
+27. **Motivos do ledger:** `starter`, `action`, `combat`, `death`, `equip`, `market`, `shop`, `admin`. O `equip` existe porque equipar tira o item do banco, e o ledger acompanha o banco.
+28. **O estado salvo em `slots.state` guarda `skills` e `bank` vazios:** as tabelas próprias são a fonte da verdade, e o estado é hidratado delas na resolução. A semente é gravada como int32 (mesmos bits do uint32).
+29. **Coluna `accounts.role`** (`player`/`admin`) para o painel administrativo (seção 12.1). **Índice único `characters.account_id`** (1 personagem por conta; remover o índice libera mais) e **nome único sem diferenciar maiúsculas** (`lower(name)`). O nome aceita letras (inclusive acentuadas), dígitos, `_` e espaços simples, com 3–12 caracteres.
+30. **Sessão:** cookie `vsid` HttpOnly, SameSite=Lax, Secure em produção, validade de 30 dias (fixa). Em desenvolvimento, o Vite faz proxy de `/api` para o servidor, então a API fica na mesma origem e o cookie funciona sem CORS. ⚠️ O `hello` do WebSocket (seção 7.4) leva um token, mas o cookie HttpOnly não é legível pelo JS. Proposta: autenticar o WS pelo cookie no upgrade e tornar o token do `hello` opcional (para o app nativo). Decido na tarefa do WebSocket.
+31. **Limite de requisições em memória** (janela fixa de 1 min: 120 por IP, 60 por conta), suficiente para um processo. Passa para o Redis quando houver mais de uma instância.
+32. **Argon2id com os padrões do `@node-rs/argon2`** (19 MiB, t=2, p=1, a linha de base do OWASP). No login de email inexistente, a senha é verificada contra um hash falso, para que o tempo de resposta não revele se a conta existe.
+33. **Loja NPC:** recebe `floor(valorBase × qtd × 40 / 100)` moedas. Itens não negociáveis também podem ser vendidos à loja.
+
 ## Perguntas para revisão
 
 - **Teto de XP (item 12):** 2³¹ − 1 em décimos (coluna `integer`) ou em XP (coluna `bigint`)?

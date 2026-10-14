@@ -12,15 +12,20 @@ Pronto:
 - Testes: 33 do engine (unidade, determinismo, offline vs tick a tick ±3% sobre 10.000 resoluções, fast-check), 7 de conteúdo e 2 e2e (determinismo no Chromium = Node; página de teste minerando).
 - Esqueletos: `apps/server` (só `/health`), `packages/protocol` (envelope e intenções de ação), `tools/simulator` (XP/h por ação vs. metas da seção 4.3).
 
+## Estado após as tarefas 1–5 (2026-10-14)
+
+- **Infra:** `pnpm dev` sobe um Postgres 18 embutido (`tools/dev-db`, sem Docker), o servidor (com migração automática em dev) e o cliente (com proxy `/api`).
+- **Banco:** esquema Drizzle (`apps/server/src/db/schema.ts`) e migração `0000_init.sql` com 11 tabelas.
+- **`InventoryService`:** trava por personagem, ledger em toda mudança e checagem de consistência ledger × banco (`findLedgerMismatches`).
+- **REST:** `/auth/register`, `/auth/login`, `/auth/logout`, `/characters`, `/me`, `/bank`, `/bank/sell-to-shop`, `/content/version` e `/health`. Erros `{ code, messageKey }` traduzidos; limite de requisições por IP e por conta.
+- **16 testes de integração** contra Postgres real: concorrência (40 gastos simultâneos com 10 itens → exatamente 10 passam), atomicidade, ledger, auth, personagem, loja e limites.
+
 ## Tarefas restantes, em ordem
 
 Cada tarefa segue a ordem engine e testes → servidor → cena e interface.
 
-1. **Infra local.** Validar `docker compose up` (Postgres 17 + Redis 7), módulo de configuração por variáveis de ambiente e `pnpm dev` subindo tudo a partir de um clone limpo.
-2. **Esquema do banco (Drizzle) e migrações.** Tabelas `accounts`, `sessions`, `characters`, `skills`, `slots`, `bank_items`, `equipment`, `bestiary`, `item_ledger` e `event_log`, com ids UUID v7. _Revisar antes de aplicar: difícil de desfazer._
-3. **`InventoryService`.** Toda escrita de item ou moeda numa transação com `SELECT … FOR UPDATE` e uma linha no `item_ledger`. Testes de integração: ledger = banco; duas requisições simultâneas não duplicam item.
-4. **Autenticação REST.** Register, login e logout (argon2id, token de 256 bits guardado como hash, cookie HttpOnly), limites de requisição e erros `{ code, messageKey }`.
-5. **Personagem.** `POST /characters` (nome único de 3–12 caracteres e aparência), `GET /me`, `GET /bank`, `GET /content/version`.
+_Tarefas 1–5 (infra, esquema, `InventoryService`, autenticação, personagem): feitas._
+
 6. **Protocolo completo (seção 7.4)** em `packages/protocol`, com testes de esquema. _Revisar antes de fechar: difícil de desfazer._
 7. **Servidor WebSocket.** `hello`/`welcome` com resumo offline; intenções validadas pelo engine; resolução preguiçosa (≤ 1.500 ticks com `step`, acima disso com `resolveOffline`); gravação de estado + deltas + ledger numa transação; `slot.checkpoint` a cada 50 ticks; `slot.resync`; registro de divergências; limite de 10 intenções/s.
 8. **Rede no cliente.** Cliente WS com relógio estimado (média de 5 pings), render 1 tick atrasado, backoff de reconexão (1 s → 30 s), comparação de hash nos checkpoints e fade de 200 ms no resync. Substitui o `LocalSim` (que fica só como página de dev).

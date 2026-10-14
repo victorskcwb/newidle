@@ -6,14 +6,15 @@ RPG idle de fantasia medieval para navegador. A especificação completa está e
 
 - Node.js 22+ (desenvolvido com 24 LTS)
 - pnpm 10 (`npm i -g pnpm@10`)
-- Docker (só para Postgres e Redis, a partir das próximas tarefas)
+- Docker é opcional: sem ele, `pnpm dev` e os testes usam um Postgres embutido (binários oficiais via npm)
 
 ## Comandos
 
 ```sh
 pnpm install
-pnpm dev                # cliente (http://localhost:5173) + servidor (http://localhost:3000/health)
-pnpm dev:infra          # Postgres + Redis via Docker Compose
+pnpm dev                # Postgres embutido (:5433) + servidor (:3000) + cliente (http://localhost:5173, API em /api)
+pnpm dev:infra          # alternativa: Postgres + Redis via Docker Compose (defina DATABASE_URL no .env)
+pnpm --filter @valdren/server exec drizzle-kit generate   # nova migração após mudar o esquema
 
 pnpm test               # testes unitários (Vitest) de todos os pacotes
 pnpm --filter @valdren/client test:e2e   # Playwright (instale antes: pnpm --filter @valdren/client exec playwright install chromium)
@@ -39,7 +40,8 @@ pnpm --filter @valdren/simulator start   # XP/h por ação vs. metas de balancea
 
 ```text
 apps/client          Vite + React (UI) + PixiJS (cena)
-apps/server          Fastify + WebSocket (esqueleto)
+apps/server          Fastify: auth, personagem, banco, loja; Drizzle + Postgres
+tools/dev-db         Postgres embutido para dev e testes
 packages/engine      regras puras e determinísticas: RNG, XP, step, resolveOffline, hash
 packages/content     esquemas Zod + JSON de conteúdo
 packages/protocol    mensagens cliente–servidor (Zod)
