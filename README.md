@@ -17,7 +17,7 @@ pnpm dev:infra          # alternativa: Postgres + Redis via Docker Compose (defi
 pnpm --filter @valdren/server exec drizzle-kit generate   # nova migração após mudar o esquema
 
 pnpm test               # testes unitários (Vitest) de todos os pacotes
-pnpm --filter @valdren/client test:e2e   # Playwright (instale antes: pnpm --filter @valdren/client exec playwright install chromium)
+pnpm --filter @valdren/client test:e2e   # Playwright com a stack completa (instale antes: pnpm --filter @valdren/client exec playwright install chromium)
 pnpm lint
 pnpm typecheck
 pnpm format:check
@@ -25,9 +25,13 @@ pnpm content:build      # valida o conteúdo e gera tools/content-build/dist/con
 pnpm --filter @valdren/simulator start   # XP/h por ação vs. metas de balanceamento (CSV)
 ```
 
-## Página de teste (primeira tarefa)
+## Jogar
 
-`pnpm dev` e abra http://localhost:5173. O engine roda **no navegador, sem servidor**:
+`pnpm dev` e abra http://localhost:5173: crie uma conta e um herói, escolha **Começar** em "Minerar cobre". O servidor simula; o navegador espelha a simulação e desenha a cena. Feche a aba e volte depois para ver o painel "Enquanto você estava fora".
+
+## Página do engine sem servidor
+
+http://localhost:5173/?local roda o engine **só no navegador**:
 
 - **Começar** em “Minerar cobre”: o herói caminha até o Vale Verde e minera; a cada 3 s, lascas, minério voando para a bolsa e “+2,5 XP”.
 - Minere estanho, depois funda bronze e forje a adaga na aba Forja.
@@ -40,7 +44,7 @@ pnpm --filter @valdren/simulator start   # XP/h por ação vs. metas de balancea
 
 ```text
 apps/client          Vite + React (UI) + PixiJS (cena)
-apps/server          Fastify: auth, personagem, banco, loja; Drizzle + Postgres
+apps/server          Fastify + WebSocket: auth, personagem, banco, loja, resolução dos espaços; Drizzle + Postgres
 tools/dev-db         Postgres embutido para dev e testes
 packages/engine      regras puras e determinísticas: RNG, XP, step, resolveOffline, hash
 packages/content     esquemas Zod + JSON de conteúdo

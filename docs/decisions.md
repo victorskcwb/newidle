@@ -52,6 +52,19 @@ Decisões que a especificação não cobria (ou deixava ambígua). Formato: o qu
 32. **Argon2id com os padrões do `@node-rs/argon2`** (19 MiB, t=2, p=1, a linha de base do OWASP). No login de email inexistente, a senha é verificada contra um hash falso, para que o tempo de resposta não revele se a conta existe.
 33. **Loja NPC:** recebe `floor(valorBase × qtd × 40 / 100)` moedas. Itens não negociáveis também podem ser vendidos à loja.
 
+## Protocolo e tempo real (2026-10-14)
+
+34. **O WebSocket autentica pelo cookie de sessão no upgrade.** O `token` do `hello` é opcional (para um futuro app nativo). Sem sessão válida, o servidor fecha com o código 4001. _Seção 12.1 (cookies HttpOnly)._
+35. **Mensagens além da tabela 7.4:** `ping`/`pong` (o relógio estimado precisa de amostras) e `slot.requestResync` do cliente, com `reason`. `divergence` é registrada em `event_log` como bug; `stale` (cliente muito atrasado, ex.: aba em segundo plano) só pede o estado resolvido, sem registro. _Seção 6.5._
+36. **`slot.started` traz `replyTo` e os eventos da própria intenção** (ex.: `QueueAdvanced`), para a cena animar o início. Erros de intenção também trazem `replyTo`. `actionBlocked` leva o `BlockReason` do engine em `details`, e o cliente explica o motivo ("Falta Minério de estanho").
+37. **O `slot.checkpoint` leva o hash e, como "deltas persistidos", a lista completa de habilidades e o banco** naquele tick. Por enquanto são pequenos; quando o banco crescer, vira delta de verdade.
+38. **O cliente guarda os últimos 64 estados** para calcular o hash no tick exato do checkpoint. Se estiver atrás do servidor, avança até o tick; se estiver à frente, parte do estado anterior mais próximo e avança até lá. Se o cliente estiver mais de 1.500 ticks atrás, pede o estado em vez de reproduzir.
+39. **Mudanças fora do espaço** (ex.: venda à loja): o servidor resolve o espaço antes, aplica a venda e manda `slot.resync` com `reason: external` aos clientes do personagem.
+40. **`intent.startCombat` e `intent.equip` já estão no protocolo**, com os campos da seção 7.4; o servidor responde `notImplemented` até o combate e o equipamento existirem.
+41. **Cada conexão processa suas mensagens estritamente em ordem** (fila de promessas); `seq` fora de ordem é recusado. O limite de 10 intenções/s fecha a conexão com o código 4008.
+42. **A página do engine sem servidor passou para `/?local`.** A raiz `/` agora é o jogo real (cadastro → herói → jogo).
+43. **E2E com a stack completa em portas próprias** (Postgres 5434, API 3100, web 5174), para não colidir com um `pnpm dev` aberto.
+
 ## Perguntas para revisão
 
 - **Teto de XP (item 12):** 2³¹ − 1 em décimos (coluna `integer`) ou em XP (coluna `bigint`)?
