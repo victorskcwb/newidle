@@ -1,0 +1,17 @@
+{
+  "name": "@valdren/content-build",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "build": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@valdren/content": "workspace:*",
+    "@valdren/i18n": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "4.23.15"
+  }
+}
