@@ -73,3 +73,17 @@ export function stopSlot(input: SlotState): { state: SlotState; events: GameEven
   if (wasActive) events.push({ type: 'SlotStopped', tick: state.tick, reason: 'manual' });
   return { state, events };
 }
+
+/**
+ * Moves the clock to `tick` without progress, as if the slot were paused (time beyond the
+ * offline cap is lost, not simulated). The current execution keeps its partial progress.
+ */
+export function skipTo(input: SlotState, tick: number): SlotState {
+  const state = cloneState(input);
+  const delta = tick - state.tick;
+  if (delta <= 0) return state;
+  state.tick = tick;
+  state.nextDepositTick += delta;
+  if (state.activity) state.activity.startedTick += delta;
+  return state;
+}

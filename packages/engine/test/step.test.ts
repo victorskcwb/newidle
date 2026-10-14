@@ -9,6 +9,7 @@ import {
   skillXp,
   startAction,
   step,
+  skipTo,
   stopSlot,
   xpForLevel,
   type GameEvent,
@@ -218,5 +219,17 @@ describe('bundled content', () => {
     s = step(dagger.state, 5, real).state;
     expect(qtyOf(s.bank, 'dagger_bronze')).toBe(1);
     expect(qtyOf(s.bank, 'bar_bronze')).toBe(1);
+  });
+});
+
+describe('skipTo', () => {
+  it('shifts the clock without progress, keeping partial progress', () => {
+    const s0 = started(fixtureState(), 'mine_ore');
+    const partial = step(s0, 3, content).state;
+    const skipped = skipTo(partial, partial.tick + 100_000);
+    expect(skipped.tick).toBe(partial.tick + 100_000);
+    expect(skipped.inventory).toEqual(partial.inventory);
+    const next = step(skipped, 2, content);
+    expect(next.events[0]).toMatchObject({ type: 'ActionCompleted', tick: skipped.tick + 2 });
   });
 });
