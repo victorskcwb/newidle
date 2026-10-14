@@ -1,7 +1,7 @@
 import type { SkillId } from '@valdren/content';
 import { useEffect, useRef } from 'react';
 import { formatXp, t } from '../i18n.ts';
-import { sim } from '../state/store.ts';
+import { sim, useGame } from '../state/store.ts';
 import { GameScene } from './GameScene.ts';
 
 export function SceneView() {
@@ -22,11 +22,22 @@ export function SceneView() {
         return;
       }
       scene.sync(sim.state);
-      unsubscribe = sim.subscribe({
+      const appearance = useGame.getState().profile?.appearance;
+      if (appearance) scene.setAppearance(appearance);
+      const unsubSim = sim.subscribe({
         onEvents: (events) => scene.push(events),
         onSummary: () => scene.sync(sim.state),
-        onReset: (state) => scene.sync(state),
+        onReset: (state) => scene.sync(state, true),
       });
+      const unsubStore = useGame.subscribe((s, prev) => {
+        if (s.profile && s.profile.appearance !== prev.profile?.appearance) {
+          scene.setAppearance(s.profile.appearance);
+        }
+      });
+      unsubscribe = () => {
+        unsubSim();
+        unsubStore();
+      };
     });
     return () => {
       disposed = true;

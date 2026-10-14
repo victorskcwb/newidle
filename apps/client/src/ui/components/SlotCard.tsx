@@ -2,11 +2,11 @@ import { TICK_MS, actionRates, ticksToNextLevel, ticksUntilActivityEnds } from '
 import { useEffect, useRef } from 'react';
 import { formatDuration, formatXp, t } from '../../i18n.ts';
 import { RENDER_DELAY_MS } from '../../state/localSim.ts';
-import { sim, useGame } from '../../state/store.ts';
+import { sim, useSlot } from '../../state/store.ts';
 
 /** Main slot: current action, live progress bar, XP/h, time to next level, stop button. */
 export function SlotCard() {
-  const slot = useGame((s) => s.slot);
+  const slot = useSlot();
   const activity = slot.activity;
   const action = activity ? sim.content.actions.get(activity.actionId) : undefined;
   const barRef = useRef<HTMLDivElement>(null);

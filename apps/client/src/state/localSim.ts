@@ -8,16 +8,17 @@ import {
   newCharacterSkills,
   newSlotState,
   resolveOffline,
+  skipTo,
   startAction,
   step,
   stopSlot,
   tickAt,
   type BlockReason,
   type GameEvent,
-  type OfflineSummary,
   type SlotState,
   type StopCondition,
 } from '@valdren/engine';
+import type { Sim, SimHandlers } from './sim.ts';
 
 /** The scene renders one tick behind the simulation to absorb latency (and, later, the network). */
 export const RENDER_DELAY_MS = TICK_MS;
@@ -30,17 +31,11 @@ interface SaveData {
   restarts: number;
 }
 
-export interface SimHandlers {
-  onEvents?: (events: GameEvent[], state: SlotState) => void;
-  onSummary?: (summary: OfflineSummary) => void;
-  onReset?: (state: SlotState) => void;
-}
-
 /**
  * Test-page driver: runs the engine locally against the wall clock, the way the client will
  * mirror the server's simulation. No server yet, so the client also owns the state here.
  */
-export class LocalSim {
+export class LocalSim implements Sim {
   readonly content: ContentDb = loadBundledContent();
   state: SlotState;
   private offset = 0;
@@ -99,9 +94,8 @@ export class LocalSim {
         Math.min(gap, OFFLINE_CAP_TICKS),
         this.content,
       );
-      // Time beyond the offline cap is lost: jump the clock forward.
-      state.tick = this.nowTick();
-      this.state = state;
+      // Time beyond the offline cap is lost: the slot resumes where it paused.
+      this.state = skipTo(state, this.nowTick());
       this.save();
       this.handlers.forEach((h) => h.onSummary?.(summary));
       this.emit([]);
@@ -112,14 +106,17 @@ export class LocalSim {
     if (events.length > 0) this.emit(events);
   }
 
-  startAction(actionId: string, stop: StopCondition = { kind: 'materials' }): BlockReason | null {
+  startAction(
+    actionId: string,
+    stop: StopCondition = { kind: 'materials' },
+  ): Promise<BlockReason | null> {
     this.advance();
     const result = startAction(this.state, actionId, stop, this.content);
-    if (!result.ok) return result.reason;
+    if (!result.ok) return Promise.resolve(result.reason);
     this.state = result.state;
     this.emit(result.events);
     this.save();
-    return null;
+    return Promise.resolve(null);
   }
 
   stop(): void {

@@ -8,7 +8,7 @@ export default defineConfig({
     // Same-origin API in development, so the HttpOnly session cookie just works.
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: process.env.VITE_API_TARGET ?? 'http://localhost:3000',
         rewrite: (path) => path.replace(/^\/api/, ''),
         ws: true,
       },

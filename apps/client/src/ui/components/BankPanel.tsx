@@ -1,11 +1,11 @@
 import { addItem, type ItemStack } from '@valdren/engine';
 import { formatNumber, t } from '../../i18n.ts';
-import { useGame } from '../../state/store.ts';
+import { useSlot } from '../../state/store.ts';
 import { itemName } from './SkillsPanel.tsx';
 
 /** Bank plus the not-yet-deposited action inventory, as one grid. */
 export function BankPanel() {
-  const slot = useGame((s) => s.slot);
+  const slot = useSlot();
   const all: ItemStack[] = [];
   for (const s of [...slot.bank, ...slot.inventory]) addItem(all, s.itemId, s.qty);
 

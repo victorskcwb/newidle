@@ -27,6 +27,7 @@ const DEPLETE_MS = 1000;
 const SWING_MS = 750;
 /** Below this fraction of the available space, integer scaling gives way to fit-to-space. */
 const MIN_FILL = 0.8;
+const RESYNC_FADE_MS = 200;
 
 export interface SceneTexts {
   xpGain: (xpTenths: number) => string;
@@ -77,6 +78,7 @@ export class GameScene {
   private host: HTMLElement | null = null;
   private resizeObserver: ResizeObserver | null = null;
   private paused = false;
+  private fadeStart = 0;
 
   constructor(
     private readonly content: ContentDb,
@@ -147,10 +149,14 @@ export class GameScene {
     this.app.destroy(true, { children: true });
   }
 
-  /** Initial state (or a resync): put the hero where the state says without replaying events. */
-  sync(state: SlotState): void {
+  /**
+   * Initial state (or a resync): put the hero where the state says without replaying events.
+   * With `fade`, the scene fades in over 200 ms (section 7.4) so the jump is not jarring.
+   */
+  sync(state: SlotState, fade = false): void {
     this.queue = [];
     const now = Date.now();
+    if (fade) this.fadeStart = now;
     const activity = state.activity;
     if (!activity) {
       this.clearActivity(now);
@@ -168,6 +174,10 @@ export class GameScene {
   /** Engine events, in order. They are played when their tick comes due. */
   push(events: readonly GameEvent[]): void {
     for (const event of events) this.queue.push({ at: this.tickToMs(event.tick), event });
+  }
+
+  setAppearance(appearance: { skin: number; hair: number; outfit: number }): void {
+    this.hero.setAppearance(appearance);
   }
 
   setEquippedWeapon(itemId: string | null): void {
@@ -202,6 +212,7 @@ export class GameScene {
       const fire = this.prop.getChildByLabel('fire');
       if (fire) fire.alpha = 0.75 + 0.25 * Math.sin(now / 90);
     }
+    this.root.alpha = Math.min(1, (now - this.fadeStart) / RESYNC_FADE_MS);
     this.bagBump = Math.max(0, this.bagBump - dt * 4);
     this.bag.scale.set(1 + 0.25 * this.bagBump);
 

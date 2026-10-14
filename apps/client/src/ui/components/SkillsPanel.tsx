@@ -9,7 +9,7 @@ import {
 } from '@valdren/engine';
 import { useState } from 'react';
 import { formatNumber, formatXp, t } from '../../i18n.ts';
-import { sim, useGame } from '../../state/store.ts';
+import { sim, useSlot } from '../../state/store.ts';
 
 export function blockText(reason: BlockReason): string {
   switch (reason.code) {
@@ -31,8 +31,9 @@ export function itemName(itemId: string): string {
 
 /** Grid of the 21 skills; tapping one lists its actions with requirements, rates and Start. */
 export function SkillsPanel() {
-  const slot = useGame((s) => s.slot);
+  const slot = useSlot();
   const [selected, setSelected] = useState<SkillId>('mining');
+  const [refusal, setRefusal] = useState<string | null>(null);
   const actions = sim.content.raw.actions.filter((a) => a.skill === selected);
 
   return (
@@ -61,6 +62,11 @@ export function SkillsPanel() {
           );
         })}
       </div>
+      {refusal && (
+        <p className="blocked" role="alert">
+          {refusal}
+        </p>
+      )}
       <ul className="action-list">
         {actions.map((action) => {
           const block = checkAction(slot, action.id, sim.content);
@@ -92,7 +98,9 @@ export function SkillsPanel() {
               <button
                 className="btn"
                 disabled={block !== null || running}
-                onClick={() => sim.startAction(action.id)}
+                onClick={() =>
+                  void sim.startAction(action.id).then((r) => setRefusal(r ? blockText(r) : null))
+                }
               >
                 {t('ui.start')}
               </button>
