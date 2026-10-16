@@ -6,7 +6,8 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "build": "tsx src/index.ts",
-    "maps": "tsx src/gen-maps.ts"
+    "maps": "tsx src/gen-maps.ts",
+    "icons": "tsx src/gen-icons.ts"
   },
   "dependencies": {
     "@abismo/content": "workspace:*",

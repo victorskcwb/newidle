@@ -21,5 +21,6 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm content:build
       - run: pnpm test
+      - run: pnpm --filter @abismo/client build
       - run: pnpm --filter @abismo/client exec playwright install --with-deps chromium
       - run: pnpm --filter @abismo/client test:e2e

@@ -553,5 +553,12 @@
   "error.quest_not_done": "A meta ainda não foi cumprida.",
   "error.quest_claimed": "Recompensa já resgatada.",
   "settings.sound": "Som",
-  "settings.volume": "Volume: {pct}%"
+  "settings.volume": "Volume: {pct}%",
+  "settings.reminders": "Avisos com o jogo em segundo plano",
+  "settings.remindersHint": "Poções acabando, nível 100 e limite offline. Com o jogo totalmente fechado, os avisos ainda não funcionam.",
+  "settings.remindersDenied": "O navegador não permitiu avisos.",
+  "notify.title": "Abismo Idle",
+  "notify.offlineCap": "O herói chegou ao limite de tempo offline. Volte para continuar caçando.",
+  "notify.noPotions": "As poções acabaram e o herói voltou à vila.",
+  "notify.level100": "Nível 100! O altar de reset espera por você."
 }

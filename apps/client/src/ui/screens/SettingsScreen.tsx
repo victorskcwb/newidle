@@ -1,6 +1,7 @@
 import { MAX_LEVEL, type PotionSettings } from '@abismo/engine';
 import { useState } from 'react';
 import { t } from '../../i18n.ts';
+import { Reminders } from '../../game/notify.ts';
 import { usePrefs } from '../../state/prefs.ts';
 import { Sheet, tryIntent } from '../Sheet.tsx';
 import { useSim } from '../useSim.ts';
@@ -112,6 +113,23 @@ export function SettingsScreen() {
         />
         {t('settings.sound')}
       </label>
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={prefs.reminders}
+          disabled={!Reminders.supported()}
+          onChange={(e) => {
+            const on = e.target.checked;
+            if (!on) return prefs.set({ reminders: false });
+            void Reminders.request().then((ok) => {
+              prefs.set({ reminders: ok });
+              setError(ok ? null : t('settings.remindersDenied'));
+            });
+          }}
+        />
+        {t('settings.reminders')}
+      </label>
+      <p className="muted small">{t('settings.remindersHint')}</p>
       <label className="field">
         <span>{t('settings.volume', { pct: Math.round(prefs.volume * 100) })}</span>
         <input

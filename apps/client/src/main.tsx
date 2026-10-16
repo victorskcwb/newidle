@@ -5,10 +5,16 @@ import { createRoot } from 'react-dom/client';
 import { GameSim } from './game/sim.ts';
 import { t } from './i18n.ts';
 import { deleteSave, loadSave, startAutosave, writeSave, type LoadResult } from './save/storage.ts';
+import { usePrefs } from './state/prefs.ts';
 import { useUi } from './state/store.ts';
+import { Reminders } from './game/notify.ts';
+import { registerSW } from 'virtual:pwa-register';
 import { App } from './ui/App.tsx';
 import { CreateHeroScreen, type NewHeroChoice } from './ui/screens/CreateHeroScreen.tsx';
 import './ui/styles.css';
+
+// Installable app: the service worker exists only in production builds.
+if (import.meta.env.PROD) registerSW({ immediate: true });
 
 // Debug only: `?speed=N` runs the game N× faster in development builds (e2e tests use it).
 const params = new URLSearchParams(location.search);
@@ -23,6 +29,9 @@ type Phase =
   | { kind: 'game'; sim: GameSim };
 
 function run(sim: GameSim): GameSim {
+  const reminders = new Reminders(sim);
+  reminders.enabled = usePrefs.getState().reminders;
+  usePrefs.subscribe((p) => (reminders.enabled = p.reminders));
   useUi.getState().setZoom(window.innerWidth < 700 ? 1 : 2);
   sim.start();
   startAutosave(
