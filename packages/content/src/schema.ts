@@ -260,6 +260,8 @@ export const regionSchema = z.strictObject({
   nameKey: key,
   levelRange: range,
   order: nonNegInt,
+  /** Bonus for owning at least one copy of every card of the region's monsters. */
+  cardSetBonus: z.strictObject({ stat: statSchema, value: z.number().int() }).optional(),
 });
 export type Region = z.infer<typeof regionSchema>;
 

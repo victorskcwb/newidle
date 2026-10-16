@@ -20,7 +20,8 @@
         "key": "bone_walker",
         "spawnAnim": "rise",
         "tint": "#d8d2bf"
-      }
+      },
+      "cardId": "card_bone_walker"
     },
     {
       "id": "grave_rat",
@@ -42,7 +43,8 @@
         "key": "grave_rat",
         "tint": "#8a6f5a",
         "scale": 0.75
-      }
+      },
+      "cardId": "card_grave_rat"
     },
     {
       "id": "gravekeeper",
@@ -66,7 +68,8 @@
         "spawnAnim": "rise",
         "tint": "#5e7d6a",
         "scale": 1.5
-      }
+      },
+      "cardId": "card_gravekeeper"
     },
     {
       "id": "grey_wolf",
@@ -87,7 +90,8 @@
         "atlas": "region_cinzarra",
         "key": "grey_wolf",
         "tint": "#8f8f96"
-      }
+      },
+      "cardId": "card_grey_wolf"
     },
     {
       "id": "pale_spider",
@@ -109,7 +113,8 @@
         "key": "pale_spider",
         "tint": "#d9d4e6",
         "scale": 0.9
-      }
+      },
+      "cardId": "card_pale_spider"
     },
     {
       "id": "spider_matriarch",
@@ -133,7 +138,8 @@
         "spawnAnim": "rise",
         "scale": 1.6
       },
-      "boss": true
+      "boss": true,
+      "cardId": "card_spider_matriarch"
     },
     {
       "id": "skeleton_archer",
@@ -154,7 +160,8 @@
         "atlas": "region_cinzarra",
         "key": "skeleton_archer",
         "tint": "#cfc8b0"
-      }
+      },
+      "cardId": "card_skeleton_archer"
     },
     {
       "id": "ghoul",
@@ -175,7 +182,8 @@
         "atlas": "region_cinzarra",
         "key": "ghoul",
         "tint": "#7d8f6a"
-      }
+      },
+      "cardId": "card_ghoul"
     },
     {
       "id": "lord_vharok",
@@ -199,7 +207,8 @@
         "spawnAnim": "rise",
         "scale": 1.8
       },
-      "boss": true
+      "boss": true,
+      "cardId": "card_lord_vharok"
     },
     {
       "id": "bog_toad",
@@ -220,7 +229,8 @@
         "atlas": "region_morvel",
         "key": "bog_toad",
         "tint": "#5f7a3a"
-      }
+      },
+      "cardId": "card_bog_toad"
     },
     {
       "id": "leech_swarm",
@@ -242,7 +252,8 @@
         "key": "leech_swarm",
         "tint": "#4a2f3a",
         "scale": 0.8
-      }
+      },
+      "cardId": "card_leech_swarm"
     },
     {
       "id": "mire_mother",
@@ -266,7 +277,8 @@
         "spawnAnim": "rise",
         "scale": 1.6
       },
-      "boss": true
+      "boss": true,
+      "cardId": "card_mire_mother"
     },
     {
       "id": "drowned_villager",
@@ -287,7 +299,8 @@
         "atlas": "region_morvel",
         "key": "drowned_villager",
         "tint": "#6a8a9a"
-      }
+      },
+      "cardId": "card_drowned_villager"
     },
     {
       "id": "marsh_hag",
@@ -308,7 +321,8 @@
         "atlas": "region_morvel",
         "key": "marsh_hag",
         "tint": "#7a5a8a"
-      }
+      },
+      "cardId": "card_marsh_hag"
     },
     {
       "id": "old_drowned",
@@ -332,7 +346,8 @@
         "spawnAnim": "rise",
         "scale": 1.7
       },
-      "boss": true
+      "boss": true,
+      "cardId": "card_old_drowned"
     },
     {
       "id": "rot_walker",
@@ -353,7 +368,8 @@
         "atlas": "region_morvel",
         "key": "rot_walker",
         "tint": "#6a6a3a"
-      }
+      },
+      "cardId": "card_rot_walker"
     },
     {
       "id": "swamp_horror",
@@ -375,7 +391,8 @@
         "key": "swamp_horror",
         "tint": "#2f4a3a",
         "scale": 1.2
-      }
+      },
+      "cardId": "card_swamp_horror"
     },
     {
       "id": "morvel_root",
@@ -399,7 +416,8 @@
         "spawnAnim": "rise",
         "scale": 2.0
       },
-      "boss": true
+      "boss": true,
+      "cardId": "card_morvel_root"
     },
     {
       "id": "ember_hound",
@@ -420,7 +438,8 @@
         "atlas": "region_citadel",
         "key": "ember_hound",
         "tint": "#d9642a"
-      }
+      },
+      "cardId": "card_ember_hound"
     },
     {
       "id": "ash_soldier",
@@ -441,7 +460,8 @@
         "atlas": "region_citadel",
         "key": "ash_soldier",
         "tint": "#7a7a7a"
-      }
+      },
+      "cardId": "card_ash_soldier"
     },
     {
       "id": "ashen_captain",
@@ -465,7 +485,8 @@
         "spawnAnim": "rise",
         "scale": 1.7
       },
-      "boss": true
+      "boss": true,
+      "cardId": "card_ashen_captain"
     },
     {
       "id": "magma_golem",
@@ -487,7 +508,8 @@
         "key": "magma_golem",
         "tint": "#b8401a",
         "scale": 1.3
-      }
+      },
+      "cardId": "card_magma_golem"
     },
     {
       "id": "flame_cultist",
@@ -508,7 +530,8 @@
         "atlas": "region_citadel",
         "key": "flame_cultist",
         "tint": "#e09a3a"
-      }
+      },
+      "cardId": "card_flame_cultist"
     },
     {
       "id": "ember_priestess",
@@ -532,7 +555,8 @@
         "spawnAnim": "rise",
         "scale": 1.7
       },
-      "boss": true
+      "boss": true,
+      "cardId": "card_ember_priestess"
     },
     {
       "id": "cinder_knight",
@@ -554,7 +578,8 @@
         "key": "cinder_knight",
         "tint": "#4a4a5a",
         "scale": 1.1
-      }
+      },
+      "cardId": "card_cinder_knight"
     },
     {
       "id": "inferno_wraith",
@@ -575,7 +600,8 @@
         "atlas": "region_citadel",
         "key": "inferno_wraith",
         "tint": "#ff5a3a"
-      }
+      },
+      "cardId": "card_inferno_wraith"
     },
     {
       "id": "charred_king",
@@ -599,7 +625,8 @@
         "spawnAnim": "rise",
         "scale": 2.0
       },
-      "boss": true
+      "boss": true,
+      "cardId": "card_charred_king"
     }
   ],
   "lootTables": [

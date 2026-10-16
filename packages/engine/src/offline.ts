@@ -8,6 +8,7 @@ import {
 } from './constants.ts';
 import { filterKeeps, generateItem, rarityRank } from './items.ts';
 import { killXp } from './hunt.ts';
+import { cardChancePpm, pityThreshold } from './cards.ts';
 import { addXp } from './progression.ts';
 import { categoryLoot, potionHoursLeft, type RateSheet } from './rates.ts';
 import { rngBinomial, rngChance, rngInt, type RngState } from './rng.ts';
@@ -46,6 +47,8 @@ export interface OfflineReport {
   materials: Record<string, number>;
   consumables: Record<string, number>;
   newBosses: string[];
+  /** Cards gained while away: card id → copies gained. */
+  cards: Record<string, number>;
   unlockedHunts: string[];
 }
 
@@ -78,6 +81,34 @@ function emptyRarities(): Record<Rarity, number> {
  * per-hit simulation. Counts are expected values with binomial / unbiased-rounding noise,
  * so the mean over many resolutions matches the tick simulation.
  */
+function rollOfflineCards(
+  s: GameState,
+  content: ContentDb,
+  monsterId: string,
+  elite: boolean,
+  kills: number,
+  report: OfflineReport,
+) {
+  const cardId = content.monsters.get(monsterId)?.cardId;
+  const card = cardId ? content.cards.get(cardId) : undefined;
+  if (!card || kills <= 0) return;
+  const copies = s.hero.cards[card.id] ?? 0;
+  if (copies >= card.maxCopies) return;
+  const since = s.cardPity[card.id] ?? 0;
+  const beforePity = Math.max(0, Math.min(kills, pityThreshold(card) - since));
+  const hits =
+    rngBinomial(s.rng, beforePity, cardChancePpm(card, elite, false)) +
+    rngBinomial(s.rng, kills - beforePity, cardChancePpm(card, elite, true));
+  const gained = Math.min(hits, card.maxCopies - copies);
+  if (gained > 0) {
+    s.hero.cards[card.id] = copies + gained;
+    s.cardPity[card.id] = 0;
+    report.cards[card.id] = (report.cards[card.id] ?? 0) + gained;
+  } else {
+    s.cardPity[card.id] = since + kills;
+  }
+}
+
 export function resolveOffline(
   s: GameState,
   content: ContentDb,
@@ -109,6 +140,7 @@ export function resolveOffline(
     materials: {},
     consumables: {},
     newBosses: [],
+    cards: {},
     unlockedHunts: [],
   };
   const hunting = s.hunt !== null && s.activity.kind !== 'idle_town' && rates !== null;
@@ -235,6 +267,8 @@ export function resolveOffline(
       }
       salvage(r, leftover);
     }
+    // Cards: binomial over the kills, with the pity rule from the kill where it starts.
+    rollOfflineCards(s, content, c.monsterId, c.elite, c.n, report);
     // 5. Extras (potions dropped by monsters).
     for (const e of table.extras) {
       const hits = rngBinomial(rng, c.n, e.chancePpm);

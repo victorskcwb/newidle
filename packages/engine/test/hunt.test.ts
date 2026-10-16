@@ -60,12 +60,11 @@ describe('hunt simulation', () => {
     const s = hunting(3);
     s.consumables.potion_hp_small = 0;
     s.gold = 1000n;
-    s.settings.returnWhenOutOfPotions = true;
-    const events = step(s, content, TICKS_PER_HOUR / 4);
-    const trip = ofType(events, 'TownTripStarted')[0]!;
-    expect(trip.reason).toBe('no_potions');
+    s.activity = { kind: 'to_town', untilTick: s.tick, reason: 'no_potions' };
+    const events = step(s, content, 1);
     const arrived = ofType(events, 'ArrivedInTown')[0]!;
     expect(arrived.potionsBought).toBe(s.settings.potionTarget);
+    expect(s.gold).toBe(1000n - BigInt(10 * s.settings.potionTarget));
   });
 
   it('death costs 10% of the level XP, never a level, never items', () => {

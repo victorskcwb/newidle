@@ -2,6 +2,7 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import {
   BACKPACK_SIZE,
+  SAVE_VERSION,
   IntentError,
   OFFLINE_CAP_TICKS,
   TICKS_PER_HOUR,
@@ -355,7 +356,7 @@ describe('save migration v1 → v2', () => {
     delete v1.state.combat!.buffUntil;
     delete (v1.state as Record<string, unknown>).flags;
     const loaded = decodeSave(JSON.stringify(v1), content);
-    expect(loaded.version).toBe(2);
+    expect(loaded.version).toBe(SAVE_VERSION);
     expect(loaded.state.hero.resets).toEqual({
       count: 0,
       points: 0,

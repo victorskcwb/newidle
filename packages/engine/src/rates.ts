@@ -10,6 +10,7 @@ import {
   TICKS_PER_HOUR,
 } from './constants.ts';
 import { stepQuiet, type SimCounters } from './hunt.ts';
+import { cardChancePpm } from './cards.ts';
 import { rarityTable } from './items.ts';
 import { cloneState } from './state.ts';
 import { heroStats } from './stats.ts';
@@ -46,6 +47,8 @@ export interface RateSheet {
   sustainHours: number | null;
   dropsPerHour: Record<Rarity, number>;
   extrasPerHour: Record<string, number>;
+  /** Expected cards per hour by card id (base chances, without the pity rule). */
+  cardsPerHour: Record<string, number>;
 }
 
 export function newCounters(): SimCounters {
@@ -55,6 +58,7 @@ export function newCounters(): SimCounters {
     gold: 0,
     goldSpent: 0,
     potionsUsed: {},
+    cards: {},
     groups: { normal: 0, elite: 0, boss: 0 },
     potionsByGroup: { normal: {}, elite: {}, boss: {} },
     potionsBought: {},
@@ -200,10 +204,17 @@ export function computeRates(
     mix.push({ monsterId: hunt.boss.monsterId, elite: false, n: bossKills });
 
   let goldPerHour = 0;
+  const cardsPerHour: Record<string, number> = {};
   for (const { monsterId, elite, n } of mix) {
     if (n <= 0) continue;
     const killsPerHour = perHour(n);
     goldPerHour += killsPerHour * expectedGold(content, monsterId, elite, stats.goldPct);
+    const cardId = content.monsters.get(monsterId)?.cardId;
+    const card = cardId ? content.cards.get(cardId) : undefined;
+    if (card) {
+      cardsPerHour[card.id] =
+        (cardsPerHour[card.id] ?? 0) + (killsPerHour * cardChancePpm(card, elite, false)) / PPM;
+    }
     categories.push({ monsterId, elite, killsPerHour });
     const loot = categoryLoot(content, monsterId, elite, stats.magicFindPct);
     for (const r of RARITY_ORDER) {
@@ -243,6 +254,7 @@ export function computeRates(
     sustainHours: counters.stoppedAtTick === null ? null : hours,
     dropsPerHour,
     extrasPerHour,
+    cardsPerHour,
   };
 }
 

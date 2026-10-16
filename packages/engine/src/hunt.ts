@@ -18,6 +18,7 @@ import {
   TOWN_STAY_TICKS,
 } from './constants.ts';
 import { filterKeeps, generateItem, pickWeighted, rollSalvage } from './items.ts';
+import { rollCard } from './cards.ts';
 import { addXp } from './progression.ts';
 import { rngChance, rngInt } from './rng.ts';
 import { heroStats, type HeroStats } from './stats.ts';
@@ -37,6 +38,8 @@ export interface SimCounters {
   deaths: number;
   townTrips: number;
   bossEncounters: number;
+  /** Cards dropped by id. */
+  cards: Record<string, number>;
   /** Groups cleared, by kind, and potions drunk while fighting each kind (rate sheet). */
   groups: Record<GroupKind, number>;
   potionsByGroup: Record<GroupKind, Record<string, number>>;
@@ -383,6 +386,11 @@ function killMonster(
       s.materials[materialId] = (s.materials[materialId] ?? 0n) + BigInt(qty);
       out?.push({ type: 'MaterialsGained', tick: t, materialId, qty });
     }
+  }
+  const card = rollCard(s, content, m.monsterId, m.elite, (ppm) => rngChance(s.rng, ppm));
+  if (card) {
+    if (o.counters) o.counters.cards[card.cardId] = (o.counters.cards[card.cardId] ?? 0) + 1;
+    out?.push({ type: 'CardDropped', tick: t, fromUid: m.uid, ...card });
   }
   for (const extra of table.extras) {
     if (!rngChance(s.rng, extra.chancePpm)) continue;

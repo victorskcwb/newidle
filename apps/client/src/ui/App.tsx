@@ -9,6 +9,7 @@ import { EventLog } from './EventLog.tsx';
 import { Hud } from './Hud.tsx';
 import { OfflineModal } from './OfflineModal.tsx';
 import { AltarScreen } from './screens/AltarScreen.tsx';
+import { CardsScreen } from './screens/CardsScreen.tsx';
 import { CharacterScreen } from './screens/CharacterScreen.tsx';
 import { FilterScreen } from './screens/FilterScreen.tsx';
 import { HuntsScreen } from './screens/HuntsScreen.tsx';
@@ -24,6 +25,7 @@ const SCREENS: Record<Screen, () => React.JSX.Element> = {
   menu: MenuScreen,
   character: CharacterScreen,
   skills: SkillsScreen,
+  cards: CardsScreen,
   hunts: HuntsScreen,
   smith: SmithScreen,
   altar: AltarScreen,

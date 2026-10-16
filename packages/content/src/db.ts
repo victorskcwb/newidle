@@ -108,6 +108,10 @@ export function buildContentDb(raw: unknown): ContentDb {
   for (const m of c.monsters) {
     ref(db.lootTables.has(m.lootTableId), `monster ${m.id}: unknown lootTableId ${m.lootTableId}`);
     if (m.cardId) ref(db.cards.has(m.cardId), `monster ${m.id}: unknown cardId ${m.cardId}`);
+    if (m.cardId) {
+      const owner = c.monsters.find((o) => o !== m && o.cardId === m.cardId);
+      ref(!owner, `card ${m.cardId}: used by both ${m.id} and ${owner?.id}`);
+    }
     ref(m.damageMin <= m.damageMax, `monster ${m.id}: damageMin > damageMax`);
   }
   for (const t of c.lootTables) {
@@ -137,6 +141,12 @@ export function buildContentDb(raw: unknown): ContentDb {
     c.hunts.some((h) => h.startUnlocked),
     'no hunt has startUnlocked: true (a new hero would have nowhere to hunt)',
   );
+  for (const card of c.cards) {
+    ref(
+      c.monsters.some((m) => m.cardId === card.id),
+      `card ${card.id}: no monster drops it`,
+    );
+  }
   for (const sk of c.skills) {
     for (const r of sk.requires) {
       const req = db.skills.get(r.skillId);

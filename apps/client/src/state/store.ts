@@ -13,7 +13,16 @@ export type TownView = null | 'depositing' | 'idle';
 
 /** Full-panel screens reachable from the HUD (at most 2 taps away, section 11). */
 export type Screen =
-  'menu' | 'character' | 'skills' | 'hunts' | 'smith' | 'altar' | 'filter' | 'settings' | 'save';
+  | 'menu'
+  | 'character'
+  | 'skills'
+  | 'cards'
+  | 'hunts'
+  | 'smith'
+  | 'altar'
+  | 'filter'
+  | 'settings'
+  | 'save';
 
 interface UiState {
   /** HUD values at the tick the scene is showing (not the engine's latest tick). */

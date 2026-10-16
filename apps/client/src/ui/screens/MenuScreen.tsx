@@ -12,6 +12,7 @@ export function MenuScreen() {
   const items: { screen: Screen; badge?: string | number }[] = [
     { screen: 'character', badge: hero.unspentAttributePoints || undefined },
     { screen: 'skills', badge: hero.unspentSkillPoints || undefined },
+    { screen: 'cards' },
     { screen: 'hunts' },
     { screen: 'smith' },
     {

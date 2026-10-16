@@ -124,3 +124,9 @@ export const RESET_POINTS_PER_NEW_BOSS = 2;
 /** Each reset is worth more than the last: + this × resets already done (decisions #68). */
 export const RESET_POINTS_PER_PAST_RESET = 2;
 export const RESETS_FOR_SHOP = 1;
+
+// --- Cards (section 8.4) --------------------------------------------------------------------
+/** Elite kills roll cards at 4× the base chance (1/2,000 → 1/500). */
+export const CARD_ELITE_KILL_PCT = 400;
+/** After this many times the expected kills without a copy, the chance doubles. */
+export const CARD_PITY_FACTOR = 3;

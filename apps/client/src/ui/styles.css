@@ -960,3 +960,39 @@ input[type='range'] {
     width: calc(100vw - 2 * var(--gutter));
   }
 }
+
+/* --- Card album ------------------------------------------------------------------------------ */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.card {
+  padding: 8px;
+  border: 2px solid var(--edge);
+  background: #15131b;
+  display: grid;
+  gap: 2px;
+  opacity: 0.6;
+}
+
+.card.owned {
+  opacity: 1;
+  border-color: #3f6a8a;
+  background: #172230;
+}
+
+.card.maxed {
+  border-color: var(--accent);
+}
+
+.card-name {
+  font-size: 13px;
+}
+
+.copies {
+  color: var(--info);
+  letter-spacing: 2px;
+}

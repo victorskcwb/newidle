@@ -31,7 +31,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
     refine: 0,
   };
   const s: GameState = {
-    version: 2,
+    version: 3,
     tick: 0,
     rng: createRng(hero.seed),
     nextUid: 2,
@@ -53,6 +53,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
       respecs: 0,
       freeRespec: false,
       resets: { count: 0, points: 0, upgrades: {}, newBossesThisCycle: 0 },
+      cards: {},
     },
     backpack: [],
     stash: [],
@@ -89,6 +90,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
       bossKills: 0,
     },
     flags: [],
+    cardPity: {},
   };
   const stats = heroStats(s.hero, content);
   s.hero.hp = stats.maxHp;

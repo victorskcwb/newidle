@@ -306,6 +306,22 @@ export class Director {
         );
         break;
       }
+      case 'CardDropped': {
+        const from = this.monsters.get(e.fromUid)?.actor ?? this.hero;
+        const card = this.content.cards.get(e.cardId)!;
+        this.fx.ring(from.x, from.y, 0x9fd3ff);
+        this.fx.burst(from.x, from.y, 0x9fd3ff, 20);
+        this.fx.number(from.x, from.y - 20, t('fx.card'), 'crit');
+        this.log(
+          t(e.copies === 1 ? 'log.cardNew' : 'log.cardCopy', {
+            card: t(card.nameKey),
+            n: e.copies,
+            max: card.maxCopies,
+          }),
+          { tone: 'good' },
+        );
+        break;
+      }
       case 'ConsumableDropped': {
         const from = this.monsters.get(e.fromUid)?.actor ?? this.hero;
         const x = from.x;

@@ -8,7 +8,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export interface SaveFile {
   version: number;
@@ -62,7 +62,7 @@ const attributes = z.strictObject({
 });
 
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(2),
+  version: z.literal(3),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -89,6 +89,7 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
       upgrades: z.record(z.string(), nonNeg),
       newBossesThisCycle: nonNeg,
     }),
+    cards: z.record(z.string(), nonNeg),
   }),
   backpack: z.array(item),
   stash: z.array(item),
@@ -145,6 +146,7 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
     bossKills: nonNeg,
   }),
   flags: z.array(z.string()),
+  cardPity: z.record(z.string(), nonNeg),
 });
 
 /**
@@ -175,6 +177,14 @@ export const SAVE_MIGRATIONS: Record<
         // Heroes past their 5th kill already had their chance at the first magic item.
         flags: (lifetime.kills ?? 0n) >= 5n ? ['first_magic'] : [],
       },
+    };
+  },
+  /** v2 → v3: cards (section 8.4). */
+  2: (raw) => {
+    const state = raw.state as Record<string, Record<string, unknown>>;
+    return {
+      ...raw,
+      state: { ...state, version: 3, hero: { ...state.hero, cards: {} }, cardPity: {} },
     };
   },
 };
@@ -212,6 +222,9 @@ export function unknownContentRefs(state: GameState, content: ContentDb): string
     }
   }
   for (const h of state.unlockedHunts) if (!content.hunts.has(h)) problems.push(`hunt ${h}`);
+  for (const id of Object.keys(state.hero.cards)) {
+    if (!content.cards.has(id)) problems.push(`card ${id}`);
+  }
   if (state.hunt && !content.hunts.has(state.hunt.huntId))
     problems.push(`hunt ${state.hunt.huntId}`);
   const a = state.activity;

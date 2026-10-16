@@ -59,6 +59,8 @@ export interface Hero {
   /** A free redistribution is available (after a reset). */
   freeRespec: boolean;
   resets: ResetProgress;
+  /** Card copies by card id (section 8.4). */
+  cards: Record<string, number>;
 }
 
 export interface LootFilter {
@@ -134,7 +136,7 @@ export interface Lifetime {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 2;
+  version: 3;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;
@@ -155,6 +157,8 @@ export interface GameState {
   lifetime: Lifetime;
   /** One-time events already done (e.g. the guaranteed first magic item). */
   flags: string[];
+  /** Kills of each card's monster since its last copy (pity rule). */
+  cardPity: Record<string, number>;
 }
 
 // --- Events ---------------------------------------------------------------------------------
@@ -185,6 +189,7 @@ export type GameEvent =
   | { type: 'ItemDropped'; tick: number; fromUid: number; item: ItemInstance; kept: boolean }
   | { type: 'ConsumableDropped'; tick: number; fromUid: number; consumableId: string; qty: number }
   | { type: 'MaterialsGained'; tick: number; materialId: string; qty: number }
+  | { type: 'CardDropped'; tick: number; fromUid: number; cardId: string; copies: number }
   | { type: 'LevelUp'; tick: number; level: number }
   | { type: 'HeroDied'; tick: number; xpLost: number }
   | { type: 'TownTripStarted'; tick: number; reason: TownReason; arriveTick: number }

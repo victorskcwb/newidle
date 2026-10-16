@@ -15,6 +15,13 @@ test('skills, hunt map, reset and reset shop', async ({ page }) => {
   await expect(page.getByTestId('hunt-pale_woods')).toContainText('Derrote O Coveiro');
   await page.getByRole('button', { name: 'Fechar' }).click();
 
+  // Card album: every monster has a card, none found yet.
+  await page.getByTestId('menu-button').click();
+  await page.getByTestId('menu-cards').click();
+  await expect(page.getByTestId('cards')).toContainText('0 de 27 cartas');
+  await expect(page.getByTestId('card-card_bone_walker')).toContainText('???');
+  await page.getByRole('button', { name: 'Fechar' }).click();
+
   // Jump to level 100 (debug, development builds only).
   await page.getByTestId('menu-button').click();
   await page.getByTestId('menu-settings').click();

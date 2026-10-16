@@ -4,19 +4,31 @@
       "id": "cinzarra",
       "nameKey": "region.cinzarra",
       "levelRange": [1, 30],
-      "order": 0
+      "order": 0,
+      "cardSetBonus": {
+        "stat": "lifePct",
+        "value": 5
+      }
     },
     {
       "id": "morvel_swamp",
       "nameKey": "region.morvel_swamp",
       "levelRange": [30, 60],
-      "order": 1
+      "order": 1,
+      "cardSetBonus": {
+        "stat": "damagePct",
+        "value": 5
+      }
     },
     {
       "id": "burned_citadel",
       "nameKey": "region.burned_citadel",
       "levelRange": [60, 100],
-      "order": 2
+      "order": 2,
+      "cardSetBonus": {
+        "stat": "xpPct",
+        "value": 5
+      }
     }
   ],
   "hunts": [

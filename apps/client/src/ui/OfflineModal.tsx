@@ -62,6 +62,16 @@ export function OfflineModal() {
                 })}
               </div>
             )}
+            {Object.keys(r.cards).length > 0 && (
+              <div className="offline-items">
+                <div className="muted">{t('offline.cards')}</div>
+                {Object.entries(r.cards).map(([id, n]) => (
+                  <div key={id} className="tone-info">
+                    {t(sim.content.cards.get(id)!.nameKey)} +{n}
+                  </div>
+                ))}
+              </div>
+            )}
             {r.items.length > 0 && (
               <div className="offline-items">
                 <div className="muted">{t('offline.items')}</div>

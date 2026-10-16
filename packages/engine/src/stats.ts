@@ -23,6 +23,7 @@ import {
 } from './constants.ts';
 import { ATTRIBUTES, type Attributes, type Hero, type ItemInstance } from './types.ts';
 import { upgradeTotal } from './upgrades.ts';
+import { cardMods } from './cards.ts';
 
 export type StatMods = Partial<Record<Stat, number>>;
 
@@ -132,10 +133,13 @@ function statsKey(hero: Hero): string {
   const skills = Object.entries(hero.skillLevels)
     .map(([id, l]) => `${id}${l}`)
     .join(',');
+  const cards = Object.entries(hero.cards)
+    .map(([id, n]) => `${id}${n}`)
+    .join(',');
   const ups = Object.entries(hero.resets.upgrades)
     .map(([id, l]) => `${id}${l}`)
     .join(',');
-  return `${hero.level}|${a.strength},${a.dexterity},${a.vitality},${a.energy}|${items}|${skills}|${ups}`;
+  return `${hero.level}|${a.strength},${a.dexterity},${a.vitality},${a.energy}|${items}|${skills}|${ups}|${cards}`;
 }
 
 /** Derived stats of the hero. Cached per hero object; the cache key covers every input. */
@@ -173,6 +177,8 @@ export function computeHeroStats(hero: Hero, content: ContentDb): HeroStats {
     const skill = content.skills.get(id);
     if (skill?.kind === 'passive' && level > 0) add({ [skill.stat]: skill.perLevel * level });
   }
+  // Cards and completed regions.
+  add(cardMods(hero, content));
   // Reset shop bonuses.
   add({
     xpPct: upgradeTotal(hero, content, 'xpPct'),
