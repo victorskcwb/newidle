@@ -1,10 +1,11 @@
-import type { Consumable, ContentDb, Hunt, Monster } from '@abismo/content';
+import type { Consumable, ContentDb, Hunt, Monster, MonsterAffix } from '@abismo/content';
 import { rollHit, type AttackProfile } from './combat.ts';
 import {
   BASE_CRIT_CHANCE_PPM,
   BASE_CRIT_DAMAGE_PCT,
   DEATH_XP_LOSS_PCT,
   ELITE_DAMAGE_PCT,
+  ELITE_AFFIX_COUNT,
   ELITE_DROP_CHANCE_PCT,
   ELITE_LIFE_PCT,
   ELITE_MAGIC_FIND_BONUS,
@@ -81,9 +82,17 @@ function seconds(s: number): number {
   return Math.max(1, Math.round(s * TICKS_PER_SECOND));
 }
 
-function monsterInstance(uid: number, m: Monster, elite: boolean): MonsterInstance {
-  const lifePct = elite ? ELITE_LIFE_PCT : 100;
-  const dmgPct = elite ? ELITE_DAMAGE_PCT : 100;
+function monsterInstance(
+  uid: number,
+  m: Monster,
+  elite: boolean,
+  affixes: readonly MonsterAffix[] = [],
+): MonsterInstance {
+  const sum = (k: 'lifePct' | 'damagePct' | 'attackSpeedPct') =>
+    affixes.reduce((n, a) => n + (a[k] ?? 0), 0);
+  const lifePct = ((elite ? ELITE_LIFE_PCT : 100) * (100 + sum('lifePct'))) / 100;
+  const dmgPct = ((elite ? ELITE_DAMAGE_PCT : 100) * (100 + sum('damagePct'))) / 100;
+  const aps = (m.attacksPerSecond * (100 + sum('attackSpeedPct'))) / 100;
   const hp = Math.floor((m.hp * lifePct) / 100);
   return {
     uid,
@@ -94,9 +103,30 @@ function monsterInstance(uid: number, m: Monster, elite: boolean): MonsterInstan
     maxHp: hp,
     damageMin: Math.floor((m.damageMin * dmgPct) / 100),
     damageMax: Math.floor((m.damageMax * dmgPct) / 100),
-    attackIntervalTicks: Math.max(1, Math.ceil(TICKS_PER_SECOND / m.attacksPerSecond)),
+    attackIntervalTicks: Math.max(1, Math.ceil(TICKS_PER_SECOND / aps)),
     nextAttackTick: 0,
+    affixes: affixes.map((a) => a.id),
   };
+}
+
+/** One or two distinct elite modifiers. RNG draws: count, then one pick per modifier. */
+function rollEliteAffixes(s: GameState, content: ContentDb): MonsterAffix[] {
+  const pool = [...content.monsterAffixes.values()];
+  const count = Math.min(pool.length, rngInt(s.rng, ELITE_AFFIX_COUNT[0], ELITE_AFFIX_COUNT[1]));
+  const out: MonsterAffix[] = [];
+  for (let i = 0; i < count; i++) {
+    const a = pickWeighted(s.rng, pool, (x) => x.weight);
+    pool.splice(pool.indexOf(a), 1);
+    out.push(a);
+  }
+  return out;
+}
+
+/** Sum of one numeric field over a monster's elite modifiers. */
+function affixTotal(content: ContentDb, m: MonsterInstance, k: 'defensePct' | 'leechPct'): number {
+  let n = 0;
+  for (const id of m.affixes) n += content.monsterAffixes.get(id)?.[k] ?? 0;
+  return n;
 }
 
 /**
@@ -123,7 +153,10 @@ function startWalking(
     for (let i = 0; i < size; i++) {
       const pick = pickWeighted(s.rng, hunt.spawns, (sp) => sp.weight);
       const m = content.monsters.get(pick.monsterId)!;
-      group.push(monsterInstance(s.nextUid++, m, elite && i === 0));
+      const isElite = elite && i === 0;
+      group.push(
+        monsterInstance(s.nextUid++, m, isElite, isElite ? rollEliteAffixes(s, content) : []),
+      );
     }
   }
   const engageTick = t + seconds(hunt.walkSecondsBetweenGroups);
@@ -138,6 +171,7 @@ function startWalking(
       elite: m.elite,
       boss: m.boss,
       maxHp: m.maxHp,
+      affixes: m.affixes,
     })),
   });
 }
@@ -456,7 +490,11 @@ function heroStrike(
       critDamagePct: stats.critDamagePct,
       damagePct: Math.floor((skillPct * (100 + undead)) / 100),
     };
-    const hit = rollHit(s.rng, atk, def);
+    const armorPct = 100 + affixTotal(content, m, 'defensePct');
+    const hit = rollHit(s.rng, atk, {
+      evasion: def.evasion,
+      defense: Math.floor((def.defense * armorPct) / 100),
+    });
     const dealt = Math.min(hit.damage, m.hp);
     m.hp -= hit.damage;
     leech += Math.floor((dealt * stats.lifeLeechPct) / 100);
@@ -532,6 +570,8 @@ function fight(
     );
     m.nextAttackTick = t + m.attackIntervalTicks;
     hero.hp -= hit.damage;
+    const leech = m.affixes.length > 0 ? affixTotal(content, m, 'leechPct') : 0;
+    if (leech > 0) m.hp = Math.min(m.maxHp, m.hp + Math.floor((hit.damage * leech) / 100));
     out?.push({ type: 'MonsterAttack', tick: t, uid: m.uid, damage: hit.damage, miss: hit.miss });
     if (hero.hp <= 0) {
       die(s, t, out, o);

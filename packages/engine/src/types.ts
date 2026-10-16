@@ -93,6 +93,8 @@ export interface MonsterInstance {
   damageMax: number;
   attackIntervalTicks: number;
   nextAttackTick: number;
+  /** Elite modifiers (monster affix ids). */
+  affixes: string[];
 }
 
 /** What the hero is doing. Each phase ends at a known tick or when the fight resolves. */
@@ -136,7 +138,7 @@ export interface Lifetime {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 3;
+  version: 4;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;
@@ -169,6 +171,7 @@ export interface SpawnedMonster {
   elite: boolean;
   boss: boolean;
   maxHp: number;
+  affixes: string[];
 }
 
 export interface HitResult {

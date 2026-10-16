@@ -8,7 +8,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 export interface SaveFile {
   version: number;
@@ -50,6 +50,7 @@ const monster = z.strictObject({
   damageMax: nonNeg,
   attackIntervalTicks: int.min(1),
   nextAttackTick: nonNeg,
+  affixes: z.array(id),
 });
 
 const townReason = z.enum(['backpack_full', 'no_potions', 'death', 'manual']);
@@ -62,7 +63,7 @@ const attributes = z.strictObject({
 });
 
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(3),
+  version: z.literal(4),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -186,6 +187,14 @@ export const SAVE_MIGRATIONS: Record<
       ...raw,
       state: { ...state, version: 3, hero: { ...state.hero, cards: {} }, cardPity: {} },
     };
+  },
+  /** v3 → v4: elite modifiers on monsters (none for monsters already in a fight). */
+  3: (raw) => {
+    const state = raw.state as Record<string, unknown> & { activity: { group?: object[] } };
+    const activity = state.activity.group
+      ? { ...state.activity, group: state.activity.group.map((m) => ({ ...m, affixes: [] })) }
+      : state.activity;
+    return { ...raw, state: { ...state, version: 4, activity } };
   },
 };
 

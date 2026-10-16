@@ -505,5 +505,11 @@
   "fx.card": "Carta!",
   "log.cardNew": "Carta nova: {card}!",
   "log.cardCopy": "Carta: {card} ({n}/{max})",
-  "offline.cards": "Cartas"
+  "offline.cards": "Cartas",
+  "elite.swift": "Veloz",
+  "elite.brutal": "Brutal",
+  "elite.armored": "Blindado",
+  "elite.vampiric": "Vampírico",
+  "elite.giant": "Gigante",
+  "monster.eliteAffixes": "{name} — {affixes}"
 }

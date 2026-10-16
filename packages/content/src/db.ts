@@ -13,6 +13,7 @@ import {
   type Rarity,
   type Region,
   type ResetUpgrade,
+  type MonsterAffix,
   type Skill,
 } from './schema.ts';
 
@@ -29,6 +30,7 @@ export interface ContentDb {
   readonly regions: ReadonlyMap<string, Region>;
   readonly hunts: ReadonlyMap<string, Hunt>;
   readonly resetUpgrades: ReadonlyMap<string, ResetUpgrade>;
+  readonly monsterAffixes: ReadonlyMap<string, MonsterAffix>;
   /** Material yielded by salvaging each rarity. */
   readonly salvageMaterial: Readonly<Record<Rarity, Material>>;
 }
@@ -66,6 +68,7 @@ export function mergeContentFiles(files: readonly Partial<ContentFile>[]): Conte
     regions: [],
     hunts: [],
     resetUpgrades: [],
+    monsterAffixes: [],
   };
   for (const file of files) {
     for (const k of Object.keys(merged) as (keyof ContentFile)[]) {
@@ -99,6 +102,7 @@ export function buildContentDb(raw: unknown): ContentDb {
     regions: indexById('region', c.regions, problems),
     hunts: indexById('hunt', c.hunts, problems),
     resetUpgrades: indexById('resetUpgrade', c.resetUpgrades, problems),
+    monsterAffixes: indexById('monsterAffix', c.monsterAffixes, problems),
   };
 
   const ref = (ok: boolean, message: string) => {
@@ -202,5 +206,6 @@ export function translationKeys(db: ContentDb): string[] {
   for (const r of db.regions.values()) keys.push(r.nameKey);
   for (const h of db.hunts.values()) keys.push(h.nameKey);
   for (const u of db.resetUpgrades.values()) keys.push(u.nameKey, u.descKey);
+  for (const a of db.monsterAffixes.values()) keys.push(a.nameKey);
   return keys;
 }

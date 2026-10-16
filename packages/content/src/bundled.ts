@@ -1,4 +1,5 @@
 import economy from '../data/economy.json' with { type: 'json' };
+import elites from '../data/elites.json' with { type: 'json' };
 import items from '../data/items.json' with { type: 'json' };
 import monsters from '../data/monsters.json' with { type: 'json' };
 import resets from '../data/resets.json' with { type: 'json' };
@@ -15,6 +16,7 @@ export const CONTENT_FILES = {
   skills,
   world,
   resets,
+  elites,
 } as unknown as Record<string, Partial<ContentFile>>;
 
 let cached: ContentDb | undefined;

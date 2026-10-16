@@ -31,7 +31,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
     refine: 0,
   };
   const s: GameState = {
-    version: 3,
+    version: 4,
     tick: 0,
     rng: createRng(hero.seed),
     nextUid: 2,

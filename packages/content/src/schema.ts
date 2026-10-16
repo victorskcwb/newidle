@@ -246,6 +246,22 @@ export const skillSchema = z.discriminatedUnion('kind', [
 ]);
 export type Skill = z.infer<typeof skillSchema>;
 
+/** Elite modifiers (milestone 2): each elite rolls one or two. Percent values (50 = +50%). */
+export const monsterAffixSchema = z.strictObject({
+  id,
+  nameKey: key,
+  weight: posInt,
+  lifePct: nonNegInt.optional(),
+  damagePct: nonNegInt.optional(),
+  attackSpeedPct: nonNegInt.optional(),
+  defensePct: nonNegInt.optional(),
+  /** Share of the damage dealt to the hero that heals the monster. */
+  leechPct: nonNegInt.optional(),
+  /** Name colour on the map (#rrggbb). */
+  color: z.string().regex(/^#[0-9a-f]{6}$/),
+});
+export type MonsterAffix = z.infer<typeof monsterAffixSchema>;
+
 export const cardSchema = z.strictObject({
   id,
   nameKey: key,
@@ -327,5 +343,6 @@ export const contentSchema = z.strictObject({
   regions: z.array(regionSchema),
   hunts: z.array(huntSchema),
   resetUpgrades: z.array(resetUpgradeSchema),
+  monsterAffixes: z.array(monsterAffixSchema),
 });
 export type ContentFile = z.infer<typeof contentSchema>;

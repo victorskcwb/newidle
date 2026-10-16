@@ -53,6 +53,8 @@ export const ELITE_DAMAGE_PCT = 150;
 export const ELITE_REWARD_PCT = 200;
 export const ELITE_DROP_CHANCE_PCT = 300;
 export const ELITE_MAGIC_FIND_BONUS = 100;
+/** Elite modifiers rolled per elite (milestone 2). */
+export const ELITE_AFFIX_COUNT: readonly [number, number] = [1, 2];
 export const POTION_COOLDOWN_TICKS = 5 * TICKS_PER_SECOND;
 export const DEFAULT_POTION_THRESHOLD_PCT = 50;
 export const DEFAULT_MANA_POTION_THRESHOLD_PCT = 30;

@@ -440,6 +440,7 @@ export class Director {
       boss: boolean;
       maxHp: number;
       hp?: number;
+      affixes: string[];
     }[],
     center: TilePoint,
     animate: boolean,
@@ -464,9 +465,20 @@ export class Director {
       const actor = this.takeActor();
       actor.setTexture((dir) => monsterTextureKey(def.sprite.key, dir), anims);
       actor.reset(true);
-      const color = m.boss ? NAME_COLOR.boss : m.elite ? NAME_COLOR.elite : NAME_COLOR.normal;
+      const affixes = m.affixes
+        .map((id) => this.content.monsterAffixes.get(id))
+        .filter((a) => a !== undefined);
+      const color = m.boss
+        ? NAME_COLOR.boss
+        : (affixes[0]?.color ?? (m.elite ? NAME_COLOR.elite : NAME_COLOR.normal));
+      const base = `${this.monsterName(def, m.elite)} ${t('hud.level', { level: def.level })}`;
       actor.setName(
-        `${this.monsterName(def, m.elite)} ${t('hud.level', { level: def.level })}`,
+        affixes.length > 0
+          ? t('monster.eliteAffixes', {
+              name: base,
+              affixes: affixes.map((a) => t(a.nameKey)).join(', '),
+            })
+          : base,
         color,
       );
       actor.place(spot);

@@ -1,0 +1,39 @@
+{
+  "monsterAffixes": [
+    {
+      "id": "swift",
+      "nameKey": "elite.swift",
+      "weight": 100,
+      "attackSpeedPct": 50,
+      "color": "#7fd8ff"
+    },
+    {
+      "id": "brutal",
+      "nameKey": "elite.brutal",
+      "weight": 100,
+      "damagePct": 50,
+      "color": "#ff6b4a"
+    },
+    {
+      "id": "armored",
+      "nameKey": "elite.armored",
+      "weight": 80,
+      "defensePct": 150,
+      "color": "#b8bcc6"
+    },
+    {
+      "id": "vampiric",
+      "nameKey": "elite.vampiric",
+      "weight": 60,
+      "leechPct": 25,
+      "color": "#c0306a"
+    },
+    {
+      "id": "giant",
+      "nameKey": "elite.giant",
+      "weight": 80,
+      "lifePct": 100,
+      "color": "#e0b030"
+    }
+  ]
+}
