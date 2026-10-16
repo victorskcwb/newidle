@@ -5,7 +5,7 @@
       "nameKey": "reset.wisdom",
       "descKey": "reset.wisdom.desc",
       "maxLevel": 20,
-      "baseCost": 4,
+      "baseCost": 3,
       "effects": [
         {
           "effect": "xpPct",

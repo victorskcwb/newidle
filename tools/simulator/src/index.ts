@@ -1,110 +1,268 @@
 /**
- * Balance simulator (first cut). Runs a fresh hero through the tick simulation for N hours
- * in the starting hunt, auto-equipping better drops, and writes a CSV of the progression.
+ * Balance simulator (section 12.2). Synthetic players play sessions through the engine:
+ * a few minutes of tick simulation, then the time away resolved offline (12 h cap), as the
+ * real client does. In each session the player makes the obvious choices: best open hunt,
+ * better gear, skill points, refining, salvage, reset at level 100, reset shop.
  *
- *   pnpm sim [hours=8] [seed=1]
+ *   pnpm sim [profile=active|casual] [days=20] [seed=1]
  *
- * The full synthetic-player model of section 12.2 (sessions per day, offline gaps, resets)
- * builds on this once those systems exist.
+ * Writes tools/simulator/out/<profile>.csv (one row per session) and prints a summary
+ * against the targets of section 12.2.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { loadContent } from '@abismo/content';
+import { loadContent, type Hunt } from '@abismo/content';
 import {
   TICKS_PER_HOUR,
+  buyUpgrade,
+  computeHeroStats,
   computeRates,
   createGame,
   equipItem,
-  heroStats,
-  itemStats,
+  learnBlock,
+  learnSkill,
+  performReset,
+  refineBlock,
+  refineItem,
+  resetBlock,
+  resolveOffline,
+  salvageUpTo,
+  shopUnlocked,
   startHunt,
   step,
+  upgradeCost,
   type GameState,
+  type ItemInstance,
 } from '@abismo/engine';
 
-const hours = Number(process.argv[2] ?? 8);
-const seed = Number(process.argv[3] ?? 1);
-const content = loadContent();
-const state = createGame(content, { name: 'Sim', seed: [seed, 2, 3, 4] });
-const huntId = [...content.hunts.values()].find((h) => h.startUnlocked)!.id;
+const PROFILES = {
+  /** 8 sessions a day, every 2 h while awake, 8 h of sleep. */
+  active: { sessionsPerDay: 8, sessionMinutes: 6 },
+  /** 4 sessions a day. */
+  casual: { sessionsPerDay: 4, sessionMinutes: 4 },
+} as const;
+type Profile = keyof typeof PROFILES;
 
-/** Crude gear score: equip anything in the stash whose damage/defense/life is higher. */
-function score(s: GameState, uid: number): number {
-  const item = [...s.stash, ...Object.values(s.hero.equipment)].find((i) => i?.uid === uid);
-  if (!item) return 0;
-  const st = itemStats(item, content);
-  return (
-    ((st.damageMin ?? 0) + (st.damageMax ?? 0)) * 3 +
-    (st.defense ?? 0) * 2 +
-    (st.mods.life ?? 0) +
-    (st.mods.damagePct ?? 0) * 2 +
-    (st.mods.damageFlat ?? 0) * 5
-  );
+const profile = (process.argv[2] ?? 'active') as Profile;
+const days = Number(process.argv[3] ?? 20);
+const seed = Number(process.argv[4] ?? 1);
+const { sessionsPerDay, sessionMinutes } = PROFILES[profile];
+const content = loadContent();
+const hunts = [...content.hunts.values()];
+
+// --- The player's choices ------------------------------------------------------------------
+
+/** How much a setup is worth: damage per second × a little for survivability. */
+function power(s: GameState): number {
+  const st = computeHeroStats(s.hero, content);
+  const dps = ((st.damageMin + st.damageMax) / 2) * (10 / st.attackIntervalTicks);
+  return dps * Math.sqrt(st.maxHp) * (1 + st.defense / 1000);
 }
 
 function autoEquip(s: GameState) {
-  for (const item of [...s.stash]) {
-    const slot = content.itemBases.get(item.baseId)!.slot;
-    const current = s.hero.equipment[slot];
-    if (!current || score(s, item.uid) > score(s, current.uid)) {
+  for (const item of [...s.backpack, ...s.stash]) {
+    const base = content.itemBases.get(item.baseId)!;
+    if (base.requires.level > s.hero.level) continue;
+    const current = s.hero.equipment[base.slot];
+    const before = power(s);
+    const trial = structuredClone(s.hero);
+    trial.equipment[base.slot] = item;
+    const after = power({ ...s, hero: trial });
+    if (!current || after > before * 1.001) {
       try {
         equipItem(s, content, item.uid);
       } catch {
-        // requirement not met yet
+        // attribute requirement
       }
     }
   }
 }
 
-const t0 = performance.now();
-const rates0 = computeRates(state, content, huntId);
-const rateMs = performance.now() - t0;
-console.log(`rate sheet in ${rateMs.toFixed(0)} ms:`, {
-  killsPerHour: rates0.killsPerHour.toFixed(0),
-  xpPerHour: rates0.xpPerHour.toFixed(0),
-  goldPerHour: rates0.goldPerHour.toFixed(0),
-  deathsPerHour: rates0.deathsPerHour.toFixed(2),
-  potionsPerHour: rates0.potionsUsedPerHour,
-  dropsPerHour: rates0.dropsPerHour,
-});
+/** Skill order: the main attack, then damage and survival passives, then the rest. */
+const SKILL_PLAN = [
+  'heavy_strike',
+  'heavy_strike',
+  'heavy_strike',
+  'sword_mastery',
+  'sword_mastery',
+  'toughness',
+  'toughness',
+  'whirlwind',
+  'war_cry',
+  'war_cry',
+  'war_cry',
+  'charge',
+  'precision',
+  'precision',
+  'precision',
+  'iron_skin',
+  'iron_skin',
+  'iron_skin',
+  'fury',
+  'fury',
+  'fury',
+  'bloodthirst',
+  'bloodthirst',
+  'critical_eye',
+  'undead_bane',
+];
+function spendSkills(s: GameState) {
+  const order = [
+    ...SKILL_PLAN,
+    ...[...content.skills.keys()].flatMap((id) => Array(10).fill(id) as string[]),
+  ];
+  for (const id of order) {
+    if (s.hero.unspentSkillPoints <= 0) return;
+    const skill = content.skills.get(id)!;
+    if ((s.hero.skillLevels[id] ?? 0) >= skill.maxLevel) continue;
+    if (learnBlock(s.hero, skill) === null) learnSkill(s, content, id);
+  }
+}
 
-startHunt(state, content, huntId);
-const rows = ['minute,level,xp,gold,kills,deaths,stash,common,magic,rare,epic,legendary,dps_hint'];
-const stepTicks = TICKS_PER_HOUR / 6;
-const t1 = performance.now();
-for (let i = 1; i <= hours * 6; i++) {
-  const events = step(state, content, stepTicks);
-  for (const e of events) {
-    if (e.type === 'ArrivedInTown') autoEquip(state);
-    if (e.type === 'HuntStopped') {
-      console.log(`hunt stopped at minute ${i * 10}: ${e.reason}`);
-      startHunt(state, content, huntId);
+/** Refines equipped weapon and chest while it is safe (+1..+9) and affordable. */
+function refineGear(s: GameState) {
+  for (const slot of ['weapon', 'chest', 'helm', 'offhand'] as const) {
+    const item = s.hero.equipment[slot];
+    while (item && item.refine < 9 && refineBlock(s, item, false, 'refine_charm') === null) {
+      refineItem(s, content, item.uid);
     }
   }
-  const st = heroStats(state.hero, content);
-  const l = state.lifetime;
-  rows.push(
-    [
-      i * 10,
-      state.hero.level,
-      state.hero.xp,
-      state.gold,
-      l.kills,
-      l.deaths,
-      state.stash.length,
-      l.itemsByRarity.common,
-      l.itemsByRarity.magic,
-      l.itemsByRarity.rare,
-      l.itemsByRarity.epic,
-      l.itemsByRarity.legendary,
-      ((st.damageMin + st.damageMax) / 2 / (st.attackIntervalTicks / 10)).toFixed(1),
-    ].join(','),
+}
+
+function bestHunt(s: GameState): Hunt {
+  const open = hunts.filter(
+    (h) => s.unlockedHunts.includes(h.id) && h.levelRange[0] <= s.hero.level + 2,
+  );
+  return open[open.length - 1] ?? hunts[0]!;
+}
+
+function shop(s: GameState) {
+  if (!shopUnlocked(s.hero)) return;
+  // Speed first (XP), then the rest in order, each as far as the points go.
+  const wishes = ['wisdom', 'ancestral_power', 'fortune', 'master', 'deep_pack', 'patience'];
+  for (const id of wishes) {
+    for (;;) {
+      const cost = upgradeCost(content, s.hero, id);
+      if (cost === null || cost > s.hero.resets.points) break;
+      buyUpgrade(s, content, id);
+    }
+  }
+}
+
+function session(s: GameState) {
+  autoEquip(s);
+  // Keep the best items; salvage the rest for refine materials.
+  if (s.stash.length > 60) salvageUpTo(s, content, 'rare');
+  spendSkills(s);
+  refineGear(s);
+  if (resetBlock(s) === null) {
+    performReset(s, content);
+    spendSkills(s);
+  }
+  shop(s);
+  const hunt = bestHunt(s);
+  if (s.hunt?.huntId !== hunt.id || s.activity.kind === 'idle_town') startHunt(s, content, hunt.id);
+}
+
+// --- Run --------------------------------------------------------------------------------------
+
+const s = createGame(content, { name: 'Sim', seed: [seed, 0x9e3779b9, 7, 11] });
+startHunt(s, content, hunts[0]!.id);
+const rows = [
+  'day,hour,level,resets,hunt,gold,kills,common,magic,rare,epic,legendary,refine,power',
+];
+const awakeHours = 16;
+const gapHours = awakeHours / sessionsPerDay;
+let hour = 8;
+let firstLegendaryDay: number | null = null;
+const cycleDone: number[] = [];
+const t0 = performance.now();
+let lastResets = 0;
+/** First cycle only: XP and hours spent in each hunt, to compare XP/h between hunts. */
+const perHunt = new Map<string, { xp: bigint; hours: number; levels: number[] }>();
+
+for (let d = 0; d < days; d++) {
+  for (let k = 0; k < sessionsPerDay; k++) {
+    session(s);
+    const huntId = s.hunt?.huntId ?? '-';
+    const xpBefore = s.lifetime.xpEarned;
+    const levelBefore = s.hero.level;
+    step(s, content, sessionMinutes * 60 * 10);
+    session(s);
+    // Time away until the next session (overnight after the last one).
+    const away = k === sessionsPerDay - 1 ? 24 - awakeHours + gapHours : gapHours;
+    const rates = s.hunt ? computeRates(s, content, s.hunt.huntId, 2 * TICKS_PER_HOUR) : null;
+    resolveOffline(s, content, rates, Math.round(away * TICKS_PER_HOUR));
+    hour += sessionMinutes / 60 + away;
+    if (s.hero.resets.count === 0 && s.hunt?.huntId === huntId) {
+      const h = perHunt.get(huntId) ?? { xp: 0n, hours: 0, levels: [] };
+      h.xp += s.lifetime.xpEarned - xpBefore;
+      h.hours += sessionMinutes / 60 + away;
+      h.levels.push(levelBefore);
+      perHunt.set(huntId, h);
+    }
+    const day = hour / 24;
+    if (firstLegendaryDay === null && s.lifetime.itemsByRarity.legendary > 0)
+      firstLegendaryDay = day;
+    if (s.hero.resets.count > lastResets) {
+      cycleDone.push(day);
+      lastResets = s.hero.resets.count;
+    }
+    const l = s.lifetime.itemsByRarity;
+    const weapon = s.hero.equipment.weapon as ItemInstance | undefined;
+    rows.push(
+      [
+        day.toFixed(2),
+        hour.toFixed(1),
+        s.hero.level,
+        s.hero.resets.count,
+        s.hunt?.huntId ?? '-',
+        s.gold,
+        s.lifetime.kills,
+        l.common,
+        l.magic,
+        l.rare,
+        l.epic,
+        l.legendary,
+        weapon?.refine ?? 0,
+        power(s).toFixed(0),
+      ].join(','),
+    );
+  }
+}
+
+mkdirSync(new URL('../out/', import.meta.url), { recursive: true });
+const file = new URL(`../out/${profile}.csv`, import.meta.url);
+writeFileSync(file, rows.join('\n') + '\n');
+
+// --- Summary against section 12.2 -----------------------------------------------------------
+const reached100 = cycleDone[0] ?? null;
+const cycles = cycleDone.map((day, i) => day - (i === 0 ? 0 : cycleDone[i - 1]!));
+console.log(
+  `profile ${profile}, ${days} days, seed ${seed} (${((performance.now() - t0) / 1000).toFixed(0)} s)`,
+);
+console.log(`final: level ${s.hero.level}, resets ${s.hero.resets.count}, hunt ${s.hunt?.huntId}`);
+console.log(
+  `first level 100 (first reset): ${reached100 === null ? 'not reached' : `day ${reached100.toFixed(1)}`}  [target 3–5 for active]`,
+);
+console.log(
+  `first legendary: ${firstLegendaryDay === null ? 'none' : `day ${firstLegendaryDay.toFixed(1)}`}  [target 1–3]`,
+);
+console.log(
+  `cycle lengths (days): ${cycles.map((c) => c.toFixed(1)).join(', ') || '-'}  [each ≥10% faster]`,
+);
+const levels = rows.slice(1).filter((_, i) => i % sessionsPerDay === sessionsPerDay - 1);
+console.log('end of each day: level/resets/hunt');
+console.log(
+  levels
+    .map((r) => r.split(','))
+    .map((c) => `  day ${Math.round(Number(c[0]))}: L${c[2]} R${c[3]} ${c[4]}`)
+    .join('\n'),
+);
+console.log('first cycle, XP/h by hunt (hero levels while there):');
+for (const [id, h] of perHunt) {
+  const lv = `${Math.min(...h.levels)}–${Math.max(...h.levels)}`;
+  console.log(
+    `  ${id.padEnd(20)} ${(Number(h.xp) / h.hours).toFixed(0).padStart(8)} XP/h  levels ${lv}`,
   );
 }
-const simMs = performance.now() - t1;
-mkdirSync(new URL('../out/', import.meta.url), { recursive: true });
-const file = new URL('../out/progression.csv', import.meta.url);
-writeFileSync(file, rows.join('\n') + '\n');
-console.log(`${hours} h simulated in ${simMs.toFixed(0)} ms → ${file.pathname}`);
-console.log(rows.slice(0, 7).join('\n'));
-console.log('...');
-console.log(rows.slice(-3).join('\n'));
+console.log(`csv: ${file.pathname}`);

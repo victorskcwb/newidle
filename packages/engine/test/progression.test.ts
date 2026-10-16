@@ -269,7 +269,7 @@ describe('reset (section 8.1)', () => {
     const xpBefore = computeHeroStats(s.hero, content).xpPct;
     buyUpgrade(s, content, 'wisdom');
     buyUpgrade(s, content, 'wisdom');
-    expect(s.hero.resets.points).toBe(100 - 4 - 8);
+    expect(s.hero.resets.points).toBe(100 - 3 - 6);
     expect(computeHeroStats(s.hero, content).xpPct).toBe(xpBefore + 20);
     buyUpgrade(s, content, 'deep_pack');
     expect(backpackSize(s.hero, content)).toBe(BACKPACK_SIZE + 5);
