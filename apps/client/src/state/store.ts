@@ -17,6 +17,7 @@ interface UiState {
   log: LogLine[];
   logExpanded: boolean;
   backpackOpen: boolean;
+  menuOpen: boolean;
   tab: 'backpack' | 'stash';
   selectedUid: number | null;
   town: TownView;
@@ -27,6 +28,7 @@ interface UiState {
   pushLog: (line: Omit<LogLine, 'id'>) => void;
   toggleLog: () => void;
   openBackpack: (open: boolean) => void;
+  openMenu: (open: boolean) => void;
   setTab: (tab: 'backpack' | 'stash') => void;
   select: (uid: number | null) => void;
   setTown: (town: TownView) => void;
@@ -42,6 +44,7 @@ export const useUi = create<UiState>((set) => ({
   log: [],
   logExpanded: false,
   backpackOpen: false,
+  menuOpen: false,
   tab: 'backpack',
   selectedUid: null,
   town: null,
@@ -52,6 +55,7 @@ export const useUi = create<UiState>((set) => ({
     set((s) => ({ log: [...s.log.slice(-(LOG_LIMIT - 1)), { ...line, id: ++logId }] })),
   toggleLog: () => set((s) => ({ logExpanded: !s.logExpanded })),
   openBackpack: (backpackOpen) => set({ backpackOpen, selectedUid: null }),
+  openMenu: (menuOpen) => set({ menuOpen }),
   setTab: (tab) => set({ tab, selectedUid: null }),
   select: (selectedUid) => set({ selectedUid }),
   setTown: (town) => set({ town }),

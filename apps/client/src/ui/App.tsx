@@ -5,6 +5,8 @@ import { useUi } from '../state/store.ts';
 import { BackpackPanel } from './BackpackPanel.tsx';
 import { EventLog } from './EventLog.tsx';
 import { Hud } from './Hud.tsx';
+import { MenuPanel } from './MenuPanel.tsx';
+import { OfflineModal } from './OfflineModal.tsx';
 import { SimContext, useSimBridge } from './useSim.ts';
 
 function TownOverlay() {
@@ -21,6 +23,8 @@ function TownOverlay() {
 export function App({ sim, mapId }: { sim: GameSim; mapId: string }) {
   useSimBridge(sim);
   const backpackOpen = useUi((s) => s.backpackOpen);
+  const menuOpen = useUi((s) => s.menuOpen);
+  const openMenu = useUi((s) => s.openMenu);
   return (
     <SimContext.Provider value={sim}>
       <SceneView sim={sim} mapId={mapId} />
@@ -30,6 +34,8 @@ export function App({ sim, mapId }: { sim: GameSim; mapId: string }) {
         <EventLog />
       </div>
       {backpackOpen && <BackpackPanel />}
+      {menuOpen && <MenuPanel onClose={() => openMenu(false)} />}
+      <OfflineModal />
     </SimContext.Provider>
   );
 }

@@ -140,6 +140,7 @@ function Corner() {
   const zoom = useUi((s) => s.zoom);
   const setZoom = useUi((s) => s.setZoom);
   const openBackpack = useUi((s) => s.openBackpack);
+  const openMenu = useUi((s) => s.openMenu);
   const i = ZOOM_LEVELS.indexOf(zoom as (typeof ZOOM_LEVELS)[number]);
   return (
     <nav className="corner">
@@ -166,7 +167,12 @@ function Corner() {
       <button type="button" className="btn" disabled title={t('action.soon')}>
         {t('action.character')}
       </button>
-      <button type="button" className="btn" disabled title={t('action.soon')}>
+      <button
+        type="button"
+        className="btn"
+        onClick={() => openMenu(true)}
+        data-testid="menu-button"
+      >
         {t('action.menu')}
       </button>
       <button

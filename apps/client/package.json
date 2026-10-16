@@ -16,6 +16,7 @@
     "@abismo/engine": "workspace:*",
     "@abismo/i18n": "workspace:*",
     "easystarjs": "0.4.4",
+    "idb-keyval": "6.3.0",
     "phaser": "3.90.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",

@@ -1,6 +1,7 @@
 import type { ContentDb } from '@abismo/content';
 import { DIRECTIONS } from '@abismo/content';
 import type Phaser from 'phaser';
+import { HAIR_COLORS, OUTFIT_COLORS } from '../ui/appearance.ts';
 import { RARITY_COLOR } from '../ui/rarity.ts';
 
 /**
@@ -11,8 +12,6 @@ import { RARITY_COLOR } from '../ui/rarity.ts';
 export type Direction = (typeof DIRECTIONS)[number];
 
 const OUTLINE = 0x0b0a0f;
-const HAIR = [0x3b2a1e, 0xc9a25a, 0x8c2f1e, 0xd8d8d8];
-const OUTFIT = [0x6b4a2f, 0x2f4f6b, 0x4f2f5a, 0x3d5a2f];
 
 function eyes(
   g: Phaser.GameObjects.Graphics,
@@ -91,7 +90,11 @@ export function makeTextures(
   content: ContentDb,
   appearance: { hair: number; outfit: number },
 ) {
-  drawHero(scene, HAIR[appearance.hair % HAIR.length]!, OUTFIT[appearance.outfit % OUTFIT.length]!);
+  drawHero(
+    scene,
+    HAIR_COLORS[appearance.hair % HAIR_COLORS.length]!,
+    OUTFIT_COLORS[appearance.outfit % OUTFIT_COLORS.length]!,
+  );
   for (const m of content.monsters.values()) {
     drawMonster(scene, m.sprite.key, parseInt(m.sprite.tint.slice(1), 16), m.sprite.scale ?? 1);
   }

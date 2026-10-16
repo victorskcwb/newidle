@@ -58,6 +58,8 @@ export class GameSim {
   offlineReport: OfflineReport | null = null;
   /** Increments whenever inventory, equipment or settings change (UI re-renders). */
   version = 0;
+  /** Autosave checks this; turned off while a save import replaces the stored save. */
+  saveEnabled = true;
 
   private originMs = 0;
   private originTick = 0;
@@ -70,16 +72,23 @@ export class GameSim {
   private changeListeners = new Set<() => void>();
 
   constructor(
-    heroName: string,
+    state: GameState,
     /** Debug only (dev builds): game speed multiplier. */
     readonly speed = 1,
   ) {
+    this.state = state;
+    this.snapshot();
+  }
+
+  /** A brand-new hero (level 1, starter sword) with a seed from the browser's crypto RNG. */
+  static newHero(hero: { name: string; appearance: { hair: number; outfit: number } }, speed = 1) {
+    const content = loadContent();
     const seed = crypto.getRandomValues(new Uint32Array(4));
-    this.state = createGame(this.content, {
-      name: heroName,
+    const state = createGame(content, {
+      ...hero,
       seed: [seed[0]!, seed[1]!, seed[2]!, seed[3]!],
     });
-    this.snapshot();
+    return new GameSim(state, speed);
   }
 
   start() {
