@@ -1,0 +1,107 @@
+import { readFileSync } from 'node:fs';
+import { hasKey } from '@abismo/i18n';
+import { describe, expect, it } from 'vitest';
+import {
+  CONTENT_FILES,
+  ContentError,
+  buildContentDb,
+  loadContent,
+  mergeContentFiles,
+  tiledMapSchema,
+  translationKeys,
+  validateHuntMap,
+  type TiledMap,
+} from '../src/index.ts';
+
+const merged = () => structuredClone(mergeContentFiles(Object.values(CONTENT_FILES)));
+
+function problemsOf(raw: unknown): string[] {
+  try {
+    buildContentDb(raw);
+    return [];
+  } catch (e) {
+    if (e instanceof ContentError) return [...e.problems];
+    throw e;
+  }
+}
+
+describe('bundled content', () => {
+  it('is valid and complete for the first hunt', () => {
+    const c = loadContent();
+    expect(c.hunts.get('forgotten_cemetery')).toBeDefined();
+    expect(c.monsters.size).toBe(3);
+    expect(c.itemBases.size).toBe(6);
+    expect(c.affixes.size).toBe(8);
+  });
+
+  it('has pt-BR text for every key it references', () => {
+    const missing = translationKeys(loadContent()).filter((k) => !hasKey(k));
+    expect(missing).toEqual([]);
+  });
+});
+
+describe('validation', () => {
+  it('rejects duplicate ids', () => {
+    const c = merged();
+    c.monsters.push(c.monsters[0]!);
+    expect(problemsOf(c)).toContain('duplicate monster id "bone_walker"');
+  });
+
+  it('rejects unknown references', () => {
+    const c = merged();
+    c.monsters[0]!.lootTableId = 'nope';
+    c.hunts[0]!.spawns.push({ monsterId: 'ghost', weight: 1 });
+    const problems = problemsOf(c);
+    expect(problems).toContain('monster bone_walker: unknown lootTableId nope');
+    expect(problems).toContain('hunt forgotten_cemetery: unknown spawn monsterId ghost');
+  });
+
+  it('rejects schema violations with the path', () => {
+    const c = merged();
+    (c.affixes[0] as { weight: number }).weight = -1;
+    expect(problemsOf(c).some((p) => p.startsWith('affixes.0.weight'))).toBe(true);
+  });
+
+  it('rejects a boss used as a regular spawn', () => {
+    const c = merged();
+    c.hunts[0]!.spawns.push({ monsterId: 'gravekeeper', weight: 1 });
+    expect(problemsOf(c)).toContain(
+      'hunt forgotten_cemetery: boss gravekeeper listed as a regular spawn',
+    );
+  });
+});
+
+describe('hunt maps', () => {
+  const load = (): TiledMap =>
+    tiledMapSchema.parse(
+      JSON.parse(
+        readFileSync(
+          new URL('../../../assets/maps/forgotten_cemetery.tmj', import.meta.url),
+          'utf8',
+        ),
+      ),
+    );
+
+  it('the cemetery map is valid: layers, numbered route, everything reachable', () => {
+    expect(validateHuntMap(load(), 'route')).toEqual([]);
+  });
+
+  it('detects an unreachable waypoint', () => {
+    const map = load();
+    const collision = map.layers.find((l) => l.name === 'collision');
+    const route = map.layers.find((l) => l.name === 'route');
+    if (collision?.type !== 'tilelayer' || route?.type !== 'objectgroup') throw new Error('layers');
+    const wp = route.objects.find((o) => o.name === 'wp_3')!;
+    const tx = Math.floor(wp.x / 32);
+    const ty = Math.floor(wp.y / 32);
+    for (const [dx, dy] of [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ] as const) {
+      collision.data[(ty + dy) * map.width + tx + dx] = 10;
+    }
+    expect(validateHuntMap(map, 'route')).toContain('wp_3 is not reachable from wp_1');
+  });
+});

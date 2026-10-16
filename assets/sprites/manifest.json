@@ -1,0 +1,54 @@
+{
+  "atlases": {
+    "hero": {
+      "placeholder": true,
+      "sprites": {
+        "warrior": {
+          "animations": {
+            "idle": { "frames": 2, "frameMs": 400, "loop": true },
+            "walk": { "frames": 4, "frameMs": 120, "loop": true },
+            "attack": { "frames": 4, "frameMs": 70, "impactFrame": 2 },
+            "cast": { "frames": 4, "frameMs": 90, "impactFrame": 3 },
+            "hurt": { "frames": 2, "frameMs": 80 },
+            "die": { "frames": 4, "frameMs": 150 }
+          }
+        }
+      }
+    },
+    "region_cinzarra": {
+      "placeholder": true,
+      "sprites": {
+        "bone_walker": {
+          "animations": {
+            "idle": { "frames": 2, "frameMs": 450, "loop": true },
+            "walk": { "frames": 4, "frameMs": 140, "loop": true },
+            "attack": { "frames": 4, "frameMs": 80, "impactFrame": 2 },
+            "hurt": { "frames": 2, "frameMs": 80 },
+            "die": { "frames": 4, "frameMs": 120 },
+            "spawn": { "frames": 4, "frameMs": 120 }
+          }
+        },
+        "grave_rat": {
+          "animations": {
+            "idle": { "frames": 2, "frameMs": 300, "loop": true },
+            "walk": { "frames": 4, "frameMs": 90, "loop": true },
+            "attack": { "frames": 3, "frameMs": 70, "impactFrame": 1 },
+            "hurt": { "frames": 2, "frameMs": 80 },
+            "die": { "frames": 4, "frameMs": 100 },
+            "spawn": { "frames": 3, "frameMs": 100 }
+          }
+        },
+        "gravekeeper": {
+          "animations": {
+            "idle": { "frames": 2, "frameMs": 500, "loop": true },
+            "walk": { "frames": 4, "frameMs": 160, "loop": true },
+            "attack": { "frames": 5, "frameMs": 90, "impactFrame": 3 },
+            "hurt": { "frames": 2, "frameMs": 90 },
+            "die": { "frames": 6, "frameMs": 140 },
+            "spawn": { "frames": 6, "frameMs": 150 }
+          }
+        }
+      }
+    }
+  }
+}
