@@ -5,9 +5,12 @@ import {
   refineBlock,
   refineChancePpm,
   refineCost,
+  reforgeBlock,
+  reforgeCost,
   REFINE_LOSES_LEVEL_FROM,
   type ItemInstance,
   type RefineResult,
+  type RolledAffix,
 } from '@abismo/engine';
 import { useState } from 'react';
 import { formatNumber, t } from '../../i18n.ts';
@@ -27,6 +30,8 @@ export function SmithScreen() {
   const [result, setResult] = useState<RefineResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [bulk, setBulk] = useState<Rarity>('common');
+  const [affixIndex, setAffixIndex] = useState(0);
+  const [rerolled, setRerolled] = useState<RolledAffix | null>(null);
   const protectionId =
     [...sim.content.consumables.values()].find((c) => c.kind === 'refine_protection')?.id ?? '';
   const charms = s.consumables[protectionId] ?? 0;
@@ -50,6 +55,8 @@ export function SmithScreen() {
         onChange={(e) => {
           setUid(Number(e.target.value));
           setResult(null);
+          setRerolled(null);
+          setAffixIndex(0);
         }}
         data-testid="smith-item"
       >
@@ -131,6 +138,19 @@ export function SmithScreen() {
       )}
       {error && <p className="tone-bad">{error}</p>}
 
+      <h3 className="pixel">{t('smith.reforge')}</h3>
+      {item && (
+        <Reforge
+          item={item}
+          index={affixIndex}
+          setIndex={setAffixIndex}
+          result={rerolled}
+          onReforge={() =>
+            setError(tryIntent(() => setRerolled(sim.reforge(item.uid, affixIndex))))
+          }
+        />
+      )}
+
       <h3 className="pixel">{t('smith.bulk')}</h3>
       <p className="muted small">{t('smith.bulkHint')}</p>
       <div className="choice-row">
@@ -156,5 +176,73 @@ export function SmithScreen() {
         {t('smith.bulkButton', { n: bulkCount })}
       </button>
     </Sheet>
+  );
+}
+
+/** Reforge (milestone 2): reroll one chosen affix of a rare or better item. */
+function Reforge({
+  item,
+  index,
+  setIndex,
+  result,
+  onReforge,
+}: {
+  item: ItemInstance;
+  index: number;
+  setIndex: (i: number) => void;
+  result: RolledAffix | null;
+  onReforge: () => void;
+}) {
+  const sim = useSim();
+  const s = sim.state;
+  const cost = reforgeCost(item);
+  const block = reforgeBlock(s, item, index);
+  const affixText = (a: RolledAffix) => {
+    const affix = sim.content.affixes.get(a.affixId);
+    return affix ? t(affix.textKey, { value: a.value }) : a.affixId;
+  };
+  if (!cost) return <p className="muted small">{t('smith.reforgeRarity')}</p>;
+  return (
+    <div className="item-card">
+      <p className="muted small">{t('smith.reforgeHint')}</p>
+      <div className="choice-col" role="radiogroup" aria-label={t('smith.reforge')}>
+        {item.affixes.map((a, i) => (
+          <label key={i} className="check">
+            <input type="radio" name="reforge" checked={index === i} onChange={() => setIndex(i)} />
+            <span className="affix">{affixText(a)}</span>
+          </label>
+        ))}
+      </div>
+      <ul className="item-lines">
+        <li className={s.gold < cost.gold ? 'tone-bad' : undefined}>
+          {t('smith.gold', { need: formatNumber(cost.gold), have: formatNumber(s.gold) })}
+        </li>
+        {Object.entries(cost.materials).map(([id, qty]) => {
+          const have = s.materials[id] ?? 0n;
+          return (
+            <li key={id} className={have < BigInt(qty) ? 'tone-bad' : undefined}>
+              {t(sim.content.materials.get(id)!.nameKey)}: {formatNumber(have)} / {qty}
+            </li>
+          );
+        })}
+      </ul>
+      <button
+        type="button"
+        className="btn wide"
+        disabled={block !== null}
+        onClick={onReforge}
+        data-testid="reforge-button"
+      >
+        {t('smith.reforgeButton')}
+      </button>
+      {block && block !== 'rarity' && (
+        <div className="tone-bad small">{t(`smith.reforgeBlock.${block}`)}</div>
+      )}
+      {result && (
+        <p className="tone-good" data-testid="reforge-result">
+          {t('smith.reforged', { affix: affixText(result) })}
+        </p>
+      )}
+    </div>
   );
 }

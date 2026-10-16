@@ -511,5 +511,13 @@
   "elite.armored": "Blindado",
   "elite.vampiric": "Vampírico",
   "elite.giant": "Gigante",
-  "monster.eliteAffixes": "{name} — {affixes}"
+  "monster.eliteAffixes": "{name} — {affixes}",
+  "smith.reforge": "Reforjar",
+  "smith.reforgeHint": "Escolha um afixo para sortear de novo. Os outros afixos não mudam e nunca se repetem.",
+  "smith.reforgeRarity": "Só itens raros ou melhores podem ser reforjados.",
+  "smith.reforgeButton": "Reforjar o afixo escolhido",
+  "smith.reforged": "Novo afixo: {affix}",
+  "smith.reforgeBlock.no_affix": "Escolha um afixo.",
+  "smith.reforgeBlock.gold": "Falta ouro.",
+  "smith.reforgeBlock.materials": "Faltam materiais."
 }

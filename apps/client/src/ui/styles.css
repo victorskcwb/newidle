@@ -996,3 +996,8 @@ input[type='range'] {
   color: var(--info);
   letter-spacing: 2px;
 }
+
+.choice-col {
+  display: grid;
+  gap: 2px;
+}

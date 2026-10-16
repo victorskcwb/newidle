@@ -127,7 +127,10 @@ const cache = new WeakMap<Hero, { key: string; stats: HeroStats }>();
 function statsKey(hero: Hero): string {
   const items = EQUIPMENT_SLOTS.map((s) => {
     const it = hero.equipment[s];
-    return it ? `${it.uid}.${it.refine}` : '-';
+    // Affixes are part of the key because reforging changes them in place.
+    return it
+      ? `${it.uid}.${it.refine}.${it.affixes.map((a) => a.affixId + a.value).join('.')}`
+      : '-';
   }).join(',');
   const a = hero.allocated;
   const skills = Object.entries(hero.skillLevels)

@@ -132,3 +132,13 @@ export const RESETS_FOR_SHOP = 1;
 export const CARD_ELITE_KILL_PCT = 400;
 /** After this many times the expected kills without a copy, the chance doubles. */
 export const CARD_PITY_FACTOR = 3;
+
+// --- Reforge (milestone 2) ------------------------------------------------------------------
+/** Gold per reforge = this × item level². */
+export const REFORGE_GOLD_PER_ILVL_SQUARED = 20;
+/** Materials per reforge by rarity (rare and better only). */
+export const REFORGE_MATERIALS: Partial<Record<Rarity, Record<string, number>>> = {
+  rare: { essence: 5, crystal: 3 },
+  epic: { crystal: 5, core: 2 },
+  legendary: { core: 3, soul: 1 },
+};

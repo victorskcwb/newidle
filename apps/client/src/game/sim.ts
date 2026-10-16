@@ -12,6 +12,7 @@ import {
   learnSkill,
   performReset,
   refineItem,
+  reforgeItem,
   resolveOffline,
   respecSkills,
   returnToTown,
@@ -36,6 +37,7 @@ import {
   type PotionSettings,
   type RateSheet,
   type RefineResult,
+  type RolledAffix,
 } from '@abismo/engine';
 import { RatesClient } from './ratesClient.ts';
 
@@ -215,6 +217,13 @@ export class GameSim {
     this.freshSnapshot();
     this.changed(true);
     return result;
+  }
+
+  reforge(uid: number, index: number): RolledAffix {
+    const rolled = reforgeItem(this.state, this.content, uid, index);
+    this.freshSnapshot();
+    this.changed(true);
+    return rolled;
   }
 
   salvageUpTo(rarity: Rarity) {

@@ -8,6 +8,7 @@ export * from './items.ts';
 export * from './offline.ts';
 export * from './progression.ts';
 export * from './rates.ts';
+export * from './reforge.ts';
 export * from './refine.ts';
 export * from './resets.ts';
 export * from './rng.ts';
