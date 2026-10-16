@@ -4,6 +4,7 @@ import {
   RESET_BASE_COST,
   RESET_BASE_POINTS,
   RESET_POINTS_PER_NEW_BOSS,
+  RESET_POINTS_PER_PAST_RESET,
   RESETS_FOR_SHOP,
 } from './constants.ts';
 import { IntentError } from './progression.ts';
@@ -18,11 +19,16 @@ export function resetCost(hero: Hero): bigint {
 }
 
 /**
- * Reset points the current cycle is worth: 10 + bosses defeated for the first time × 2.
- * (The infinite dungeon adds floor(max floor ÷ 5) in milestone 3.)
+ * Reset points the current cycle is worth: 10 + 2 × resets already done + bosses defeated
+ * for the first time × 2. The growing term makes every cycle faster than the last
+ * (section 12.2). The infinite dungeon adds floor(max floor ÷ 5) in milestone 3.
  */
 export function resetPointsEarned(hero: Hero): number {
-  return RESET_BASE_POINTS + hero.resets.newBossesThisCycle * RESET_POINTS_PER_NEW_BOSS;
+  return (
+    RESET_BASE_POINTS +
+    hero.resets.count * RESET_POINTS_PER_PAST_RESET +
+    hero.resets.newBossesThisCycle * RESET_POINTS_PER_NEW_BOSS
+  );
 }
 
 export type ResetBlock = 'level' | 'gold';
@@ -67,13 +73,13 @@ export function shopUnlocked(hero: Hero): boolean {
   return hero.resets.count >= RESETS_FOR_SHOP;
 }
 
-/** Reset points for the next level of an upgrade: baseCost × that level. */
+/** Reset points for the next level n of an upgrade: baseCost + costPerLevel × (n − 1). */
 export function upgradeCost(content: ContentDb, hero: Hero, upgradeId: string): number | null {
   const up = content.resetUpgrades.get(upgradeId);
   if (!up) return null;
   const level = hero.resets.upgrades[upgradeId] ?? 0;
   if (level >= up.maxLevel) return null;
-  return up.baseCost * (level + 1);
+  return up.baseCost + (up.costPerLevel ?? up.baseCost) * level;
 }
 
 export function buyUpgrade(s: GameState, content: ContentDb, upgradeId: string) {

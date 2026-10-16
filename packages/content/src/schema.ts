@@ -306,8 +306,9 @@ export const resetUpgradeSchema = z.strictObject({
   nameKey: key,
   descKey: key,
   maxLevel: posInt,
-  /** Cost of level n is baseCost × n. */
+  /** Cost of level n is baseCost + costPerLevel × (n − 1); costPerLevel defaults to baseCost. */
   baseCost: posInt,
+  costPerLevel: nonNegInt.optional(),
   effects: z.array(z.strictObject({ effect: z.enum(RESET_EFFECTS), perLevel: posInt })).min(1),
 });
 export type ResetUpgrade = z.infer<typeof resetUpgradeSchema>;

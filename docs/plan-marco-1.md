@@ -23,8 +23,7 @@ Ordem de trabalho: engine e testes primeiro, depois interface, por último a cen
 
 ## Pendências do marco 1
 
-1. Meta de resets cada vez mais rápidos (pergunta em `decisions.md`).
-2. Vila como cena própria, monstros ambientes, efeitos de habilidade em sprite (com a arte do marco 2).
+1. Vila como cena própria, monstros ambientes, efeitos de habilidade em sprite (com a arte do marco 2).
 
 ## Riscos
 

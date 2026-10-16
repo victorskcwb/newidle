@@ -33,12 +33,12 @@
 
 `pnpm sim active 20` e `pnpm sim casual 16`:
 
-| Meta                                           | Resultado                                             | Situação                                                 |
-| ---------------------------------------------- | ----------------------------------------------------- | -------------------------------------------------------- |
-| Primeiro nível 100 em 3–5 dias (ativo)         | dia 2,9–3,5 (2 sementes); casual: dia 3,9             | ✅ no limite inferior                                    |
-| Primeiro lendário em 1–3 dias                  | dia 0,5–1,8                                           | ⚠️ varia muito com a semente                             |
-| Cada reset ≥10% mais rápido até o 10º          | 3,0 → 1,9 → 1,8 → 1,6 → 1,7 → … → 1,4 dias            | ❌ estabiliza depois do 2º (pergunta em `decisions.md`)  |
-| Nenhuma caçada acima de 130% da média da faixa | uma caçada por faixa; XP/h cresce de caçada em caçada | ✅ (vale testar de novo quando houver caçadas paralelas) |
+| Meta                                           | Resultado                                                          | Situação                                                 |
+| ---------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------- |
+| Primeiro nível 100 em 3–5 dias (ativo)         | dia 2,9–3,5 (2 sementes); casual: dia 3,9                          | ✅ no limite inferior                                    |
+| Primeiro lendário em 1–3 dias                  | dia 0,5–1,8                                                        | ⚠️ varia muito com a semente                             |
+| Cada reset ≥10% mais rápido até o 10º          | 2,9 → 1,6 → 1,2 → 1,2 → 0,9 dia; depois ~1 dia (ritmo das sessões) | ✅ após as decisões 68–69                                |
+| Nenhuma caçada acima de 130% da média da faixa | uma caçada por faixa; XP/h cresce de caçada em caçada              | ✅ (vale testar de novo quando houver caçadas paralelas) |
 
 ## Como testar à mão
 
@@ -57,6 +57,5 @@ pnpm dev     # http://localhost:5173 ; ?speed=5 acelera (só em desenvolvimento)
 
 ## Pendências
 
-- A meta de resets cada vez mais rápidos depende de uma decisão de design (ver `decisions.md`).
 - A vila como cena própria, monstros ambientes e efeitos de habilidade em sprite ficam para a arte final (marco 2).
 - Tudo ainda é arte provisória feita por código; sons são do marco 2.

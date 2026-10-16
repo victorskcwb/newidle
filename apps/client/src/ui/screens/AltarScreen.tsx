@@ -51,7 +51,11 @@ export function AltarScreen() {
           {t('altar.cost', { gold: formatNumber(resetCost(hero)) })}
         </li>
         <li className="pixel" data-testid="reset-points">
-          {t('altar.earns', { n: points, bosses: hero.resets.newBossesThisCycle })}
+          {t('altar.earns', {
+            n: points,
+            resets: hero.resets.count,
+            bosses: hero.resets.newBossesThisCycle,
+          })}
         </li>
       </ul>
       {confirm ? (

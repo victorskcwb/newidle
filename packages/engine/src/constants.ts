@@ -121,4 +121,6 @@ export const REFINE_SUCCESS_PPM: readonly number[] = [
 export const RESET_BASE_COST = 100_000;
 export const RESET_BASE_POINTS = 10;
 export const RESET_POINTS_PER_NEW_BOSS = 2;
+/** Each reset is worth more than the last: + this × resets already done (decisions #68). */
+export const RESET_POINTS_PER_PAST_RESET = 2;
 export const RESETS_FOR_SHOP = 1;

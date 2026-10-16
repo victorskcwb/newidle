@@ -226,6 +226,8 @@ describe('reset (section 8.1)', () => {
     const s = maxed();
     const items = ownedItemUids(s);
     expect(resetPointsEarned(s.hero)).toBe(12);
+    // Later cycles are worth more: + 2 × resets already done.
+    expect(resetPointsEarned({ ...s.hero, resets: { ...s.hero.resets, count: 3 } })).toBe(18);
     const { points } = performReset(s, content);
     expect(points).toBe(12);
     expect(s.hero.level).toBe(1);
@@ -269,7 +271,7 @@ describe('reset (section 8.1)', () => {
     const xpBefore = computeHeroStats(s.hero, content).xpPct;
     buyUpgrade(s, content, 'wisdom');
     buyUpgrade(s, content, 'wisdom');
-    expect(s.hero.resets.points).toBe(100 - 3 - 6);
+    expect(s.hero.resets.points).toBe(100 - 4 - 4);
     expect(computeHeroStats(s.hero, content).xpPct).toBe(xpBefore + 20);
     buyUpgrade(s, content, 'deep_pack');
     expect(backpackSize(s.hero, content)).toBe(BACKPACK_SIZE + 5);

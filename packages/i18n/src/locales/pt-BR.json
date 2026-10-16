@@ -408,7 +408,7 @@
   "altar.keep.stats": "Estatísticas",
   "altar.needLevel": "Requer nível 100 (você está no {level})",
   "altar.cost": "Custo: {gold} ouro",
-  "altar.earns": "Ganha {n} pontos de reset (10 + {bosses} chefes inéditos × 2)",
+  "altar.earns": "Ganha {n} pontos de reset (10 + 2 × {resets} resets feitos + {bosses} chefes inéditos × 2)",
   "altar.reset": "Fazer o reset nº {n}",
   "altar.confirm": "Confirmar o reset",
   "altar.done": "Renascido! +{n} pontos de reset.",

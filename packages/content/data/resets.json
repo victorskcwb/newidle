@@ -4,14 +4,15 @@
       "id": "wisdom",
       "nameKey": "reset.wisdom",
       "descKey": "reset.wisdom.desc",
-      "maxLevel": 20,
-      "baseCost": 3,
+      "maxLevel": 40,
+      "baseCost": 4,
       "effects": [
         {
           "effect": "xpPct",
           "perLevel": 10
         }
-      ]
+      ],
+      "costPerLevel": 0
     },
     {
       "id": "ancestral_power",
