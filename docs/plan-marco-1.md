@@ -17,26 +17,19 @@ Ordem de trabalho: engine e testes primeiro, depois interface, por último a cen
 | 9   | HUD, log de eventos, mochila e baú com afixos e comparação                                                                                              | `apps/client/src/ui`                           |
 | 10  | Testes: unidade, propriedade, determinismo (100.000 ticks), offline × tick a tick, conteúdo, e2e                                                        | `*/test`, `apps/client/e2e`                    |
 
-## Próximas tarefas (ordem)
+## Concluído no restante do marco 1 (2026-10-16)
 
-1. **Personagem** — 10 espaços, atributos, distribuição manual e perfil automático; taxas previstas mudam ao equipar (o engine já recalcula).
-2. **Árvore de habilidades do Guerreiro** — 4 ativas (faltam grito de guerra/buff e investida) e 8 passivas em conteúdo, pré-requisitos, 10 níveis por nó, prioridade das 4 ativas, redistribuição com custo crescente. Engine: buffs e passivas.
-3. **Filtro de loot (tela)** — o engine já aplica "a partir de raridade X" e "sempre manter afixo Y".
-4. **Ferreiro: refino +1 a +15** — tabela de chances da seção 7.5, custo crescente em ouro e materiais, volta 1 nível a partir de +10, item de proteção, nunca destrói. Desmanche em massa. Testes de propriedade.
-5. **Reset e loja de reset** — nível 100, custo 100.000 × n, o que zera e o que fica, pontos de reset, itens inativos acima do nível (o engine já marca), 7 melhorias. Comando de depuração para chegar ao 100.
-6. **Mapa de hunts** — regiões, cadeados com motivo, taxas previstas por hunt.
-7. **Conteúdo do marco 1** — Cinzarra completa (Bosque Pálido, Cripta Rachada, Lorde Vharok), Pântano de Morvel e Cidadela Queimada (3 hunts cada); itens-base em 4 tiers (iLvl 1, 20, 45, 70); ~20 afixos; um mapa do Tiled por hunt. A vila como cena própria.
-8. **Primeiros 10 minutos** — ancião, primeiro item mágico garantido no 5º abate, tutoriais (baú, equipar, desmanchar, refino, offline, altar).
-9. **Configurações** — som, modo econômico (30 fps, sem partículas), limite de poção, fonte maior, reduzir movimento.
-10. **Cena: polimento** — monstros ambientes nas áreas de spawn, barra grande de chefe, efeitos de habilidade, sons, animação de tiles além da água.
-11. **Simulador (seção 12.2)** — perfis casual/ativo com sessões e offline, CSV por dia, metas de balanceamento; ajustar números.
-12. **Desempenho** — medir 60 fps com 4 monstros em perfil de celular; mover a ficha de taxas para um Web Worker se pesar.
-13. **Relatório do marco** (`docs/report-marco-1.md`).
+Árvore de habilidades, refino, reset e loja de reset, filtro de loot, Personagem, Mapa de caçadas, Ferreiro, Altar, Configurações, primeiros 10 minutos, conteúdo completo (3 regiões, 9 caçadas, 40 itens-base, 20 afixos, 9 mapas), simulador por sessões, barra de chefe, recarga das habilidades, medição de fps. Detalhes em [report-marco-1.md](report-marco-1.md).
+
+## Pendências do marco 1
+
+1. Meta de resets cada vez mais rápidos (pergunta em `decisions.md`).
+2. Vila como cena própria, monstros ambientes, efeitos de habilidade em sprite (com a arte do marco 2).
 
 ## Riscos
 
 - **Encenação × engine:** a cena segura eventos até o herói chegar. Mapas com rotas longas entre grupos podem gerar atraso frequente. Mitigação já feita: aceleração até 3× e salto após 10 s. A medir com mapas reais.
-- **Custo da ficha de taxas** (~150 ms a frio no thread principal, amostra de 4 h) a cada mudança de equipamento. Se crescer com mais conteúdo, mover para Worker.
+- **Custo da ficha de taxas:** ~300 ms por cálculo (amostra de 8 h), já fora do thread principal. O Mapa de caçadas calcula as 9 em sequência (~3 s); se o conteúdo crescer, guardar em cache por configuração.
 - **Balanceamento:** o XP sobe rápido demais numa hunt só (ver perguntas em `decisions.md`). Precisa do simulador completo antes do conteúdo final.
 
 ## Relatório da primeira tarefa

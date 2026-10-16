@@ -68,6 +68,47 @@ Decisões que a especificação não cobria ou deixava ambíguas. Formato: o que
 42. **Nome do herói:** 3 a 16 caracteres, letras (com acento), números, espaço, "-" e "_", sem espaços duplos. Aparência: 4 cores de cabelo e 4 de roupa. Caçadora e Feiticeiro aparecem com cadeado e o motivo ("Libera no reset 5").
 43. **Respostas às perguntas da primeira tarefa** (o Victor pediu para seguir as recomendações): penalidade de XP como na especificação (10+ e 20+ níveis), com o ajuste vindo do conteúdo e do simulador; elite continua sendo o primeiro monstro do grupo; mortes offline com qualquer taxa (item 24); o commit `b4a593b` sem o arquivo pt-BR fica como está.
 
+## Restante do marco 1 (2026-10-16, trabalho autônomo)
+
+O Victor saiu e pediu para seguir sozinho com o que eu recomendasse. Tudo abaixo foi decidido sem consulta; as perguntas abertas estão no fim.
+
+### Habilidades, refino e reset
+
+44. **Árvore do Guerreiro em conteúdo** (`skills.json`): 4 ativas (Golpe pesado, Grito de guerra, Golpe giratório, Investida) e 8 passivas, em 4 linhas × 3 colunas, com pré-requisitos por nível. O `content-build` recusa pré-requisito desconhecido, ciclo e posição repetida.
+45. **Grito de guerra** gasta o golpe do herói e dá +20% de dano (+4% por nível) por 8 s; não é relançado enquanto dura. **Investida** atordoa o alvo por 1,5 s (adia o próximo ataque dele). A ordem dos espaços é a prioridade; aprender uma ativa nova a coloca no primeiro espaço livre.
+46. **Redistribuir habilidades** custa 200 × n² de ouro (n = redistribuições pagas até agora) e é grátis uma vez depois de cada reset. Atributos não são redistribuídos fora do reset (a especificação não pedia).
+47. **Refino:** custo da tentativa para +N = 50 × N² de ouro, 3N fragmentos, (N − 5) essências a partir do +6 e (N − 10) cristais a partir do +11. Chances da seção 7.5 (+11 a +15: 40, 35, 30, 25, 20%). A falha só faz voltar um nível em tentativas para +10 ou mais. O **amuleto de proteção** cai de chefes (15%, ou 50% nos chefes de região) e é gasto só quando a falha faria perder nível.
+48. **Reset:** pontos = 10 + chefes derrotados pela primeira vez no ciclo × 2. Ao resetar, o herói fica na vila. "Mestre" também paga o ponto na hora em que é comprado (senão só valeria no ciclo seguinte). A loja de reset é conteúdo (`resets.json`). Os marcos 5/10/15/20 aparecem no altar como "em breve".
+49. **Automação** libera a regra "sempre manter itens com afixo" do filtro de loot. A compra automática de poções continua disponível desde o início, porque sem ela o jogo offline parava cedo demais.
+50. **Poções escalam:** a poção pequena cura 40 + 25% da vida máxima. Com valor fixo, ela ficaria inútil a partir do nível 30. Assim há um tipo só de poção no marco 1.
+51. **Primeiro item mágico garantido no 5º abate** de um herói novo, como um drop extra (seção 11.4). Os primeiros 10 minutos são dicas de uma vez só, guardadas nos `flags` do save. Só a do ancião bloqueia a tela.
+52. **Save versão 2** (árvore, buffs, reset, flags) com a primeira migração de verdade (v1 → v2). Ela tem teste com um save v1.
+
+### Conteúdo
+
+53. **Números gerados a partir de um herói de referência por nível** (script fora do repositório; o JSON gerado é a fonte e pode ser ajustado à mão). Vida do monstro ≈ 4,5 s do dano esperado do herói; dano ≈ 1,6% da vida do herói por segundo; chefes de caçada ×14 de vida, chefes de região ×22; ouro [N, 3N] no nível N. O Cemitério manteve os números da primeira tarefa.
+54. **XP:** 18 × 1,02^(nível − 2) × 0,4 fora do Cemitério (o Cemitério é generoso de propósito: nível 2 em segundos). No simulador, o perfil ativo chega ao primeiro nível 100 entre o dia 3,0 e o 3,5.
+55. **Cada chefe libera a caçada seguinte;** o chefe de região libera a primeira caçada da próxima região (uma cadeia só de 9 caçadas).
+56. **Itens-base:** 10 espaços × 4 tiers (iLvl 1, 20, 45, 70). Armas pedem Força (10/40/85/130); o resto só nível. Anéis têm vida implícita, amuletos dano % implícito. As tabelas de loot dão o tier atual com peso 10 (arma 14) e o anterior com peso 4.
+57. **20 afixos**, cada um com até 4 tiers por iLvl. Não há "+nível de uma habilidade" ainda: exige mostrar níveis bônus na árvore.
+58. **Mapas por tema** (cemitério, bosque, cripta, pântano, aldeia, cinzas, lava) com a mesma rota e o mesmo portão em todos, para rotas e spawns serem sempre válidos. Tiles novos: piso de pedra, lama e lava animada.
+
+### Ficha de taxas e offline
+
+59. **Amostra de 8 h** (~300 ms, no Web Worker) em vez de 4 h. Com 4 h, a semente do teste dava 5,2% de erro nas poções; dez outras sementes ficavam entre −6% e +2%. O teste não deve depender de sorte.
+60. **Ouro e poções por tipo de grupo:** o ouro por abate é calculado exatamente; as poções são medidas por grupo normal, de elite e de chefe e multiplicadas pelo número exato de grupos de cada tipo por hora.
+61. **Turbo não guarda cache de `test` e `typecheck`.** O cache do teste do engine escondeu uma mudança de conteúdo (o engine depende do conteúdo, mas o turbo só olhava os arquivos do engine).
+
+### Interface
+
+62. **Telas a no máximo 2 toques:** Personagem e Mochila direto no canto; o resto via Menu (Habilidades, Mapa de caçadas, Ferreiro, Altar, Filtro de loot, Configurações, Salvar e carregar). Tocar no nome da caçada abre o mapa.
+63. **Preferências do aparelho fora do save** (localStorage): modo econômico, reduzir movimento e texto maior. Ficam por aparelho, não por herói. Sons ficam para o marco 2, como diz a especificação.
+64. **Depois de uma ação do jogador o HUD mostra o valor novo na hora.** Normalmente ele acompanha o tick que a cena está mostrando (decisão 32), mas equipar, refinar e resetar não podem parecer atrasados.
+65. **Depuração só em desenvolvimento** (Configurações): "ir para o nível 100" e "+ouro e materiais". Os testes e2e usam os dois para o reset e o refino.
+66. **Desempenho:** 59,6 fps (quadro p99 de 16,8 ms) lutando, com perfil Pixel 7 e CPU 4× mais lenta. O teste de fps é opcional (`PERF=1`): máquinas de CI não têm GPU.
+67. **Ficou de fora do marco 1:** a vila como cena própria (segue como sobreposição), monstros ambientes nas áreas de spawn e efeitos de habilidade em sprite (hoje é um anel colorido). Nada disso muda regra; entra com a arte final no marco 2.
+
 ## Perguntas para revisão
 
-- Nenhuma pendente.
+- **Resets cada vez mais rápidos (seção 12.2):** a meta "cada reset chega ao 100 pelo menos 10% mais rápido que o anterior, até o reset 10" não é atingida. No simulador (perfil ativo), os ciclos ficam em 3,0 → 1,9 → 1,8 → 1,6 → 1,7 → 1,8 → 1,4 dias: caem no começo e depois estabilizam. Com 10 pontos por reset (a fórmula da seção 8.1, até a masmorra do marco 3) e a Sabedoria dando +10% de XP por nível com custo linear, o bônus de XP não cresce 10% a cada ciclo. Opções: (a) pontos de reset crescerem com o número do reset (ex.: 10 + 2 × resets); (b) Sabedoria multiplicativa (×1,1 por nível); (c) aceitar até a masmorra existir. Recomendo (a), porque é uma linha de conteúdo/constante e mantém a loja simples.
+- **Primeiro lendário:** entre 0,5 e 1,8 dia conforme a semente (meta 1–3). Com uma chance de 0,1% por drop, a variação é grande; com 2 sementes não dá para concluir. Proponho medir com 20 sementes no alpha.
