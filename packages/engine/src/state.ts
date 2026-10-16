@@ -31,7 +31,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
     refine: 0,
   };
   const s: GameState = {
-    version: 5,
+    version: 6,
     tick: 0,
     rng: createRng(hero.seed),
     nextUid: 2,
@@ -91,6 +91,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
     },
     flags: [],
     cardPity: {},
+    quests: { day: -1, daily: [], week: -1, weekly: null },
   };
   const stats = heroStats(s.hero, content);
   s.hero.hp = stats.maxHp;

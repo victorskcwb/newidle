@@ -10,6 +10,7 @@ import { filterKeeps, generateItem, rarityRank } from './items.ts';
 import { killXp } from './hunt.ts';
 import { cardChancePpm, pityThreshold } from './cards.ts';
 import { addXp } from './progression.ts';
+import { questLoot, questProgress } from './quests.ts';
 import { categoryLoot, potionHoursLeft, type RateSheet } from './rates.ts';
 import { rngBinomial, rngChance, rngInt, type RngState } from './rng.ts';
 import { heroStats } from './stats.ts';
@@ -285,6 +286,17 @@ export function resolveOffline(
   for (const [id, qty] of Object.entries(report.consumables)) {
     s.consumables[id] = (s.consumables[id] ?? 0) + qty;
   }
+
+  // Goals progress with what happened while away.
+  questProgress(s, 'kill_monsters', report.kills);
+  questProgress(s, 'defeat_bosses', report.bossKills);
+  questProgress(
+    s,
+    'kill_elites',
+    kills.filter((c) => c.elite).reduce((n, c) => n + c.n, 0),
+  );
+  questProgress(s, 'earn_gold', gold);
+  for (const r of RARITY_ORDER) questLoot(s, r, report.dropsByRarity[r]);
 
   // 6. Bosses.
   const progress = s.hunt!;

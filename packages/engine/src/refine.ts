@@ -1,6 +1,7 @@
 import type { ContentDb } from '@abismo/content';
 import { MAX_REFINE, REFINE_LOSES_LEVEL_FROM, REFINE_SUCCESS_PPM } from './constants.ts';
 import { IntentError } from './progression.ts';
+import { questProgress } from './quests.ts';
 import { rngChance } from './rng.ts';
 import type { GameState, ItemInstance } from './types.ts';
 
@@ -83,6 +84,7 @@ export function refineItem(
     s.materials[id] = (s.materials[id] ?? 0n) - BigInt(qty);
   }
   const from = item.refine;
+  questProgress(s, 'refine', 1);
   if (rngChance(s.rng, refineChancePpm(target))) {
     item.refine = target;
     return { success: true, from, to: target, protectionUsed: false };

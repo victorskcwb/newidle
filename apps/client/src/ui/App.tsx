@@ -14,6 +14,7 @@ import { CharacterScreen } from './screens/CharacterScreen.tsx';
 import { FilterScreen } from './screens/FilterScreen.tsx';
 import { HuntsScreen } from './screens/HuntsScreen.tsx';
 import { MenuScreen } from './screens/MenuScreen.tsx';
+import { QuestsScreen } from './screens/QuestsScreen.tsx';
 import { SaveScreen } from './screens/SaveScreen.tsx';
 import { SettingsScreen } from './screens/SettingsScreen.tsx';
 import { SkillsScreen } from './screens/SkillsScreen.tsx';
@@ -26,6 +27,7 @@ const SCREENS: Record<Screen, () => React.JSX.Element> = {
   character: CharacterScreen,
   skills: SkillsScreen,
   cards: CardsScreen,
+  quests: QuestsScreen,
   hunts: HuntsScreen,
   smith: SmithScreen,
   altar: AltarScreen,

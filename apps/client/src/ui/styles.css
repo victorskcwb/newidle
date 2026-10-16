@@ -1006,3 +1006,23 @@ input[type='range'] {
   color: #ff8c1a;
   font-weight: 600;
 }
+
+/* --- Goals ----------------------------------------------------------------------------------- */
+.quest {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--edge);
+}
+
+.quest > div {
+  flex: 1;
+  display: grid;
+  gap: 4px;
+}
+
+.quest-bar {
+  height: 10px;
+}

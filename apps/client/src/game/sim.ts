@@ -4,6 +4,7 @@ import {
   TICK_MS,
   allocateAttribute,
   buyUpgrade,
+  claimQuest,
   computeRates,
   createGame,
   debugSetLevel,
@@ -12,6 +13,7 @@ import {
   learnSkill,
   performReset,
   refineItem,
+  refreshQuests,
   reforgeItem,
   resolveOffline,
   respecSkills,
@@ -40,6 +42,11 @@ import {
   type RolledAffix,
 } from '@abismo/engine';
 import { RatesClient } from './ratesClient.ts';
+
+/** Days since 1970-01-01 in the player's local time zone (goals reset at local midnight). */
+export function localDay(now = new Date()): number {
+  return Math.floor((now.getTime() - now.getTimezoneOffset() * 60_000) / 86_400_000);
+}
 
 /** What the HUD shows at one tick. Kept per tick so the HUD can follow the scene's lag. */
 export interface Snapshot {
@@ -93,6 +100,7 @@ export class GameSim {
   private backlog: SimSignal[] = [];
   private changeListeners = new Set<() => void>();
   private ratesClient: RatesClient | null = null;
+  private questTimer: ReturnType<typeof setInterval> | null = null;
   private ratesRequest = 0;
 
   constructor(
@@ -117,11 +125,15 @@ export class GameSim {
 
   start() {
     this.resetClock();
+    this.refreshQuests();
+    this.questTimer = setInterval(() => this.refreshQuests(), 60_000);
     this.timer = setInterval(() => this.pump(), 50);
     document.addEventListener('visibilitychange', this.onVisibility);
   }
 
   stop() {
+    if (this.questTimer) clearInterval(this.questTimer);
+    this.questTimer = null;
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
     document.removeEventListener('visibilitychange', this.onVisibility);
@@ -169,6 +181,19 @@ export class GameSim {
 
   salvage(uid: number) {
     salvageItem(this.state, this.content, uid);
+    this.changed(false);
+  }
+
+  /** New daily/weekly goals when the local day changed (the engine has no clock). */
+  refreshQuests() {
+    const day = localDay();
+    if (this.state.quests.day === day) return;
+    refreshQuests(this.state, day);
+    this.changed(false);
+  }
+
+  claimQuest(which: number | 'weekly') {
+    claimQuest(this.state, which);
     this.changed(false);
   }
 

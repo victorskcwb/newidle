@@ -1,4 +1,5 @@
 import type { EquipmentSlot, Rarity } from '@abismo/content';
+import type { Quests } from './quests.ts';
 import type { RngState } from './rng.ts';
 
 export type Attribute = 'strength' | 'dexterity' | 'vitality' | 'energy';
@@ -140,7 +141,7 @@ export interface Lifetime {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 5;
+  version: 6;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;
@@ -163,6 +164,8 @@ export interface GameState {
   flags: string[];
   /** Kills of each card's monster since its last copy (pity rule). */
   cardPity: Record<string, number>;
+  /** Daily and weekly goals. */
+  quests: Quests;
 }
 
 // --- Events ---------------------------------------------------------------------------------

@@ -8,7 +8,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 
 export interface SaveFile {
   version: number;
@@ -63,8 +63,24 @@ const attributes = z.strictObject({
   energy: nonNeg,
 });
 
+const quest = z.strictObject({
+  kind: z.enum([
+    'kill_monsters',
+    'kill_elites',
+    'loot_magic',
+    'loot_rare',
+    'defeat_bosses',
+    'refine',
+    'earn_gold',
+  ]),
+  target: int.min(1),
+  progress: nonNeg,
+  claimed: z.boolean(),
+  reward: z.record(z.string(), nonNeg),
+});
+
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(5),
+  version: z.literal(6),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -149,6 +165,12 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
   }),
   flags: z.array(z.string()),
   cardPity: z.record(z.string(), nonNeg),
+  quests: z.strictObject({
+    day: int,
+    daily: z.array(quest),
+    week: int,
+    weekly: quest.nullable(),
+  }),
 });
 
 /**
@@ -199,6 +221,15 @@ export const SAVE_MIGRATIONS: Record<
   },
   /** v4 → v5: unique legendary effects (optional on items; nothing to convert). */
   4: (raw) => ({ ...raw, state: { ...(raw.state as object), version: 5 } }),
+  /** v5 → v6: daily and weekly goals (generated on the next refresh). */
+  5: (raw) => ({
+    ...raw,
+    state: {
+      ...(raw.state as object),
+      version: 6,
+      quests: { day: -1, daily: [], week: -1, weekly: null },
+    },
+  }),
 };
 
 export function encodeSave(state: GameState, savedAt: number): string {

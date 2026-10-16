@@ -536,5 +536,21 @@
   "unique.dark_fortune.desc": "+{pct}% de chance de cartas.",
   "unique.watcher_crown": "Coroa do Vigia",
   "unique.watcher_crown.desc": "Fora de combate, a regeneração é {multiplier}× maior.",
-  "item.unique": "Efeito único"
+  "item.unique": "Efeito único",
+  "screen.quests": "Metas",
+  "quests.daily": "Metas do dia",
+  "quests.dailyHint": "Renovam à meia-noite. Contam também o tempo em que você estiver fora.",
+  "quests.weekly": "Meta da semana",
+  "quests.reward": "Recompensa: {reward}",
+  "quests.claim": "Resgatar",
+  "quests.claimed": "Resgatada",
+  "quest.kill_monsters": "Derrote {n} monstros",
+  "quest.kill_elites": "Derrote {n} elites",
+  "quest.loot_magic": "Encontre {n} itens mágicos ou melhores",
+  "quest.loot_rare": "Encontre {n} itens raros ou melhores",
+  "quest.defeat_bosses": "Derrote {n} chefe(s)",
+  "quest.refine": "Refine {n} vezes",
+  "quest.earn_gold": "Ganhe {n} de ouro caçando",
+  "error.quest_not_done": "A meta ainda não foi cumprida.",
+  "error.quest_claimed": "Recompensa já resgatada."
 }

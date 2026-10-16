@@ -15,6 +15,13 @@ test('skills, hunt map, reset and reset shop', async ({ page }) => {
   await expect(page.getByTestId('hunt-pale_woods')).toContainText('Derrote O Coveiro');
   await page.getByRole('button', { name: 'Fechar' }).click();
 
+  // Goals: three for today and one for the week.
+  await page.getByTestId('menu-button').click();
+  await page.getByTestId('menu-quests').click();
+  await expect(page.getByTestId('quest-2')).toBeVisible();
+  await expect(page.getByTestId('quest-weekly')).toBeVisible();
+  await page.getByRole('button', { name: 'Fechar' }).click();
+
   // Card album: every monster has a card, none found yet.
   await page.getByTestId('menu-button').click();
   await page.getByTestId('menu-cards').click();

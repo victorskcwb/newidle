@@ -15,7 +15,7 @@ describe('determinism', () => {
   it('matches the golden hash (changes only when rules or content change on purpose)', () => {
     const s = hunting(42);
     stepQuiet(s, content, 100_000);
-    expect(hashState(s)).toMatchInlineSnapshot(`"14559488e8d80a3b"`);
+    expect(hashState(s)).toMatchInlineSnapshot(`"6c9714ad3acccac4"`);
   });
 
   it('step(n) equals n × step(1) and does not depend on collecting events', () => {

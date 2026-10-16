@@ -20,6 +20,7 @@ import {
 } from './constants.ts';
 import { filterKeeps, generateItem, pickWeighted, rollSalvage } from './items.ts';
 import { rollCard } from './cards.ts';
+import { questLoot, questProgress } from './quests.ts';
 import { addXp } from './progression.ts';
 import { rngChance, rngInt } from './rng.ts';
 import { heroStats, type HeroStats } from './stats.ts';
@@ -435,6 +436,10 @@ function killMonster(
     o.counters.xp += xp;
   }
   out?.push({ type: 'MonsterDied', tick: t, uid: m.uid, monsterId: m.monsterId, xp, gold });
+  questProgress(s, 'kill_monsters', 1);
+  if (m.elite) questProgress(s, 'kill_elites', 1);
+  if (m.boss) questProgress(s, 'defeat_bosses', 1);
+  questProgress(s, 'earn_gold', gold);
   if (o.freezeLevel) s.lifetime.xpEarned += BigInt(xp);
   else addXp(s, content, xp, t, out);
 
@@ -456,6 +461,7 @@ function killMonster(
     const rarity = forced ? ('magic' as const) : { magicFindPct };
     const item = generateItem(s.rng, content, table, hunt.ilvl, s.nextUid++, rarity);
     s.lifetime.itemsByRarity[item.rarity]++;
+    questLoot(s, item.rarity);
     const kept = filterKeeps(s.settings.lootFilter, item) && s.backpack.length < bagSize;
     out?.push({ type: 'ItemDropped', tick: t, fromUid: m.uid, item, kept });
     if (kept) {

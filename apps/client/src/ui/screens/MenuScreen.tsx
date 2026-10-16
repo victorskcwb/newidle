@@ -1,4 +1,4 @@
-import { MAX_LEVEL, shopUnlocked } from '@abismo/engine';
+import { MAX_LEVEL, claimableQuests, shopUnlocked } from '@abismo/engine';
 import { t } from '../../i18n.ts';
 import { useUi, type Screen } from '../../state/store.ts';
 import { Sheet } from '../Sheet.tsx';
@@ -9,7 +9,9 @@ export function MenuScreen() {
   const sim = useSim();
   const openScreen = useUi((s) => s.openScreen);
   const hero = sim.state.hero;
+  const claimable = claimableQuests(sim.state);
   const items: { screen: Screen; badge?: string | number }[] = [
+    { screen: 'quests', badge: claimable || undefined },
     { screen: 'character', badge: hero.unspentAttributePoints || undefined },
     { screen: 'skills', badge: hero.unspentSkillPoints || undefined },
     { screen: 'cards' },

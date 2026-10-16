@@ -17,6 +17,7 @@ export type Screen =
   | 'character'
   | 'skills'
   | 'cards'
+  | 'quests'
   | 'hunts'
   | 'smith'
   | 'altar'

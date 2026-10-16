@@ -1,4 +1,4 @@
-import { TICKS_PER_SECOND, backpackSize, potionHoursLeft } from '@abismo/engine';
+import { TICKS_PER_SECOND, backpackSize, claimableQuests, potionHoursLeft } from '@abismo/engine';
 import { formatDuration, formatNumber, t } from '../i18n.ts';
 import { ZOOM_LEVELS } from '../scene/GameScene.ts';
 import { useUi } from '../state/store.ts';
@@ -234,7 +234,9 @@ function Corner() {
         data-testid="menu-button"
       >
         {t('action.menu')}
-        {hero.unspentSkillPoints > 0 && <span className="badge">{hero.unspentSkillPoints}</span>}
+        {hero.unspentSkillPoints + claimableQuests(sim.state) > 0 && (
+          <span className="badge">{hero.unspentSkillPoints + claimableQuests(sim.state)}</span>
+        )}
       </button>
       <button
         type="button"
