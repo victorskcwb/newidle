@@ -1,0 +1,32 @@
+# Plano do marco 2 — Alpha
+
+Escopo da especificação (seção 13): cartas e álbum, reforja, elites com afixos de monstro, PWA instalável, notificações, arte final da região 1, sons. Com as recomendações aprovadas em 16/10/2026, entram também: lendários com efeito único (antes no marco 3), metas diárias e o "impacto" dos golpes. O alpha com testadores fica no fim do marco.
+
+## Ordem
+
+| #   | Tarefa                                                                                                                                                                                                                                                                  | Onde                    | Depende de decisão?                                                                          |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------- |
+| 1   | **Cartas e álbum:** uma carta por monstro (comum 1/2.000, elite 1/500, chefe 1/100), até 5 cópias com bônus acumulável, bônus extra ao completar a região, proteção contra azar (chance dobra após 3× o esperado), cartas no offline e na ficha de taxas, tela de álbum | engine, content, client | não                                                                                          |
+| 2   | **Elites com afixos de monstro:** "rápido", "brutal", "blindado", "vampírico", "gigante" etc., com nome e cor                                                                                                                                                           | engine, content, scene  | não                                                                                          |
+| 3   | **Reforja:** gastar materiais para ressortear um afixo escolhido de item raro ou melhor                                                                                                                                                                                 | engine, Ferreiro        | não                                                                                          |
+| 4   | **Lendários com efeito único** (veio do marco 3): itens-base lendários com efeito fixo em conteúdo (ex.: golpe giratório solta onda de choque)                                                                                                                          | engine, content         | não                                                                                          |
+| 5   | **Metas diárias e semanais:** 3 diárias + 1 semanal, recompensa em materiais e amuletos (nunca poder vendido); o dia vem do relógio do cliente, o engine só recebe o número do dia                                                                                      | engine, client          | não                                                                                          |
+| 6   | **Sons e impacto:** efeitos sonoros gerados no navegador (Web Audio, sem arquivos de terceiros), tela tremendo no crítico, pausa curta no golpe forte, celebração de lendário, carta nova e chefe                                                                       | client                  | não                                                                                          |
+| 7   | **PWA instalável e notificações:** manifesto, service worker (jogo abre sem rede), avisos de mochila cheia, poções acabando e limite offline chegando                                                                                                                   | client                  | não                                                                                          |
+| 8   | **Arte final da região 1**                                                                                                                                                                                                                                              | assets                  | **sim:** comprar um pack com licença comercial ou contratar artista; escolher o estilo       |
+| 9   | **Telemetria mínima** (retenção dia 1/dia 7, onde o jogador para)                                                                                                                                                                                                       | client + servidor       | **sim:** onde guardar os dados (servidor próprio ou serviço) e o texto de privacidade (LGPD) |
+| 10  | **Save na nuvem e ranking** (adiantado do marco 4)                                                                                                                                                                                                                      | servidor                | **sim:** hospedagem, contas (e-mail? login social?), LGPD                                    |
+| 11  | **Alpha com testadores:** 30 pessoas por 3 semanas, meta de retenção de 7 dias ≥ 20%                                                                                                                                                                                    | —                       | depende de 8 e 9                                                                             |
+
+As tarefas 1 a 7 seguem sem esperar resposta; 8 a 10 aguardam as decisões listadas.
+
+## Critérios (seção 13)
+
+- Simulador dentro das metas da seção 12.2 com ±15% (recalibrar depois das cartas, elites e lendários, que aumentam o poder do herói).
+- Retenção de 7 dias ≥ 20% com 30 testadores (depende da telemetria).
+
+## Riscos
+
+- **Poder demais:** cartas, lendários e elites deixam o herói mais forte. O simulador precisa rodar depois de cada um.
+- **Formato do save:** cartas e metas mudam o estado. Haverá migração v2 → v3 (e possivelmente v4), sempre com teste.
+- **Notificações com o jogo fechado** precisam de push do servidor; até lá, os avisos funcionam com a aba aberta em segundo plano e no app instalado (PWA) enquanto ele estiver na memória.
