@@ -1,0 +1,17 @@
+{
+  "name": "@abismo/simulator",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "sim": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@abismo/content": "workspace:*",
+    "@abismo/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "4.23.15"
+  }
+}
