@@ -35,12 +35,12 @@ Decisões que a especificação não cobria ou deixava ambíguas. Formato: o que
 
 ### Taxas e offline (seção 9)
 
-21. **Ficha de taxas = simulação de 2 h de jogo** (72.000 ticks, ~85 ms) com a semente atual e o nível congelado. Abates, XP, ouro, poções e mortes vêm da simulação. **Os drops vêm do cálculo exato** (abates por tipo de monstro × chance da tabela de loot), para que itens raros não dependam de uma amostra de sorte.
-22. **Offline aplica as taxas da configuração com que o herói saiu**, sem reavaliar a cada nível ganho (seção 9.2, passo 4). Contagens fracionárias usam arredondamento aleatório sem viés; os drops usam binomial por raridade e tipo de monstro.
+21. **Ficha de taxas = simulação de 4 h de jogo** (144.000 ticks, ~150 ms) com a semente atual e o nível congelado. Abates totais, ouro, poções e mortes vêm da simulação. **A mistura de monstros e os drops vêm do cálculo exato** (pesos de surgimento, tamanho do grupo, chance de elite, tabelas de loot), para que itens raros não dependam de uma amostra de sorte. Com 2 h, o ruído da amostra sozinho chegava a ~5% nas poções.
+22. **Offline aplica as taxas da configuração com que o herói saiu** (seção 9.2, passo 4): abates, ouro e poções não mudam com os níveis ganhos fora. **O XP, porém, é aplicado em 48 fatias de tempo** com o XP de cada abate recalculado no nível do momento, para a penalidade de nível (seção 5.1) valer offline também. Sem isso, 3 h fora levavam do nível 2 ao 39 no Cemitério. Contagens fracionárias usam arredondamento aleatório sem viés; os drops usam binomial por raridade e tipo de monstro.
 23. **Limite de poções no offline:** com compra automática, cada moeda ganha pode virar poção na próxima ida à cidade. A caçada só para quando a renda de ouro não paga as poções bebidas, descontadas as que caem dos monstros. Sem compra automática, para quando o estoque acaba.
-24. **Mortes offline:** a regra da especificação foi aplicada ao pé da letra (perdas só se a taxa passar de 1 por hora). Se a simulação da ficha parou sozinha (4 mortes seguidas), o offline também para nesse tempo.
+24. **Mortes offline com qualquer taxa:** cada morte prevista custa 10% do XP do nível, mesmo abaixo de 1 morte/h (a especificação dizia "maior que 1 por hora"; aplicar sempre deixa o offline coerente com o jogo). Se a simulação da ficha parou sozinha (4 mortes seguidas), o offline também para nesse tempo.
 25. **No offline, itens vão direto para o baú;** a mochila não muda. Itens além do limite de 200 viram material.
-26. **Teste offline × tick a tick:** 1.000 resoluções de 2 h contra a média de 30 simulações completas de 2 h, com ±5% para abates, XP, ouro, poções e total de itens. Por raridade, a tolerância é ±5% ou 4 erros-padrão da referência, o que for maior: a referência tem poucos épicos e lendários para medir 5% com precisão.
+26. **Teste offline × tick a tick:** um herói nível 30 (penalidade de XP já no piso, então o nível congelado da referência vale) e limite de poção em 99% (para o uso de poções ser mensurável). São 1.000 resoluções de 2 h contra a média de 120 simulações completas de 2 h. Erros medidos: abates 1,5%, XP 1,4%, ouro 0,3%, poções 2,8%, itens 2,6%. Tolerância de ±5% para abates, XP, ouro, poções e total de itens. Por raridade, a tolerância é ±5% ou 4 erros-padrão da referência, o que for maior: a referência tem poucos épicos e lendários para medir 5% com precisão.
 
 ### Conteúdo e mapas
 
@@ -58,9 +58,16 @@ Decisões que a especificação não cobria ou deixava ambíguas. Formato: o que
 35. **`?speed=N` só em builds de desenvolvimento** acelera o jogo, para testes e2e e depuração. Em produção é ignorado. _Restrição 6: nenhuma interação do jogador acelera nada._
 36. **Fonte Pixelify Sans** (Google Fonts, licença OFL) nos títulos e números; fonte do sistema no texto corrido.
 
+## Save, criação de herói e offline ao abrir (2026-10-16)
+
+37. **Formato do save aprovado:** IndexedDB (`idb-keyval`), uma chave, um herói. Texto JSON `{ version, savedAt, state }` com `bigint` como `{ "$bigint": "…" }`. O objeto marcado evita confundir com um nome de herói como "123n". Ao carregar: migrações versão a versão, depois Zod (`gameStateSchema`, tipado contra `GameState`), depois checagem de que todo item, afixo, hunt e monstro ainda existe no conteúdo. O codec fica no engine (puro), pronto para o servidor do marco 4.
+38. **Quando salva:** a cada 5 s, ao esconder ou fechar a página e 300 ms depois de qualquer mudança (equipar, desmanchar…). As gravações são enfileiradas e o estado é codificado no momento do pedido, então uma gravação antiga nunca sobrescreve uma nova.
+39. **Save quebrado não é apagado sozinho:** a tela mostra o motivo e o texto do save para copiar, e só então oferece "Começar de novo". _Pilar 2: o progresso do jogador vale mais que a conveniência._
+40. **Importar save** valida antes de gravar e desliga o autosave até recarregar a página, para o save atual não sobrescrever o importado.
+41. **Tempo fora ao abrir o jogo** = agora − `savedAt` (relógio que voltou conta como 0). Até 5 min, os ticks são reproduzidos; acima disso, `resolveOffline` e o painel "Enquanto você estava fora".
+42. **Nome do herói:** 3 a 16 caracteres, letras (com acento), números, espaço, "-" e "_", sem espaços duplos. Aparência: 4 cores de cabelo e 4 de roupa. Caçadora e Feiticeiro aparecem com cadeado e o motivo ("Libera no reset 5").
+43. **Respostas às perguntas da primeira tarefa** (o Victor pediu para seguir as recomendações): penalidade de XP como na especificação (10+ e 20+ níveis), com o ajuste vindo do conteúdo e do simulador; elite continua sendo o primeiro monstro do grupo; mortes offline com qualquer taxa (item 24); o commit `b4a593b` sem o arquivo pt-BR fica como está.
+
 ## Perguntas para revisão
 
-- **Formato do save (difícil de desfazer):** proposta é IndexedDB com o `GameState` inteiro em JSON, `bigint` como texto, campo `version` e migrações por versão, validado por Zod ao carregar. Mais o instante salvo para calcular o offline. Posso seguir assim?
-- **Balanceamento (item 28):** no simulador, o herói chega ao nível 23 em 1 h só no Cemitério, porque a penalidade de XP só começa 10 níveis acima do monstro. Com as outras hunts, o jogador vai mudar de hunt antes. Mas quer uma penalidade mais cedo (ex.: a partir de 5 níveis) ou deixo para o ajuste com o simulador?
-- **Elite (item 12):** "5% dos grupos são elite" virou "o primeiro monstro do grupo é elite". Prefere o grupo inteiro elite?
-- **Mortes offline (item 24):** aplicar perdas mesmo com taxa abaixo de 1 morte/h não seria mais coerente? A regra atual ignora, por exemplo, 0,9 morte/h durante 12 h.
+- Nenhuma pendente.

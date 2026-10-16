@@ -19,29 +19,25 @@ Ordem de trabalho: engine e testes primeiro, depois interface, por último a cen
 
 ## Próximas tarefas (ordem)
 
-1. **Save local** — IndexedDB (`idb-keyval`), `GameState` versionado e validado por Zod, `bigint` como texto, migrações por versão, exportar/importar em texto. Instante salvo para o offline ao abrir o jogo. Testes: ida e volta idêntica, migração de save antigo. ⚠️ Formato aguarda aprovação (ver `decisions.md`).
-2. **Painel "Enquanto você estava fora"** ao abrir o jogo (o `OfflineReport` já existe) + e2e "fechar → avançar o relógio 2 h → resumo".
-3. **Criação de herói** — nome, cabelo, roupa, classe (só Guerreiro). Hoje o herói nasce como "Aventureiro".
-4. **Personagem** — 10 espaços, atributos, distribuição manual e perfil automático; taxas previstas mudam ao equipar (o engine já recalcula).
-5. **Árvore de habilidades do Guerreiro** — 4 ativas (faltam grito de guerra/buff e investida) e 8 passivas em conteúdo, pré-requisitos, 10 níveis por nó, prioridade das 4 ativas, redistribuição com custo crescente. Engine: buffs e passivas.
-6. **Filtro de loot (tela)** — o engine já aplica "a partir de raridade X" e "sempre manter afixo Y".
-7. **Ferreiro: refino +1 a +15** — tabela de chances da seção 7.5, custo crescente em ouro e materiais, volta 1 nível a partir de +10, item de proteção, nunca destrói. Desmanche em massa. Testes de propriedade.
-8. **Reset e loja de reset** — nível 100, custo 100.000 × n, o que zera e o que fica, pontos de reset, itens inativos acima do nível (o engine já marca), 7 melhorias. Comando de depuração para chegar ao 100.
-9. **Mapa de hunts** — regiões, cadeados com motivo, taxas previstas por hunt.
-10. **Conteúdo do marco 1** — Cinzarra completa (Bosque Pálido, Cripta Rachada, Lorde Vharok), Pântano de Morvel e Cidadela Queimada (3 hunts cada); itens-base em 4 tiers (iLvl 1, 20, 45, 70); ~20 afixos; um mapa do Tiled por hunt. A vila como cena própria.
-11. **Primeiros 10 minutos** — ancião, primeiro item mágico garantido no 5º abate, tutoriais (baú, equipar, desmanchar, refino, offline, altar).
-12. **Configurações** — som, modo econômico (30 fps, sem partículas), limite de poção, fonte maior, reduzir movimento.
-13. **Cena: polimento** — monstros ambientes nas áreas de spawn, barra grande de chefe, efeitos de habilidade, sons, animação de tiles além da água.
-14. **Simulador (seção 12.2)** — perfis casual/ativo com sessões e offline, CSV por dia, metas de balanceamento; ajustar números.
-15. **Desempenho** — medir 60 fps com 4 monstros em perfil de celular; mover a ficha de taxas para um Web Worker se pesar.
-16. **Relatório do marco** (`docs/report-marco-1.md`).
+1. **Personagem** — 10 espaços, atributos, distribuição manual e perfil automático; taxas previstas mudam ao equipar (o engine já recalcula).
+2. **Árvore de habilidades do Guerreiro** — 4 ativas (faltam grito de guerra/buff e investida) e 8 passivas em conteúdo, pré-requisitos, 10 níveis por nó, prioridade das 4 ativas, redistribuição com custo crescente. Engine: buffs e passivas.
+3. **Filtro de loot (tela)** — o engine já aplica "a partir de raridade X" e "sempre manter afixo Y".
+4. **Ferreiro: refino +1 a +15** — tabela de chances da seção 7.5, custo crescente em ouro e materiais, volta 1 nível a partir de +10, item de proteção, nunca destrói. Desmanche em massa. Testes de propriedade.
+5. **Reset e loja de reset** — nível 100, custo 100.000 × n, o que zera e o que fica, pontos de reset, itens inativos acima do nível (o engine já marca), 7 melhorias. Comando de depuração para chegar ao 100.
+6. **Mapa de hunts** — regiões, cadeados com motivo, taxas previstas por hunt.
+7. **Conteúdo do marco 1** — Cinzarra completa (Bosque Pálido, Cripta Rachada, Lorde Vharok), Pântano de Morvel e Cidadela Queimada (3 hunts cada); itens-base em 4 tiers (iLvl 1, 20, 45, 70); ~20 afixos; um mapa do Tiled por hunt. A vila como cena própria.
+8. **Primeiros 10 minutos** — ancião, primeiro item mágico garantido no 5º abate, tutoriais (baú, equipar, desmanchar, refino, offline, altar).
+9. **Configurações** — som, modo econômico (30 fps, sem partículas), limite de poção, fonte maior, reduzir movimento.
+10. **Cena: polimento** — monstros ambientes nas áreas de spawn, barra grande de chefe, efeitos de habilidade, sons, animação de tiles além da água.
+11. **Simulador (seção 12.2)** — perfis casual/ativo com sessões e offline, CSV por dia, metas de balanceamento; ajustar números.
+12. **Desempenho** — medir 60 fps com 4 monstros em perfil de celular; mover a ficha de taxas para um Web Worker se pesar.
+13. **Relatório do marco** (`docs/report-marco-1.md`).
 
 ## Riscos
 
 - **Encenação × engine:** a cena segura eventos até o herói chegar. Mapas com rotas longas entre grupos podem gerar atraso frequente. Mitigação já feita: aceleração até 3× e salto após 10 s. A medir com mapas reais.
-- **Custo da ficha de taxas** (~85 ms a frio no thread principal) a cada mudança de equipamento. Se crescer com mais conteúdo, mover para Worker.
+- **Custo da ficha de taxas** (~150 ms a frio no thread principal, amostra de 4 h) a cada mudança de equipamento. Se crescer com mais conteúdo, mover para Worker.
 - **Balanceamento:** o XP sobe rápido demais numa hunt só (ver perguntas em `decisions.md`). Precisa do simulador completo antes do conteúdo final.
-- **Formato do save** é difícil de mudar depois: precisa de aprovação antes da tarefa 1.
 
 ## Relatório da primeira tarefa
 
@@ -60,6 +56,6 @@ pnpm maps:gen            # regenera o mapa de teste e o tileset provisório
 
 **O que se vê:** o herói nasce, vai ao Cemitério Esquecido e percorre a rota. Grupos de 1 a 3 monstros surgem à frente, ele sai da rota, luta, e números (branco, amarelo no crítico, verde na cura, cinza no erro) aparecem no quadro de impacto. Monstros morrem e itens saltam com a cor da raridade e voam para a mochila; o lendário tem um feixe de luz. Com a mochila cheia ou sem poções, ele anda até a saída e vai à vila. O HUD mostra vida, mana, XP, ouro, a ficha de taxas ("~349 abates/h · 5.724 XP/h · …") e o log. A mochila e o baú mostram cada item com raridade (cor e ícone), iLvl, atributos-base, afixos e a comparação com o equipado; dá para equipar e desmanchar.
 
-**Testes:** 39 no engine, 8 no conteúdo, 1 e2e, todos passando. O teste offline × tick a tick (±5%) passa.
+**Testes:** 46 no engine, 8 no conteúdo, 4 e2e, todos passando. O teste offline × tick a tick (±5%) passa com erro máximo de 3,2%.
 
-**Ainda não feito no marco 1:** tudo da lista "Próximas tarefas". Em particular, o jogo **ainda não salva**: recarregar a página começa um herói novo.
+**Ainda não feito no marco 1:** tudo da lista "Próximas tarefas".
