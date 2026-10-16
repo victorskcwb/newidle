@@ -442,7 +442,6 @@
   "settings.eco": "Modo econômico (30 fps, sem partículas)",
   "settings.reducedMotion": "Reduzir movimento",
   "settings.largeText": "Texto maior",
-  "settings.soundSoon": "Sons chegam numa próxima versão.",
   "settings.debug": "Depuração (só em desenvolvimento)",
   "settings.debugLevel": "Ir para o nível 100",
   "tip.tip_intro.title": "O ancião de Cinzarra",
@@ -552,5 +551,7 @@
   "quest.refine": "Refine {n} vezes",
   "quest.earn_gold": "Ganhe {n} de ouro caçando",
   "error.quest_not_done": "A meta ainda não foi cumprida.",
-  "error.quest_claimed": "Recompensa já resgatada."
+  "error.quest_claimed": "Recompensa já resgatada.",
+  "settings.sound": "Som",
+  "settings.volume": "Volume: {pct}%"
 }

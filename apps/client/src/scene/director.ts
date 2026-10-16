@@ -10,6 +10,7 @@ import { TICK_MS, type GameEvent, type ItemInstance } from '@abismo/engine';
 import type Phaser from 'phaser';
 import type { GameSim, SimSignal } from '../game/sim.ts';
 import { t } from '../i18n.ts';
+import { sfx } from '../audio/sfx.ts';
 import { useUi } from '../state/store.ts';
 import { itemName } from '../ui/items.ts';
 import { Actor, type Animations } from './actor.ts';
@@ -67,6 +68,10 @@ export class Director {
   private heroAnims: Animations;
   private content: ContentDb;
   timeScale = 1;
+  /** Brief freeze after heavy blows (hit-stop), in ms. */
+  private hitStop = 0;
+  /** Camera shake, flashes and hit-stop are off with reduced motion. */
+  calm = false;
 
   constructor(
     private scene: Phaser.Scene,
@@ -112,6 +117,10 @@ export class Director {
   };
 
   update(dtMs: number) {
+    if (this.hitStop > 0) {
+      this.hitStop -= dtMs;
+      return;
+    }
     const simTick = this.sim.state.tick;
     const lag = simTick - this.pTick;
     if (lag > SNAP_LAG_TICKS) {
@@ -214,15 +223,21 @@ export class Director {
         const anim = e.skillId ? 'cast' : 'attack';
         const at = first?.actor ?? this.hero;
         this.hero.attack(at.x, at.y, anim, () => {
-          if (e.skillId) this.fx.ring(this.hero.x, this.hero.y, 0x9fd3ff);
+          if (e.skillId) {
+            this.fx.ring(this.hero.x, this.hero.y, 0x9fd3ff);
+            if (e.hits.some((h) => !h.miss) && !this.calm) this.hitStop = 60;
+          }
           for (const hit of e.hits) {
             const v = this.monsters.get(hit.uid);
             if (!v) continue;
             if (hit.miss) {
+              sfx.play('miss');
               this.fx.number(v.actor.x, v.actor.y - 8, t('fx.miss'), 'miss');
               continue;
             }
             v.hp = Math.max(0, v.hp - hit.damage);
+            sfx.play(hit.crit ? 'crit' : 'hit');
+            if (hit.crit) this.shake(70, 0.004);
             if (v.def.boss) this.showBoss(v);
             v.actor.setHp(v.hp / v.maxHp);
             v.actor.hurt();
@@ -245,18 +260,21 @@ export class Director {
             this.fx.number(this.hero.x, this.hero.y - 8, t('fx.miss'), 'miss');
           } else {
             this.hero.hurt();
+            sfx.play('hurt');
             this.fx.number(this.hero.x, this.hero.y - 8, `${e.damage}`, 'taken');
           }
         });
         break;
       }
       case 'PotionUsed':
+        sfx.play('potion');
         this.fx.number(this.hero.x, this.hero.y - 8, `+${e.amount}`, 'heal');
         break;
       case 'MonsterDied': {
         const v = this.monsters.get(e.uid);
         if (!v) break;
         v.alive = false;
+        sfx.play('kill');
         if (v.def.boss) this.showBoss(null);
         this.scene.time.delayedCall(180, () => v.actor.die(() => this.release(v)));
         this.log(
@@ -288,7 +306,11 @@ export class Director {
         } else {
           this.pendingSalvage = e.item;
         }
-        if (e.item.rarity === 'legendary') this.fx.burst(x, y, 0xff8c1a, 24);
+        this.scene.time.delayedCall(220, () => sfx.play(`drop_${e.item.rarity}`));
+        if (e.item.rarity === 'legendary') {
+          this.fx.burst(x, y, 0xff8c1a, 24);
+          this.flash(255, 140, 26);
+        }
         break;
       }
       case 'MaterialsGained': {
@@ -311,6 +333,7 @@ export class Director {
         const card = this.content.cards.get(e.cardId)!;
         this.fx.ring(from.x, from.y, 0x9fd3ff);
         this.fx.burst(from.x, from.y, 0x9fd3ff, 20);
+        sfx.play('card');
         this.fx.number(from.x, from.y - 20, t('fx.card'), 'crit');
         this.log(
           t(e.copies === 1 ? 'log.cardNew' : 'log.cardCopy', {
@@ -339,6 +362,7 @@ export class Director {
         break;
       }
       case 'LevelUp':
+        sfx.play('levelUp');
         this.fx.ring(this.hero.x, this.hero.y, 0xffd84a);
         this.fx.burst(this.hero.x, this.hero.y, 0xffd84a, 16);
         this.fx.number(this.hero.x, this.hero.y - 20, t('log.levelUp', { level: e.level }), 'crit');
@@ -374,6 +398,8 @@ export class Director {
         const def = this.content.monsters.get(e.monsterId)!;
         this.fx.ring(this.hero.x, this.hero.y, 0xff6b6b);
         this.fx.burst(this.hero.x, this.hero.y, 0xff6b6b, 30);
+        sfx.play('bossDefeat');
+        this.flash(255, 107, 107);
         this.log(t(e.firstTime ? 'log.bossFirst' : 'log.boss', { monster: t(def.nameKey) }), {
           tone: 'good',
         });
@@ -421,6 +447,7 @@ export class Director {
     this.showBoss(bossView ?? null);
     const boss = e.monsters.find((m) => m.boss);
     if (boss) {
+      sfx.play('bossAppear');
       this.log(
         t('log.bossAppears', { monster: t(this.content.monsters.get(boss.monsterId)!.nameKey) }),
         {
@@ -500,6 +527,14 @@ export class Director {
       {},
       { name: '', color: NAME_COLOR.normal, bar: true },
     );
+  }
+
+  private shake(ms: number, intensity: number) {
+    if (!this.calm) this.scene.cameras.main.shake(ms, intensity);
+  }
+
+  private flash(r: number, g: number, b: number) {
+    if (!this.calm) this.scene.cameras.main.flash(220, r, g, b);
   }
 
   private showBoss(v: MonsterView | null) {

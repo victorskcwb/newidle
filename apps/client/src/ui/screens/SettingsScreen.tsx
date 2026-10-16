@@ -104,7 +104,26 @@ export function SettingsScreen() {
         />
         {t('settings.largeText')}
       </label>
-      <p className="muted small">{t('settings.soundSoon')}</p>
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={prefs.sound}
+          onChange={(e) => prefs.set({ sound: e.target.checked })}
+        />
+        {t('settings.sound')}
+      </label>
+      <label className="field">
+        <span>{t('settings.volume', { pct: Math.round(prefs.volume * 100) })}</span>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={5}
+          value={Math.round(prefs.volume * 100)}
+          disabled={!prefs.sound}
+          onChange={(e) => prefs.set({ volume: Number(e.target.value) / 100 })}
+        />
+      </label>
 
       {import.meta.env.DEV && (
         <>

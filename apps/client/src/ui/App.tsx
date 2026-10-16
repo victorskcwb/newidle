@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import type { GameSim } from '../game/sim.ts';
+import { sfx } from '../audio/sfx.ts';
 import { t } from '../i18n.ts';
 import { SceneView } from '../scene/SceneView.tsx';
 import { usePrefs } from '../state/prefs.ts';
@@ -86,6 +87,9 @@ function Game() {
 export function App({ sim }: { sim: GameSim }) {
   useSimBridge(sim);
   const largeText = usePrefs((s) => s.largeText);
+  const sound = usePrefs((s) => s.sound);
+  const volume = usePrefs((s) => s.volume);
+  useEffect(() => sfx.setVolume(sound, volume), [sound, volume]);
   useEffect(() => {
     document.documentElement.classList.toggle('large-text', largeText);
   }, [largeText]);

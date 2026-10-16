@@ -52,7 +52,7 @@ export class GameScene extends Phaser.Scene {
       const view = cam.worldView;
       return { x: view.right - 40 / cam.zoom, y: view.bottom - 40 / cam.zoom };
     };
-    this.director = new Director(
+    const director = new Director(
       this,
       this.sim,
       mapData,
@@ -61,6 +61,8 @@ export class GameScene extends Phaser.Scene {
       effects,
       backpackTarget,
     );
+    director.calm = this.options.noParticles;
+    this.director = director;
 
     const applyZoom = (zoom: number) => cam.setZoom(zoom);
     applyZoom(useUi.getState().zoom);
