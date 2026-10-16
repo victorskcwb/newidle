@@ -18,7 +18,7 @@ Escopo da especificação (seção 13): cartas e álbum, reforja, elites com afi
 | 10  | **Save na nuvem e ranking** (adiantado do marco 4)                                                                                                                                                                                                                      | servidor                | **sim:** hospedagem, contas (e-mail? login social?), LGPD                                    |
 | 11  | **Alpha com testadores:** 30 pessoas por 3 semanas, meta de retenção de 7 dias ≥ 20%                                                                                                                                                                                    | —                       | depende de 8 e 9                                                                             |
 
-**Situação em 16/10/2026:** tarefas 1 a 7 prontas e testadas (decisões 71–80). As tarefas 8 a 10 aguardam as decisões listadas na tabela; a 11 depende de 8 e 9.
+**Situação em 16/10/2026:** tarefas 1 a 8 prontas e testadas (decisões 71–87; a arte usa os packs CC0 da Kenney e arte autoral). As tarefas 9 e 10 aguardam as decisões listadas na tabela; a 11 depende da 9.
 
 ## Critérios (seção 13)
 

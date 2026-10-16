@@ -17,6 +17,7 @@ import {
   type ContentDb,
 } from '@abismo/content';
 import { hasKey } from '@abismo/i18n';
+import { PNG } from 'pngjs';
 
 const assets = new URL('../../../assets/', import.meta.url);
 const problems: string[] = [];
@@ -68,6 +69,24 @@ if (content) {
     );
   } else {
     const atlases = manifest.data.atlases;
+    // Every sheet exists and every frame fits inside it.
+    for (const [name, atlas] of Object.entries(atlases)) {
+      if (!atlas.image) continue;
+      const url = new URL(atlas.image, assets);
+      if (!existsSync(url)) {
+        problems.push(`sprites: atlas ${name} image ${atlas.image} not found`);
+        continue;
+      }
+      const png = PNG.sync.read(readFileSync(url));
+      const size = atlas.frameSize ?? 16;
+      const frames = Math.floor(png.width / size) * Math.floor(png.height / size);
+      for (const [key, sprite] of Object.entries(atlas.sprites)) {
+        for (const f of [sprite.frame, ...(sprite.variants ?? [])]) {
+          if (f !== undefined && f >= frames)
+            problems.push(`sprites: ${name}/${key} frame ${f} outside the sheet`);
+        }
+      }
+    }
     const hero = atlases.hero?.sprites.warrior;
     if (!hero) problems.push('sprites: no hero/warrior sprite');
     for (const anim of HERO_ANIMATIONS) {

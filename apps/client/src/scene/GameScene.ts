@@ -5,9 +5,16 @@ import { useUi } from '../state/store.ts';
 import { Director } from './director.ts';
 import { Effects } from './effects.ts';
 import { Pathfinder } from './pathfinder.ts';
-import { makeTextures } from './textures.ts';
+import { makeTextures, manifestSheets } from './textures.ts';
 
 export const ZOOM_LEVELS = [1, 2, 3] as const;
+
+/** Map colour per region: dusk in Cinzarra, murky green in Morvel, embers in the Citadel. */
+const REGION_TINT: Record<string, number> = {
+  cinzarra: 0x9c98b4,
+  morvel_swamp: 0x8fa088,
+  burned_citadel: 0xc89484,
+};
 
 /** The hunt map: Tiled layers, placeholder textures and the director that stages events. */
 export class GameScene extends Phaser.Scene {
@@ -17,6 +24,7 @@ export class GameScene extends Phaser.Scene {
   constructor(
     private sim: GameSim,
     private mapId: string,
+    private regionId: string,
     private options: { noParticles: boolean },
   ) {
     super('hunt');
@@ -24,8 +32,17 @@ export class GameScene extends Phaser.Scene {
 
   preload() {
     this.load.tilemapTiledJSON('map', `${this.mapId}.tmj`);
-    this.load.image('placeholder_tiles', 'sprites/placeholder_tiles.png');
+    this.load.image('tiles', 'sprites/tiles.png');
     this.load.json('manifest', 'sprites/manifest.json');
+    // Sprite sheets named by the manifest are queued as soon as the manifest arrives.
+    this.load.once('filecomplete-json-manifest', (_key: string, _type: string, data: unknown) => {
+      for (const sheet of manifestSheets(spriteManifestSchema.parse(data))) {
+        this.load.spritesheet(sheet.key, sheet.url, {
+          frameWidth: sheet.size,
+          frameHeight: sheet.size,
+        });
+      }
+    });
   }
 
   create() {
@@ -35,9 +52,13 @@ export class GameScene extends Phaser.Scene {
     makeTextures(this, this.sim.content, this.sim.state.hero.appearance);
 
     const map = this.make.tilemap({ key: 'map' });
-    const tiles = map.addTilesetImage('placeholder_tiles', 'placeholder_tiles')!;
+    const tiles = map.addTilesetImage('tiles', 'tiles')!;
     const ground = map.createLayer('ground', tiles)!;
-    map.createLayer('decor', tiles);
+    const decor = map.createLayer('decor', tiles)!;
+    // Dark-fantasy mood per region over the bright CC0 tiles.
+    const tint = REGION_TINT[this.regionId] ?? 0xffffff;
+    ground.setTint(tint);
+    decor.setTint(tint);
     Director.animateTiles(this, ground, mapData);
 
     const cam = this.cameras.main;

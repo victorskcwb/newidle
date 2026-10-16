@@ -127,6 +127,16 @@ O Victor saiu e pediu para seguir sozinho com o que eu recomendasse. Tudo abaixo
 79. **Balanceamento depois do marco 2:** equipamento cai em 6% dos abates (antes 12%) e lendários só em caçadas de iLvl 45 ou mais. Simulador: primeiro lendário com mediana de 1,5 dia (0,9 a 2,4 em 12 sementes) e primeiro nível 100 no dia 3,5. A tabela de raridade da seção 7.2 não mudou.
 80. **Formato do save chegou à versão 6** (cartas, afixos de elite, lendários únicos, metas), com migração e teste para cada passo.
 
+## Arte (2026-10-16)
+
+81. **Assets gratuitos CC0 da Kenney** (pedido do Victor: "gratuitos ou autorais"): Tiny Dungeon (herói, monstros, lápide, porta) e Tiny Town (grama, terra, árvore, cogumelos, pedra, muro). CC0 permite uso comercial sem crédito obrigatório; mesmo assim, os créditos estão em `assets/CREDITS.md` e a licença original fica junto dos arquivos em `assets/vendor/`. Descartei packs com licença "share-alike" (CC-BY-SA/GPL), que obrigariam a abrir os assets derivados.
+82. **Escala 2×:** os packs são de 16 px e o jogo usa tiles de 32 px. A escala inteira mantém o pixel art nítido. O que os packs não têm (água, lama, lava, ossos, ícones do app) continua autoral, desenhado por código e reduzido à mesma densidade de 16 px.
+83. **Tileset montado por script** (`pnpm art`) com os mesmos ids de tile do gerador de mapas, então os mapas do Tiled continuam válidos. Objetos da camada de decoração têm fundo transparente. Ganhamos 2 tiles de chão para a Cidadela (terra escura e entulho).
+84. **Monstros com sprite compartilhado:** são 27 monstros para cerca de 12 sprites da Kenney. Os parecidos dividem o sprite, com a cor do conteúdo (`tint`) clareada 45% para não escurecer demais. Chefes ficam maiores (escala do conteúdo).
+85. **Uma frente só:** os sprites da Kenney olham para a frente. Esquerda e direita são espelhadas; cima e baixo usam o mesmo quadro. As animações seguem por tweens com o tempo do manifesto. A seção 4.3 pede 4 direções; isso volta quando houver arte com 4 direções.
+86. **Clima de fantasia sombria por cima de tiles claros:** a cena escurece o mapa por região (Cinzarra crepuscular, Morvel esverdeado, Cidadela avermelhada) sem alterar os arquivos originais.
+87. **Criação de herói:** a escolha de cor de cabelo e roupa virou escolha entre 4 visuais de guerreiro da Kenney (o campo `hair` continua no save, sem uso).
+
 ## Perguntas para revisão
 
 - ~~**Resets cada vez mais rápidos (seção 12.2):** a meta "cada reset chega ao 100 pelo menos 10% mais rápido que o anterior, até o reset 10" não é atingida. No simulador (perfil ativo), os ciclos ficam em 3,0 → 1,9 → 1,8 → 1,6 → 1,7 → 1,8 → 1,4 dias: caem no começo e depois estabilizam. Com 10 pontos por reset (a fórmula da seção 8.1, até a masmorra do marco 3) e a Sabedoria dando +10% de XP por nível com custo linear, o bônus de XP não cresce 10% a cada ciclo. Opções: (a) pontos de reset crescerem com o número do reset (ex.: 10 + 2 × resets); (b) Sabedoria multiplicativa (×1,1 por nível); (c) aceitar até a masmorra existir. Recomendo (a), porque é uma linha de conteúdo/constante e mantém a loja simples.~~ Resolvido: decisões 68–70.

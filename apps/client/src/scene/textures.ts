@@ -1,8 +1,9 @@
-import type { ContentDb } from '@abismo/content';
+import type { ContentDb, Monster, SpriteManifest } from '@abismo/content';
 import { DIRECTIONS } from '@abismo/content';
 import type Phaser from 'phaser';
 import { HAIR_COLORS, OUTFIT_COLORS } from '../ui/appearance.ts';
 import { RARITY_COLOR } from '../ui/rarity.ts';
+import type { LookFor } from './actor.ts';
 
 /**
  * Placeholder art drawn by code: coloured shapes with an outline, one texture per facing.
@@ -161,4 +162,59 @@ export function makeTextures(
     gem.generateTexture(`item_${rarity}`, 14, 14);
     gem.destroy();
   }
+}
+
+/** Texture key of a sprite sheet image (loaded by the scene from the manifest). */
+export function sheetKey(image: string) {
+  return `sheet:${image}`;
+}
+
+/** Every sprite sheet the manifest uses, to load in preload(). */
+export function manifestSheets(
+  manifest: SpriteManifest,
+): { key: string; url: string; size: number }[] {
+  const seen = new Map<string, { key: string; url: string; size: number }>();
+  for (const atlas of Object.values(manifest.atlases)) {
+    if (atlas.image && atlas.frameSize) {
+      seen.set(atlas.image, {
+        key: sheetKey(atlas.image),
+        url: atlas.image,
+        size: atlas.frameSize,
+      });
+    }
+  }
+  return [...seen.values()];
+}
+
+/** Lightens a tint towards white so shared sprites stay readable when recoloured. */
+function softTint(hex: string): number {
+  const n = parseInt(hex.slice(1), 16);
+  const mix = (c: number) => Math.round(c + (255 - c) * 0.45);
+  return (mix(n >> 16) << 16) | (mix((n >> 8) & 255) << 8) | mix(n & 255);
+}
+
+/** The hero's look: a sprite sheet frame chosen by outfit, or the code-drawn warrior. */
+export function heroLook(manifest: SpriteManifest, outfit: number): LookFor {
+  const atlas = manifest.atlases.hero;
+  const sprite = atlas?.sprites.warrior;
+  const frame = sprite?.variants?.[outfit % sprite.variants.length] ?? sprite?.frame;
+  if (atlas?.image && atlas.frameSize && frame !== undefined) {
+    const key = sheetKey(atlas.image);
+    const scale = 32 / atlas.frameSize;
+    return (dir) => ({ texture: key, frame, flipX: dir === 'left', scale });
+  }
+  return (dir) => ({ texture: heroTextureKey(dir), flipX: false, scale: 1 });
+}
+
+/** A monster's look: its sprite sheet frame (tinted, scaled for bosses) or the drawn shape. */
+export function monsterLook(manifest: SpriteManifest, def: Monster): LookFor {
+  const atlas = manifest.atlases[def.sprite.atlas];
+  const frame = atlas?.sprites[def.sprite.key]?.frame;
+  if (atlas?.image && atlas.frameSize && frame !== undefined) {
+    const key = sheetKey(atlas.image);
+    const scale = (32 / atlas.frameSize) * (def.sprite.scale ?? 1);
+    const tint = softTint(def.sprite.tint);
+    return (dir) => ({ texture: key, frame, flipX: dir === 'left', scale, tint });
+  }
+  return (dir) => ({ texture: monsterTextureKey(def.sprite.key, dir), flipX: false, scale: 1 });
 }

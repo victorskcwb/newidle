@@ -168,8 +168,6 @@
   "create.intro": "Cinzarra precisa de alguém que desça ao abismo. Quem é você?",
   "create.name": "Nome",
   "create.nameRule": "3 a 16 letras, números ou espaços",
-  "create.hair": "Cabelo",
-  "create.outfit": "Roupa",
   "create.class": "Classe",
   "create.locked": "Libera no reset {n}",
   "create.start": "Começar",
@@ -560,5 +558,6 @@
   "notify.title": "Abismo Idle",
   "notify.offlineCap": "O herói chegou ao limite de tempo offline. Volte para continuar caçando.",
   "notify.noPotions": "As poções acabaram e o herói voltou à vila.",
-  "notify.level100": "Nível 100! O altar de reset espera por você."
+  "notify.level100": "Nível 100! O altar de reset espera por você.",
+  "create.look": "Visual"
 }

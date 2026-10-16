@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { spriteManifestSchema } from '@abismo/content';
+import { useEffect, useState } from 'react';
 import { t } from '../../i18n.ts';
-import { HAIR_COLORS, OUTFIT_COLORS, cssColor, isValidHeroName } from '../appearance.ts';
+import { isValidHeroName } from '../appearance.ts';
 
 export interface NewHeroChoice {
   name: string;
@@ -13,43 +14,53 @@ const CLASSES = [
   { id: 'sorcerer', resets: 10 },
 ] as const;
 
-function Swatches({
-  label,
-  colors,
-  value,
-  onChange,
-}: {
-  label: string;
-  colors: readonly number[];
-  value: number;
-  onChange: (i: number) => void;
-}) {
+/** One frame of the CC0 sprite sheet, scaled 4× with crisp pixels (CSS sprite). */
+function SheetFrame({ image, frame, size }: { image: string; frame: number; size: number }) {
+  const cols = 12;
+  const scale = 4;
   return (
-    <fieldset className="field">
-      <legend>{label}</legend>
-      <div className="swatches" role="radiogroup" aria-label={label}>
-        {colors.map((c, i) => (
-          <button
-            key={c}
-            type="button"
-            role="radio"
-            aria-checked={value === i}
-            aria-label={`${label} ${i + 1}`}
-            className={`swatch${value === i ? ' active' : ''}`}
-            style={{ background: cssColor(c) }}
-            onClick={() => onChange(i)}
-          />
-        ))}
-      </div>
-    </fieldset>
+    <span
+      className="sheet-frame"
+      style={{
+        width: size * scale,
+        height: size * scale,
+        backgroundImage: `url(${image})`,
+        backgroundSize: `${cols * size * scale}px auto`,
+        backgroundPosition: `-${(frame % cols) * size * scale}px -${Math.floor(frame / cols) * size * scale}px`,
+      }}
+    />
   );
+}
+
+/** The hero's looks from the sprite manifest (the same frames the map uses). */
+function useHeroLooks() {
+  const [looks, setLooks] = useState<{ image: string; size: number; frames: number[] } | null>(
+    null,
+  );
+  useEffect(() => {
+    let live = true;
+    void fetch('sprites/manifest.json')
+      .then((r) => r.json())
+      .then((raw: unknown) => {
+        const atlas = spriteManifestSchema.parse(raw).atlases.hero;
+        const frames = atlas?.sprites.warrior?.variants;
+        if (live && atlas?.image && atlas.frameSize && frames) {
+          setLooks({ image: atlas.image, size: atlas.frameSize, frames });
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
+  return looks;
 }
 
 /** Name, simple appearance and class (only the Guerreiro until reset 5). */
 export function CreateHeroScreen({ onCreate }: { onCreate: (hero: NewHeroChoice) => void }) {
   const [name, setName] = useState('');
-  const [hair, setHair] = useState(0);
   const [outfit, setOutfit] = useState(0);
+  const looks = useHeroLooks();
   const trimmed = name.trim();
   const valid = isValidHeroName(trimmed);
   return (
@@ -58,16 +69,11 @@ export function CreateHeroScreen({ onCreate }: { onCreate: (hero: NewHeroChoice)
         className="panel screen-card"
         onSubmit={(e) => {
           e.preventDefault();
-          if (valid) onCreate({ name: trimmed, appearance: { hair, outfit } });
+          if (valid) onCreate({ name: trimmed, appearance: { hair: 0, outfit } });
         }}
       >
         <h1 className="pixel">{t('create.title')}</h1>
         <p className="muted">{t('create.intro')}</p>
-
-        <div className="hero-preview" aria-hidden>
-          <div className="preview-head" style={{ borderTopColor: cssColor(HAIR_COLORS[hair]!) }} />
-          <div className="preview-body" style={{ background: cssColor(OUTFIT_COLORS[outfit]!) }} />
-        </div>
 
         <label className="field">
           <span>{t('create.name')}</span>
@@ -85,13 +91,24 @@ export function CreateHeroScreen({ onCreate }: { onCreate: (hero: NewHeroChoice)
           </small>
         </label>
 
-        <Swatches label={t('create.hair')} colors={HAIR_COLORS} value={hair} onChange={setHair} />
-        <Swatches
-          label={t('create.outfit')}
-          colors={OUTFIT_COLORS}
-          value={outfit}
-          onChange={setOutfit}
-        />
+        <fieldset className="field">
+          <legend>{t('create.look')}</legend>
+          <div className="looks" role="radiogroup" aria-label={t('create.look')}>
+            {(looks?.frames ?? [0, 1, 2, 3]).map((frame, i) => (
+              <button
+                key={i}
+                type="button"
+                role="radio"
+                aria-checked={outfit === i}
+                aria-label={`${t('create.look')} ${i + 1}`}
+                className={`look${outfit === i ? ' active' : ''}`}
+                onClick={() => setOutfit(i)}
+              >
+                {looks && <SheetFrame image={looks.image} frame={frame} size={looks.size} />}
+              </button>
+            ))}
+          </div>
+        </fieldset>
 
         <fieldset className="field">
           <legend>{t('create.class')}</legend>

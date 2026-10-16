@@ -16,7 +16,8 @@
     "test": "turbo run test",
     "content:build": "pnpm --filter @abismo/content-build run build",
     "maps:gen": "pnpm --filter @abismo/content-build run maps",
-    "sim": "pnpm --filter @abismo/simulator run sim"
+    "sim": "pnpm --filter @abismo/simulator run sim",
+    "art": "pnpm --filter @abismo/content-build run art"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

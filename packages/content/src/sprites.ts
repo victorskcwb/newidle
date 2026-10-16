@@ -28,9 +28,19 @@ export const spriteManifestSchema = z.strictObject({
     z.string(),
     z.strictObject({
       placeholder: z.boolean(),
+      /** Sprite sheet under assets/ (absent: shapes drawn by code). */
+      image: z.string().min(1).optional(),
+      /** Frame size in the sheet, in pixels (square). */
+      frameSize: z.number().int().min(8).optional(),
       sprites: z.record(
         z.string(),
-        z.strictObject({ animations: z.record(z.string(), animation) }),
+        z.strictObject({
+          /** Frame index in the sheet (front-facing; left/right are mirrored). */
+          frame: z.number().int().min(0).optional(),
+          /** Alternative frames chosen by the hero's outfit. */
+          variants: z.array(z.number().int().min(0)).min(1).optional(),
+          animations: z.record(z.string(), animation),
+        }),
       ),
     }),
   ),

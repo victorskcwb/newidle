@@ -1026,3 +1026,31 @@ input[type='range'] {
 .quest-bar {
   height: 10px;
 }
+
+/* Hero looks on the creation screen (frames of the CC0 sprite sheet). */
+.looks {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.look {
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  background: #1f1b28;
+  border: 2px solid var(--edge);
+  cursor: pointer;
+}
+
+.look.active {
+  border-color: var(--accent);
+  background: #3b2c12;
+}
+
+.sheet-frame {
+  display: block;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}

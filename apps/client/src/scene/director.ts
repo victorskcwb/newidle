@@ -16,7 +16,7 @@ import { itemName } from '../ui/items.ts';
 import { Actor, type Animations } from './actor.ts';
 import type { Effects } from './effects.ts';
 import type { Pathfinder } from './pathfinder.ts';
-import { heroTextureKey, monsterTextureKey } from './textures.ts';
+import { heroLook, monsterLook } from './textures.ts';
 
 /** Hero states of the cavebot (section 4.2). */
 type Mode = 'walk_route' | 'engage' | 'fight' | 'loot' | 'return_town' | 'in_town' | 'dead';
@@ -96,11 +96,16 @@ export class Director {
     this.exit = exit ? { tx: Math.floor(exit.x / 32), ty: Math.floor(exit.y / 32) } : wps[0]!;
 
     this.heroAnims = manifest.atlases.hero?.sprites.warrior?.animations ?? {};
-    this.hero = new Actor(scene, heroTextureKey, this.heroAnims, {
-      name: sim.state.hero.name,
-      color: NAME_COLOR.hero,
-      bar: true,
-    });
+    this.hero = new Actor(
+      scene,
+      heroLook(manifest, sim.state.hero.appearance.outfit),
+      this.heroAnims,
+      {
+        name: sim.state.hero.name,
+        color: NAME_COLOR.hero,
+        bar: true,
+      },
+    );
     this.hero.place(this.exit);
     this.hero.container.setVisible(false);
     scene.cameras.main.startFollow(this.hero.container, true, 0.12, 0.12);
@@ -490,7 +495,7 @@ export class Director {
       const anims =
         this.manifest.atlases[def.sprite.atlas]?.sprites[def.sprite.key]?.animations ?? {};
       const actor = this.takeActor();
-      actor.setTexture((dir) => monsterTextureKey(def.sprite.key, dir), anims);
+      actor.setLook(monsterLook(this.manifest, def), anims);
       actor.reset(true);
       const affixes = m.affixes
         .map((id) => this.content.monsterAffixes.get(id))
@@ -523,7 +528,7 @@ export class Director {
     if (free) return free;
     return new Actor(
       this.scene,
-      () => '__MISSING',
+      () => ({ texture: '__MISSING', flipX: false, scale: 1 }),
       {},
       { name: '', color: NAME_COLOR.normal, bar: true },
     );

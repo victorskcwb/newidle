@@ -6,32 +6,13 @@
  *   pnpm maps:gen
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { TILE } from './gen-maps-tiles.ts';
 import { Image } from './png.ts';
 
 type Rgba = readonly [number, number, number, number];
 const T = 32;
 const COLS = 8;
-const ROWS = 2;
-
-/** Tile ids inside the tileset (Tiled gid = id + 1). */
-export const TILE = {
-  grass: 0,
-  grass2: 1,
-  path: 2,
-  wall: 3,
-  grave: 4,
-  tree: 5,
-  water1: 6,
-  water2: 7,
-  gate: 8,
-  collision: 9,
-  bones: 10,
-  mushrooms: 11,
-  stone: 12,
-  mud: 13,
-  lava1: 14,
-  lava2: 15,
-} as const;
+const ROWS = 3;
 
 let seed = 0x2545f491;
 function rand(): number {
@@ -160,6 +141,8 @@ function drawTileset(): Image {
   }
   // Swamp mud.
   fill(TILE.mud, hex('#3b3a26'), [hex('#4a4830'), hex('#2e2d1c'), hex('#556b2f')], 0.2);
+  fill(TILE.ash, hex('#3a2a26'), [hex('#4a3430'), hex('#2a1e1c')], 0.15);
+  fill(TILE.ash2, hex('#3a2a26'), [hex('#6a5a50'), hex('#2a1e1c')], 0.25);
   // Lava, two frames.
   for (const [id, shift] of [
     [TILE.lava1, 0],
@@ -230,7 +213,7 @@ const THEMES: Record<Theme, ThemeSpec> = {
     hazard: TILE.water1,
   },
   swamp: {
-    ground: [TILE.mud, TILE.grass2],
+    ground: [TILE.mud, TILE.mud],
     pond: TILE.water1,
     inner: 'water',
     outerTrees: 0.14,
@@ -248,7 +231,7 @@ const THEMES: Record<Theme, ThemeSpec> = {
     hazard: TILE.water1,
   },
   ash: {
-    ground: [TILE.stone, TILE.stone],
+    ground: [TILE.ash, TILE.ash2],
     pond: TILE.lava1,
     inner: 'walls',
     outerTrees: 0,
@@ -257,7 +240,7 @@ const THEMES: Record<Theme, ThemeSpec> = {
     hazard: TILE.lava1,
   },
   molten: {
-    ground: [TILE.stone, TILE.stone],
+    ground: [TILE.ash, TILE.ash2],
     pond: TILE.lava1,
     inner: 'lava',
     outerTrees: 0,
@@ -386,7 +369,8 @@ function buildHuntMap(theme: Theme, mapSeed: number) {
         hazardAt(x, y, spec.hazard);
       } else if (rand() < 0.03) {
         decor[i] = gid(TILE.bones);
-      } else if (rand() < 0.02) {
+      } else if (rand() < 0.02 && theme !== 'ash' && theme !== 'molten') {
+        // No mushrooms among the citadel's embers.
         decor[i] = gid(TILE.mushrooms);
       }
     }
@@ -482,8 +466,8 @@ function buildHuntMap(theme: Theme, mapSeed: number) {
     tilesets: [
       {
         firstgid: 1,
-        name: 'placeholder_tiles',
-        image: '../sprites/placeholder_tiles.png',
+        name: 'tiles',
+        image: '../sprites/tiles.png',
         imagewidth: COLS * T,
         imageheight: ROWS * T,
         columns: COLS,

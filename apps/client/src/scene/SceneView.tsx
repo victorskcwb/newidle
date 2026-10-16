@@ -7,11 +7,13 @@ import { GameScene } from './GameScene.ts';
 export function SceneView({
   sim,
   mapId,
+  regionId,
   eco,
   reducedMotion,
 }: {
   sim: GameSim;
   mapId: string;
+  regionId: string;
   /** Economy mode: 30 fps and no particles. */
   eco: boolean;
   reducedMotion: boolean;
@@ -29,10 +31,10 @@ export function SceneView({
       scale: { mode: Phaser.Scale.RESIZE, width: '100%', height: '100%' },
       fps: { target: eco ? 30 : 60, limit: eco ? 30 : 0 },
       banner: false,
-      scene: new GameScene(sim, mapId, { noParticles: eco || reducedMotion }),
+      scene: new GameScene(sim, mapId, regionId, { noParticles: eco || reducedMotion }),
     });
     return () => game.destroy(true);
-  }, [sim, mapId, eco, reducedMotion]);
+  }, [sim, mapId, regionId, eco, reducedMotion]);
 
   return <div ref={host} className="scene" data-testid="scene" />;
 }

@@ -7,13 +7,16 @@
     "typecheck": "tsc -p tsconfig.json",
     "build": "tsx src/index.ts",
     "maps": "tsx src/gen-maps.ts",
-    "icons": "tsx src/gen-icons.ts"
+    "icons": "tsx src/gen-icons.ts",
+    "art": "tsx src/build-art.ts"
   },
   "dependencies": {
     "@abismo/content": "workspace:*",
-    "@abismo/i18n": "workspace:*"
+    "@abismo/i18n": "workspace:*",
+    "pngjs": "7.0.0"
   },
   "devDependencies": {
+    "@types/pngjs": "6.0.5",
     "tsx": "4.23.15"
   }
 }

@@ -14,9 +14,22 @@ export function toTile(x: number, y: number): TilePoint {
 
 export type Animations = Record<string, SpriteAnimation>;
 
+/** How an actor is drawn when facing a direction. */
+export interface Look {
+  texture: string;
+  frame?: number;
+  flipX: boolean;
+  /** Base scale (sprite sheets of 16 px are drawn at 2× on the 32 px map). */
+  scale: number;
+  tint?: number;
+}
+
+export type LookFor = (dir: Direction) => Look;
+
 /**
- * A hero or monster on the map: sprite, shadow, name/level label and life bar. Placeholder
- * animations are tweens timed from the sprite manifest (frames × frameMs, impact frame).
+ * A hero or monster on the map: sprite, shadow, name/level label and life bar. Animations
+ * are tweens timed from the sprite manifest (frames × frameMs, impact frame), so a still
+ * sprite sheet frame or a code-drawn placeholder animate the same way.
  */
 export class Actor {
   readonly container: Phaser.GameObjects.Container;
@@ -25,6 +38,8 @@ export class Actor {
   private bar: Phaser.GameObjects.Graphics;
   private bob = 0;
   private hpRatio = 1;
+  private baseScale = 1;
+  private tint: number | undefined;
   path: TilePoint[] = [];
   dir: Direction = 'down';
   /** Tiles per second at time scale 1. */
@@ -33,14 +48,14 @@ export class Actor {
 
   constructor(
     private scene: Phaser.Scene,
-    private textureFor: (dir: Direction) => string,
+    private lookFor: LookFor,
     private anims: Animations,
     opts: { name: string; color: string; bar: boolean; barWidth?: number },
   ) {
     const shadow = scene.add.image(0, 10, 'shadow');
-    this.sprite = scene.add.image(0, 0, textureFor('down'));
+    this.sprite = scene.add.image(0, 0, '__DEFAULT');
     this.label = scene.add
-      .text(0, -this.sprite.height / 2 - 12, opts.name, {
+      .text(0, 0, opts.name, {
         fontFamily: '"Pixelify Sans", monospace',
         fontSize: '8px',
         color: opts.color,
@@ -53,7 +68,7 @@ export class Actor {
     this.bar.setVisible(opts.bar);
     this.barWidth = opts.barWidth ?? 24;
     this.container = scene.add.container(0, 0, [shadow, this.sprite, this.bar, this.label]);
-    this.drawBar();
+    this.applyLook();
   }
 
   private barWidth: number;
@@ -68,15 +83,32 @@ export class Actor {
     return toTile(this.container.x, this.container.y);
   }
 
+  /** Top of the drawn sprite, relative to the actor's position. */
+  private get top() {
+    return -this.sprite.displayHeight / 2;
+  }
+
+  private applyLook() {
+    const look = this.lookFor(this.dir);
+    this.sprite.setTexture(look.texture, look.frame);
+    this.sprite.setFlipX(look.flipX);
+    this.baseScale = look.scale;
+    this.sprite.setScale(look.scale);
+    this.tint = look.tint;
+    if (look.tint !== undefined) this.sprite.setTint(look.tint);
+    else this.sprite.clearTint();
+    this.label.setY(this.top - 12);
+    this.drawBar();
+  }
+
   setName(name: string, color: string) {
     this.label.setText(name).setColor(color);
   }
 
-  setTexture(textureFor: (dir: Direction) => string, anims: Animations) {
-    this.textureFor = textureFor;
+  setLook(lookFor: LookFor, anims: Animations) {
+    this.lookFor = lookFor;
     this.anims = anims;
-    this.sprite.setTexture(textureFor(this.dir));
-    this.label.setY(-this.sprite.height / 2 - 12);
+    this.applyLook();
   }
 
   place(t: TilePoint) {
@@ -84,12 +116,6 @@ export class Actor {
     this.container.setPosition(p.x, p.y);
     this.container.setDepth(p.y);
     this.path = [];
-  }
-
-  setVisible(v: boolean) {
-    this.container.setVisible(v);
-    this.container.setAlpha(1);
-    this.sprite.setScale(1).setAlpha(1).setAngle(0);
   }
 
   face(x: number, y: number) {
@@ -100,7 +126,9 @@ export class Actor {
       Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'up' : 'down';
     if (dir !== this.dir) {
       this.dir = dir;
-      this.sprite.setTexture(this.textureFor(dir));
+      const look = this.lookFor(dir);
+      this.sprite.setTexture(look.texture, look.frame);
+      this.sprite.setFlipX(look.flipX);
     }
   }
 
@@ -111,7 +139,7 @@ export class Actor {
 
   private drawBar() {
     const w = this.barWidth;
-    const y = -this.sprite.height / 2 - 8;
+    const y = this.top - 8;
     this.bar.clear();
     this.bar.fillStyle(0x000000, 0.8);
     this.bar.fillRect(-w / 2 - 1, y - 1, w + 2, 5);
@@ -171,23 +199,31 @@ export class Actor {
       onComplete: () => this.sprite.setPosition(0, 0),
     });
     if (animName === 'cast') {
-      this.scene.tweens.add({ targets: this.sprite, scale: 1.2, duration: total / 2, yoyo: true });
+      this.scene.tweens.add({
+        targets: this.sprite,
+        scale: this.baseScale * 1.2,
+        duration: total / 2,
+        yoyo: true,
+      });
     }
     this.scene.time.delayedCall(impactDelayMs(anim), onImpact);
   }
 
   hurt() {
     this.sprite.setTintFill(0xffffff);
-    this.scene.time.delayedCall(70, () => this.sprite.clearTint());
+    this.scene.time.delayedCall(70, () => {
+      if (this.tint !== undefined) this.sprite.setTint(this.tint);
+      else this.sprite.clearTint();
+    });
   }
 
   spawn() {
     const anim = this.anims.spawn;
     const duration = anim ? anim.frames * anim.frameMs : 300;
-    this.sprite.setScale(1, 0.1).setAlpha(0);
+    this.sprite.setScale(this.baseScale, this.baseScale * 0.1).setAlpha(0);
     this.scene.tweens.add({
       targets: this.sprite,
-      scaleY: 1,
+      scaleY: this.baseScale,
       alpha: 1,
       duration,
       ease: 'Back.easeOut',
@@ -200,7 +236,7 @@ export class Actor {
     this.bar.setVisible(false);
     this.scene.tweens.add({
       targets: this.sprite,
-      scaleY: 0.2,
+      scaleY: this.baseScale * 0.2,
       alpha: 0,
       angle: this.dir === 'left' ? -60 : 60,
       duration,
@@ -213,7 +249,8 @@ export class Actor {
   reset(showBar: boolean) {
     this.scene.tweens.killTweensOf(this.sprite);
     this.scene.tweens.killTweensOf(this.label);
-    this.sprite.setScale(1).setAlpha(1).setAngle(0).setPosition(0, 0).clearTint();
+    this.sprite.setAlpha(1).setAngle(0).setPosition(0, 0);
+    this.applyLook();
     this.label.setAlpha(1);
     this.bar.setVisible(showBar);
     this.hpRatio = 1;

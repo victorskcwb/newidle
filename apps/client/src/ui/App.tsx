@@ -68,6 +68,7 @@ function Game() {
         key={`${hunt.mapId}|${eco}|${reducedMotion}`}
         sim={sim}
         mapId={hunt.mapId}
+        regionId={hunt.regionId}
         eco={eco}
         reducedMotion={reducedMotion}
       />
