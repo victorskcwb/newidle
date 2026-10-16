@@ -1,0 +1,27 @@
+{
+  "regions": [
+    { "id": "cinzarra", "nameKey": "region.cinzarra", "levelRange": [1, 30], "order": 0 }
+  ],
+  "hunts": [
+    {
+      "id": "forgotten_cemetery",
+      "nameKey": "hunt.forgotten_cemetery",
+      "regionId": "cinzarra",
+      "mapId": "maps/forgotten_cemetery",
+      "routeLayer": "route",
+      "recommendedLevel": 3,
+      "levelRange": [1, 10],
+      "ilvl": 5,
+      "spawns": [
+        { "monsterId": "bone_walker", "weight": 70 },
+        { "monsterId": "grave_rat", "weight": 30 }
+      ],
+      "groupSize": { "min": 1, "max": 3 },
+      "walkSecondsBetweenGroups": 3,
+      "travelSeconds": 10,
+      "eliteChancePpm": 50000,
+      "boss": { "monsterId": "gravekeeper", "everyKills": 300 },
+      "startUnlocked": true
+    }
+  ]
+}

@@ -1,0 +1,268 @@
+import { z } from 'zod';
+
+/** Lowercase snake_case identifier used for every content id. */
+const id = z.string().regex(/^[a-z][a-z0-9_]*$/, 'ids are lowercase snake_case');
+const key = z.string().regex(/^[a-z][a-zA-Z0-9_.]*$/, 'translation keys are dotted');
+const ppm = z.number().int().min(0).max(1_000_000);
+const posInt = z.number().int().min(1);
+const nonNegInt = z.number().int().min(0);
+const range = z
+  .tuple([nonNegInt, nonNegInt])
+  .refine(([min, max]) => min <= max, 'range min must be <= max');
+
+export const EQUIPMENT_SLOTS = [
+  'weapon',
+  'offhand',
+  'helm',
+  'chest',
+  'gloves',
+  'pants',
+  'boots',
+  'belt',
+  'ring',
+  'amulet',
+] as const;
+export const slotSchema = z.enum(EQUIPMENT_SLOTS);
+export type EquipmentSlot = z.infer<typeof slotSchema>;
+
+export const RARITIES = ['common', 'magic', 'rare', 'epic', 'legendary'] as const;
+export const raritySchema = z.enum(RARITIES);
+export type Rarity = z.infer<typeof raritySchema>;
+
+/**
+ * Every stat an item, affix or card can modify. The engine knows how to apply each one;
+ * adding a stat here means adding its effect in `packages/engine/src/stats.ts`.
+ * Percent stats are whole percents (5 = +5%).
+ */
+export const STATS = [
+  'strength',
+  'dexterity',
+  'vitality',
+  'energy',
+  'life',
+  'lifePct',
+  'mana',
+  'damageFlat',
+  'damagePct',
+  'attackSpeedPct',
+  'critChancePct',
+  'critDamagePct',
+  'lifeLeechPct',
+  'accuracy',
+  'defense',
+  'defensePct',
+  'evasion',
+  'xpPct',
+  'goldPct',
+  'magicFindPct',
+  'damageVsUndeadPct',
+] as const;
+export const statSchema = z.enum(STATS);
+export type Stat = z.infer<typeof statSchema>;
+
+const statBlock = z.partialRecord(statSchema, z.number().int());
+
+const attributeRequirements = z.strictObject({
+  level: posInt,
+  strength: posInt.optional(),
+  dexterity: posInt.optional(),
+  vitality: posInt.optional(),
+  energy: posInt.optional(),
+});
+
+export const itemBaseSchema = z
+  .strictObject({
+    id,
+    nameKey: key,
+    slot: slotSchema,
+    ilvl: posInt,
+    requires: attributeRequirements,
+    base: z.strictObject({
+      damageMin: posInt.optional(),
+      damageMax: posInt.optional(),
+      attacksPerSecond: z.number().positive().max(5).optional(),
+      defense: nonNegInt.optional(),
+    }),
+    /** Fixed stats every copy of this base has (e.g. a ring's small life bonus). */
+    implicit: statBlock.optional(),
+    icon: z.string().min(1),
+    sprite: z.string().min(1).optional(),
+  })
+  .superRefine((base, ctx) => {
+    const { damageMin, damageMax, attacksPerSecond } = base.base;
+    const isWeapon = base.slot === 'weapon';
+    const hasDamage = damageMin !== undefined && damageMax !== undefined;
+    if (isWeapon && (!hasDamage || attacksPerSecond === undefined)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'weapons need damageMin, damageMax and attacksPerSecond',
+      });
+    }
+    if (hasDamage && damageMin > damageMax) {
+      ctx.addIssue({ code: 'custom', message: 'damageMin must be <= damageMax' });
+    }
+  });
+export type ItemBase = z.infer<typeof itemBaseSchema>;
+
+export const affixSchema = z
+  .strictObject({
+    id,
+    textKey: key,
+    stat: statSchema,
+    slots: z.array(slotSchema).min(1),
+    minIlvl: posInt,
+    weight: posInt,
+    tiers: z.array(z.strictObject({ minIlvl: posInt, min: posInt, max: posInt })).min(1),
+  })
+  .superRefine((affix, ctx) => {
+    let prev = 0;
+    for (const tier of affix.tiers) {
+      if (tier.min > tier.max) ctx.addIssue({ code: 'custom', message: 'tier min must be <= max' });
+      if (tier.minIlvl <= prev && prev !== 0) {
+        ctx.addIssue({ code: 'custom', message: 'tiers must be sorted by increasing minIlvl' });
+      }
+      prev = tier.minIlvl;
+    }
+    if (affix.tiers[0] && affix.tiers[0].minIlvl !== affix.minIlvl) {
+      ctx.addIssue({ code: 'custom', message: 'first tier minIlvl must equal the affix minIlvl' });
+    }
+  });
+export type Affix = z.infer<typeof affixSchema>;
+
+export const monsterSchema = z.strictObject({
+  id,
+  nameKey: key,
+  level: posInt,
+  hp: posInt,
+  damageMin: posInt,
+  damageMax: posInt,
+  attacksPerSecond: z.number().positive().max(5),
+  accuracy: posInt,
+  defense: nonNegInt,
+  evasion: nonNegInt,
+  xp: nonNegInt,
+  gold: range,
+  tags: z.array(id),
+  boss: z.boolean().optional(),
+  cardId: id.optional(),
+  lootTableId: id,
+  sprite: z.strictObject({
+    atlas: z.string().min(1),
+    key: z.string().min(1),
+    spawnAnim: z.string().min(1).optional(),
+    /** Placeholder colour (#rrggbb) used until the final atlas exists. */
+    tint: z.string().regex(/^#[0-9a-f]{6}$/),
+    /** Placeholder size in tiles (bosses are bigger). */
+    scale: z.number().positive().max(4).optional(),
+  }),
+});
+export type Monster = z.infer<typeof monsterSchema>;
+
+export const lootTableSchema = z.strictObject({
+  id,
+  equipmentDropChancePpm: ppm,
+  /** Equipment rolls per kill (bosses roll more than once). */
+  rolls: posInt.optional(),
+  /** Rarities below this are bumped up to it (boss loot). */
+  minRarity: raritySchema.optional(),
+  bases: z.array(z.strictObject({ itemBaseId: id, weight: posInt })).min(1),
+  extras: z.array(z.strictObject({ itemId: id, chancePpm: ppm, qty: range })),
+});
+export type LootTable = z.infer<typeof lootTableSchema>;
+
+export const consumableSchema = z.strictObject({
+  id,
+  nameKey: key,
+  kind: z.enum(['hp', 'mana']),
+  restore: posInt,
+  price: posInt,
+  icon: z.string().min(1),
+});
+export type Consumable = z.infer<typeof consumableSchema>;
+
+export const materialSchema = z.strictObject({
+  id,
+  nameKey: key,
+  /** Salvaging an item of this rarity yields this material. */
+  fromRarity: raritySchema,
+  salvageQty: range,
+  icon: z.string().min(1),
+});
+export type Material = z.infer<typeof materialSchema>;
+
+export const skillSchema = z.strictObject({
+  id,
+  nameKey: key,
+  descKey: key,
+  classId: id,
+  kind: z.enum(['active', 'passive']),
+  maxLevel: posInt.max(10),
+  manaCost: nonNegInt,
+  manaCostPerLevel: nonNegInt,
+  cooldownSeconds: z.number().min(0).max(120),
+  /** Damage of the skill hit as a percent of a normal hit. */
+  damagePct: nonNegInt,
+  damagePctPerLevel: nonNegInt,
+  /** 1 = single target; more = area hitting up to N monsters of the group. */
+  maxTargets: posInt.max(8),
+  effect: z.string().min(1),
+});
+export type Skill = z.infer<typeof skillSchema>;
+
+export const cardSchema = z.strictObject({
+  id,
+  nameKey: key,
+  chancePpm: ppm,
+  maxCopies: posInt,
+  bonusPerCopy: z.strictObject({ stat: statSchema, value: z.number().int() }),
+});
+export type Card = z.infer<typeof cardSchema>;
+
+export const regionSchema = z.strictObject({
+  id,
+  nameKey: key,
+  levelRange: range,
+  order: nonNegInt,
+});
+export type Region = z.infer<typeof regionSchema>;
+
+export const huntSchema = z
+  .strictObject({
+    id,
+    nameKey: key,
+    regionId: id,
+    /** Map file under assets/, without extension (e.g. "maps/forgotten_cemetery"). */
+    mapId: z.string().regex(/^maps\/[a-z0-9_]+$/),
+    routeLayer: z.string().min(1),
+    recommendedLevel: posInt,
+    levelRange: range,
+    /** Base item level of drops; each drop is this ± 2. */
+    ilvl: posInt,
+    spawns: z.array(z.strictObject({ monsterId: id, weight: posInt })).min(1),
+    groupSize: z.strictObject({ min: posInt.max(4), max: posInt.max(4) }),
+    walkSecondsBetweenGroups: z.number().positive().max(60),
+    /** One-way trip between the hunt and town, in seconds. */
+    travelSeconds: z.number().positive().max(300),
+    eliteChancePpm: ppm,
+    boss: z.strictObject({ monsterId: id, everyKills: posInt }).optional(),
+    unlocks: id.optional(),
+    /** True for the hunt every new hero starts with. */
+    startUnlocked: z.boolean().optional(),
+  })
+  .refine((h) => h.groupSize.min <= h.groupSize.max, 'groupSize.min must be <= max');
+export type Hunt = z.infer<typeof huntSchema>;
+
+/** Every content file, merged. Each file in data/ contributes one or more of these arrays. */
+export const contentSchema = z.strictObject({
+  itemBases: z.array(itemBaseSchema),
+  affixes: z.array(affixSchema),
+  monsters: z.array(monsterSchema),
+  lootTables: z.array(lootTableSchema),
+  consumables: z.array(consumableSchema),
+  materials: z.array(materialSchema),
+  skills: z.array(skillSchema),
+  cards: z.array(cardSchema),
+  regions: z.array(regionSchema),
+  hunts: z.array(huntSchema),
+});
+export type ContentFile = z.infer<typeof contentSchema>;

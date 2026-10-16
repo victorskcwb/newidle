@@ -1,0 +1,165 @@
+{
+  "itemBases": [
+    {
+      "id": "sword_rusty",
+      "nameKey": "item.sword_rusty",
+      "slot": "weapon",
+      "ilvl": 1,
+      "requires": { "level": 1, "strength": 10 },
+      "base": { "damageMin": 4, "damageMax": 8, "attacksPerSecond": 1.2 },
+      "icon": "items/sword_rusty",
+      "sprite": "hero/weapon/sword"
+    },
+    {
+      "id": "shield_plank",
+      "nameKey": "item.shield_plank",
+      "slot": "offhand",
+      "ilvl": 1,
+      "requires": { "level": 1 },
+      "base": { "defense": 6 },
+      "icon": "items/shield_plank"
+    },
+    {
+      "id": "helm_leather",
+      "nameKey": "item.helm_leather",
+      "slot": "helm",
+      "ilvl": 1,
+      "requires": { "level": 1 },
+      "base": { "defense": 4 },
+      "icon": "items/helm_leather"
+    },
+    {
+      "id": "vest_leather",
+      "nameKey": "item.vest_leather",
+      "slot": "chest",
+      "ilvl": 1,
+      "requires": { "level": 1 },
+      "base": { "defense": 8 },
+      "icon": "items/vest_leather"
+    },
+    {
+      "id": "boots_worn",
+      "nameKey": "item.boots_worn",
+      "slot": "boots",
+      "ilvl": 1,
+      "requires": { "level": 1 },
+      "base": { "defense": 3 },
+      "icon": "items/boots_worn"
+    },
+    {
+      "id": "ring_copper",
+      "nameKey": "item.ring_copper",
+      "slot": "ring",
+      "ilvl": 1,
+      "requires": { "level": 1 },
+      "base": {},
+      "implicit": { "life": 5 },
+      "icon": "items/ring_copper"
+    }
+  ],
+  "affixes": [
+    {
+      "id": "inc_damage",
+      "textKey": "affix.inc_damage",
+      "stat": "damagePct",
+      "slots": ["weapon", "gloves", "ring", "amulet"],
+      "minIlvl": 1,
+      "weight": 100,
+      "tiers": [
+        { "minIlvl": 1, "min": 5, "max": 10 },
+        { "minIlvl": 20, "min": 11, "max": 20 },
+        { "minIlvl": 45, "min": 21, "max": 35 }
+      ]
+    },
+    {
+      "id": "flat_damage",
+      "textKey": "affix.flat_damage",
+      "stat": "damageFlat",
+      "slots": ["weapon", "gloves", "ring"],
+      "minIlvl": 1,
+      "weight": 100,
+      "tiers": [
+        { "minIlvl": 1, "min": 1, "max": 3 },
+        { "minIlvl": 20, "min": 4, "max": 8 },
+        { "minIlvl": 45, "min": 9, "max": 16 }
+      ]
+    },
+    {
+      "id": "flat_life",
+      "textKey": "affix.flat_life",
+      "stat": "life",
+      "slots": ["offhand", "helm", "chest", "pants", "boots", "belt", "ring", "amulet"],
+      "minIlvl": 1,
+      "weight": 120,
+      "tiers": [
+        { "minIlvl": 1, "min": 5, "max": 15 },
+        { "minIlvl": 20, "min": 16, "max": 40 },
+        { "minIlvl": 45, "min": 41, "max": 80 }
+      ]
+    },
+    {
+      "id": "flat_defense",
+      "textKey": "affix.flat_defense",
+      "stat": "defense",
+      "slots": ["offhand", "helm", "chest", "gloves", "pants", "boots", "belt"],
+      "minIlvl": 1,
+      "weight": 100,
+      "tiers": [
+        { "minIlvl": 1, "min": 2, "max": 6 },
+        { "minIlvl": 20, "min": 7, "max": 15 },
+        { "minIlvl": 45, "min": 16, "max": 30 }
+      ]
+    },
+    {
+      "id": "inc_attack_speed",
+      "textKey": "affix.inc_attack_speed",
+      "stat": "attackSpeedPct",
+      "slots": ["weapon", "gloves"],
+      "minIlvl": 1,
+      "weight": 60,
+      "tiers": [
+        { "minIlvl": 1, "min": 3, "max": 6 },
+        { "minIlvl": 20, "min": 7, "max": 10 },
+        { "minIlvl": 45, "min": 11, "max": 15 }
+      ]
+    },
+    {
+      "id": "life_leech",
+      "textKey": "affix.life_leech",
+      "stat": "lifeLeechPct",
+      "slots": ["weapon", "ring", "amulet"],
+      "minIlvl": 5,
+      "weight": 40,
+      "tiers": [
+        { "minIlvl": 5, "min": 1, "max": 2 },
+        { "minIlvl": 30, "min": 3, "max": 4 }
+      ]
+    },
+    {
+      "id": "inc_xp",
+      "textKey": "affix.inc_xp",
+      "stat": "xpPct",
+      "slots": ["helm", "chest", "ring", "amulet"],
+      "minIlvl": 1,
+      "weight": 50,
+      "tiers": [
+        { "minIlvl": 1, "min": 2, "max": 5 },
+        { "minIlvl": 20, "min": 6, "max": 10 },
+        { "minIlvl": 45, "min": 11, "max": 15 }
+      ]
+    },
+    {
+      "id": "magic_find",
+      "textKey": "affix.magic_find",
+      "stat": "magicFindPct",
+      "slots": ["helm", "chest", "boots", "ring", "amulet"],
+      "minIlvl": 1,
+      "weight": 50,
+      "tiers": [
+        { "minIlvl": 1, "min": 5, "max": 10 },
+        { "minIlvl": 20, "min": 11, "max": 20 },
+        { "minIlvl": 45, "min": 21, "max": 35 }
+      ]
+    }
+  ]
+}

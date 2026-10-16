@@ -1,0 +1,35 @@
+{
+  "skills": [
+    {
+      "id": "heavy_strike",
+      "nameKey": "skill.heavy_strike",
+      "descKey": "skill.heavy_strike.desc",
+      "classId": "warrior",
+      "kind": "active",
+      "maxLevel": 10,
+      "manaCost": 6,
+      "manaCostPerLevel": 1,
+      "cooldownSeconds": 4,
+      "damagePct": 180,
+      "damagePctPerLevel": 15,
+      "maxTargets": 1,
+      "effect": "fx/heavy_strike"
+    },
+    {
+      "id": "whirlwind",
+      "nameKey": "skill.whirlwind",
+      "descKey": "skill.whirlwind.desc",
+      "classId": "warrior",
+      "kind": "active",
+      "maxLevel": 10,
+      "manaCost": 12,
+      "manaCostPerLevel": 2,
+      "cooldownSeconds": 6,
+      "damagePct": 90,
+      "damagePctPerLevel": 8,
+      "maxTargets": 4,
+      "effect": "fx/whirlwind"
+    }
+  ],
+  "cards": []
+}
