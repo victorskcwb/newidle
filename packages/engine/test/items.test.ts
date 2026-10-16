@@ -99,7 +99,7 @@ describe('item generation', () => {
     for (let i = 0; i < 300; i++) {
       const low = generateItem(rng, content, table, 3, i, 'rare');
       expect(low.affixes.every((a) => a.tier === 0)).toBe(true);
-      const high = generateItem(rng, content, table, 60, i, 'rare');
+      const high = generateItem(rng, content, table, 98, i, 'rare');
       for (const a of high.affixes) {
         expect(a.tier).toBe(content.affixes.get(a.affixId)!.tiers.length - 1);
       }

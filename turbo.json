@@ -6,10 +6,12 @@
       "outputs": ["dist/**"]
     },
     "typecheck": {
-      "outputs": []
+      "outputs": [],
+      "cache": false
     },
     "test": {
-      "outputs": []
+      "outputs": [],
+      "cache": false
     },
     "dev": {
       "cache": false,

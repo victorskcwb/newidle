@@ -99,7 +99,7 @@ export const OFFLINE_MAX_TICKS = 24 * TICKS_PER_HOUR;
 /** Most items generated with affixes by one offline resolution; the rest are salvaged. */
 export const OFFLINE_ITEM_LIMIT = 200;
 /** Hunting time simulated to build a rate sheet. */
-export const RATE_SAMPLE_TICKS = 4 * TICKS_PER_HOUR;
+export const RATE_SAMPLE_TICKS = 8 * TICKS_PER_HOUR;
 
 // --- Skills ---------------------------------------------------------------------------------
 export const SKILL_SLOTS = 4;

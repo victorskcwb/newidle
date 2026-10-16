@@ -29,9 +29,9 @@ describe('bundled content', () => {
   it('is valid and complete for the first hunt', () => {
     const c = loadContent();
     expect(c.hunts.get('forgotten_cemetery')).toBeDefined();
-    expect(c.monsters.size).toBe(3);
-    expect(c.itemBases.size).toBe(6);
-    expect(c.affixes.size).toBe(8);
+    expect(c.monsters.size).toBe(27);
+    expect(c.itemBases.size).toBe(40);
+    expect(c.affixes.size).toBe(20);
   });
 
   it('has pt-BR text for every key it references', () => {
@@ -95,8 +95,23 @@ describe('hunt maps', () => {
       ),
     );
 
-  it('the cemetery map is valid: layers, numbered route, everything reachable', () => {
-    expect(validateHuntMap(load(), 'route')).toEqual([]);
+  it('every hunt map is valid: layers, numbered route, everything reachable', () => {
+    for (const hunt of loadContent().hunts.values()) {
+      const map = tiledMapSchema.parse(
+        JSON.parse(
+          readFileSync(new URL(`../../../assets/${hunt.mapId}.tmj`, import.meta.url), 'utf8'),
+        ),
+      );
+      expect(validateHuntMap(map, hunt.routeLayer), hunt.id).toEqual([]);
+    }
+  });
+
+  it('hunts form one unlock chain through the three regions', () => {
+    const hunts = [...loadContent().hunts.values()];
+    expect(hunts).toHaveLength(9);
+    expect(hunts.filter((h) => h.startUnlocked).map((h) => h.id)).toEqual(['forgotten_cemetery']);
+    for (let i = 0; i + 1 < hunts.length; i++) expect(hunts[i]!.unlocks).toBe(hunts[i + 1]!.id);
+    expect(new Set(hunts.map((h) => h.regionId)).size).toBe(3);
   });
 
   it('detects an unreachable waypoint', () => {

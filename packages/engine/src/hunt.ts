@@ -37,8 +37,27 @@ export interface SimCounters {
   deaths: number;
   townTrips: number;
   bossEncounters: number;
+  /** Groups cleared, by kind, and potions drunk while fighting each kind (rate sheet). */
+  groups: Record<GroupKind, number>;
+  potionsByGroup: Record<GroupKind, Record<string, number>>;
   /** Tick at which the hunt stopped on its own (too many deaths, no potions), if it did. */
   stoppedAtTick: number | null;
+}
+
+export type GroupKind = 'normal' | 'elite' | 'boss';
+
+export function groupKind(group: readonly MonsterInstance[]): GroupKind {
+  if (group.some((m) => m.boss)) return 'boss';
+  return group.some((m) => m.elite) ? 'elite' : 'normal';
+}
+
+/** Counts a potion for the rate sheet, under the kind of group being fought (else normal). */
+function countPotion(s: GameState, o: StepOptions, id: string) {
+  if (!o.counters) return;
+  o.counters.potionsUsed[id] = (o.counters.potionsUsed[id] ?? 0) + 1;
+  const kind = s.activity.kind === 'fighting' ? groupKind(s.activity.group) : 'normal';
+  const bucket = o.counters.potionsByGroup[kind];
+  bucket[id] = (bucket[id] ?? 0) + 1;
 }
 
 export interface StepOptions {
@@ -246,7 +265,7 @@ function usePotions(
       const amount = Math.min(potionAmount(potion, stats.maxHp), stats.maxHp - hero.hp);
       hero.hp += amount;
       c.potionReadyTick = t + POTION_COOLDOWN_TICKS;
-      if (o.counters) o.counters.potionsUsed[id] = (o.counters.potionsUsed[id] ?? 0) + 1;
+      countPotion(s, o, id);
       out?.push({ type: 'PotionUsed', tick: t, consumableId: id, kind: 'hp', amount });
     }
   }
@@ -264,7 +283,7 @@ function usePotions(
       const amount = Math.min(potionAmount(potion, stats.maxMana), stats.maxMana - hero.mana);
       hero.mana += amount;
       c.manaPotionReadyTick = t + POTION_COOLDOWN_TICKS;
-      if (o.counters) o.counters.potionsUsed[id] = (o.counters.potionsUsed[id] ?? 0) + 1;
+      countPotion(s, o, id);
       out?.push({ type: 'PotionUsed', tick: t, consumableId: id, kind: 'mana', amount });
     }
   }
@@ -516,6 +535,7 @@ function fight(
 
   if (group.every((m) => m.hp <= 0)) {
     s.hunt!.consecutiveDeaths = 0;
+    if (o.counters) o.counters.groups[groupKind(group)]++;
     const noPotions = (s.consumables[s.settings.hpPotionId] ?? 0) === 0;
     if (s.backpack.length >= backpackSize(hero, content))
       goToTown(s, content, t, 'backpack_full', out, o);

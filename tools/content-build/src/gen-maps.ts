@@ -27,6 +27,10 @@ export const TILE = {
   collision: 9,
   bones: 10,
   mushrooms: 11,
+  stone: 12,
+  mud: 13,
+  lava1: 14,
+  lava2: 15,
 } as const;
 
 let seed = 0x2545f491;
@@ -146,6 +150,29 @@ function drawTileset(): Image {
       img.rect(x + mx + 2, y + my + 2, 1, 3, hex('#8e879a'));
     }
   }
+  // Stone floor (crypt, citadel).
+  fill(TILE.stone, hex('#3a3842'), [hex('#45434f'), hex('#2f2d36'), hex('#4f4c58')], 0.18);
+  {
+    const { x, y } = at(TILE.stone);
+    for (let k = 0; k < T; k += 16) img.rect(x, y + k, T, 1, hex('#2a2830'));
+    img.rect(x + 16, y, 1, 16, hex('#2a2830'));
+    img.rect(x + 8, y + 16, 1, 16, hex('#2a2830'));
+  }
+  // Swamp mud.
+  fill(TILE.mud, hex('#3b3a26'), [hex('#4a4830'), hex('#2e2d1c'), hex('#556b2f')], 0.2);
+  // Lava, two frames.
+  for (const [id, shift] of [
+    [TILE.lava1, 0],
+    [TILE.lava2, 5],
+  ] as const) {
+    const { x, y } = at(id);
+    img.rect(x, y, T, T, hex('#8a2a10'));
+    for (let row = 3; row < T; row += 7) {
+      for (let c = 0; c < T; c += 9)
+        img.rect(x + ((c + shift + row) % T), y + row, 5, 2, hex('#e0701a'));
+    }
+    img.rect(x + ((shift * 3) % T), y + 14, 3, 3, hex('#ffd04a'));
+  }
   return img;
 }
 
@@ -162,7 +189,91 @@ interface MapObject {
   visible: boolean;
 }
 
-function buildCemetery() {
+export type Theme = 'cemetery' | 'woods' | 'crypt' | 'swamp' | 'village' | 'ash' | 'molten';
+
+interface ThemeSpec {
+  ground: [number, number];
+  pond: number | null;
+  inner: 'graves' | 'trees' | 'walls' | 'water' | 'lava' | 'houses';
+  outerTrees: number;
+  outerWalls: number;
+  outerHazard: number;
+  hazard: number;
+}
+
+const THEMES: Record<Theme, ThemeSpec> = {
+  cemetery: {
+    ground: [TILE.grass, TILE.grass2],
+    pond: TILE.water1,
+    inner: 'graves',
+    outerTrees: 0.22,
+    outerWalls: 0,
+    outerHazard: 0,
+    hazard: TILE.water1,
+  },
+  woods: {
+    ground: [TILE.grass, TILE.grass2],
+    pond: TILE.water1,
+    inner: 'trees',
+    outerTrees: 0.42,
+    outerWalls: 0,
+    outerHazard: 0,
+    hazard: TILE.water1,
+  },
+  crypt: {
+    ground: [TILE.stone, TILE.stone],
+    pond: null,
+    inner: 'walls',
+    outerTrees: 0,
+    outerWalls: 0.18,
+    outerHazard: 0,
+    hazard: TILE.water1,
+  },
+  swamp: {
+    ground: [TILE.mud, TILE.grass2],
+    pond: TILE.water1,
+    inner: 'water',
+    outerTrees: 0.14,
+    outerWalls: 0,
+    outerHazard: 0.1,
+    hazard: TILE.water1,
+  },
+  village: {
+    ground: [TILE.mud, TILE.mud],
+    pond: TILE.water1,
+    inner: 'houses',
+    outerTrees: 0.08,
+    outerWalls: 0.05,
+    outerHazard: 0.08,
+    hazard: TILE.water1,
+  },
+  ash: {
+    ground: [TILE.stone, TILE.stone],
+    pond: TILE.lava1,
+    inner: 'walls',
+    outerTrees: 0,
+    outerWalls: 0.1,
+    outerHazard: 0.06,
+    hazard: TILE.lava1,
+  },
+  molten: {
+    ground: [TILE.stone, TILE.stone],
+    pond: TILE.lava1,
+    inner: 'lava',
+    outerTrees: 0,
+    outerWalls: 0.06,
+    outerHazard: 0.12,
+    hazard: TILE.lava1,
+  },
+};
+
+/**
+ * One hunt map: the same 2-tile route loop and town gate for every hunt (so routes and
+ * spawns are known to work), with ground, obstacles and hazards from the theme.
+ */
+function buildHuntMap(theme: Theme, mapSeed: number) {
+  seed = mapSeed;
+  const spec = THEMES[theme];
   const W = 40;
   const H = 30;
   const ground = new Array<number>(W * H).fill(0);
@@ -174,7 +285,8 @@ function buildCemetery() {
   const isPath = new Set<number>();
 
   for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) ground[idx(x, y)] = gid(rand() < 0.25 ? TILE.grass2 : TILE.grass);
+    for (let x = 0; x < W; x++)
+      ground[idx(x, y)] = gid(rand() < 0.25 ? spec.ground[1] : spec.ground[0]);
   }
   const path = (x0: number, y0: number, x1: number, y1: number) => {
     for (let y = y0; y <= y1; y++) {
@@ -204,32 +316,74 @@ function buildCemetery() {
       block(x, y);
     }
   }
-  // Pond.
-  for (let y = 25; y <= 27; y++) {
-    for (let x = 34; x <= 37; x++) {
-      ground[idx(x, y)] = gid(TILE.water1);
-      block(x, y);
-    }
+  const free = (x: number, y: number) =>
+    !isPath.has(idx(x, y)) && !decor[idx(x, y)] && !collision[idx(x, y)];
+  const hazardAt = (x: number, y: number, tile: number) => {
+    if (!free(x, y)) return;
+    ground[idx(x, y)] = gid(tile);
+    block(x, y);
+  };
+  if (spec.pond !== null) {
+    for (let y = 25; y <= 27; y++) for (let x = 34; x <= 37; x++) hazardAt(x, y, spec.pond);
   }
-  // Graves in rows in the middle of the loop.
+  // Obstacles in the middle of the loop (the spawn strips next to the path stay clear).
   for (let y = 12; y <= 18; y += 3) {
     for (let x = 12; x <= 27; x += 3) {
-      if (rand() < 0.85) {
-        decor[idx(x, y)] = gid(TILE.grave);
-        block(x, y);
+      if (rand() >= 0.85) continue;
+      switch (spec.inner) {
+        case 'graves':
+          decor[idx(x, y)] = gid(TILE.grave);
+          block(x, y);
+          break;
+        case 'trees':
+          decor[idx(x, y)] = gid(TILE.tree);
+          block(x, y);
+          if (rand() < 0.5) {
+            decor[idx(x + 1, y)] = gid(TILE.tree);
+            block(x + 1, y);
+          }
+          break;
+        case 'walls':
+          for (let k = 0; k < 2; k++) {
+            decor[idx(x + k, y)] = gid(rand() < 0.3 ? TILE.grave : TILE.wall);
+            block(x + k, y);
+          }
+          break;
+        case 'houses':
+          for (let k = 0; k < 2; k++) {
+            decor[idx(x + k, y)] = gid(TILE.wall);
+            block(x + k, y);
+          }
+          if (rand() < 0.5) hazardAt(x, y + 1, TILE.water1);
+          break;
+        case 'water':
+        case 'lava':
+          for (let k = 0; k < 2; k++)
+            hazardAt(x + k, y, spec.inner === 'lava' ? TILE.lava1 : TILE.water1);
+          break;
       }
     }
   }
-  // Dead trees outside the loop, bones and mushrooms anywhere free.
+  // Outside the loop: trees, walls and hazards by theme; bones and mushrooms anywhere free.
   for (let y = 1; y < H - 1; y++) {
     for (let x = 1; x < W - 1; x++) {
       const i = idx(x, y);
-      if (isPath.has(i) || decor[i] || collision[i]) continue;
+      if (!free(x, y)) continue;
       const outsideLoop = x < 5 || x > 34 || y < 5 || y > 24;
       const nearExit = y >= 12 && y <= 17 && x <= 5;
-      if (outsideLoop && !nearExit && rand() < 0.22) {
+      const r = rand();
+      if (outsideLoop && !nearExit && r < spec.outerTrees) {
         decor[i] = gid(TILE.tree);
         block(x, y);
+      } else if (outsideLoop && !nearExit && r < spec.outerTrees + spec.outerWalls) {
+        decor[i] = gid(TILE.wall);
+        block(x, y);
+      } else if (
+        outsideLoop &&
+        !nearExit &&
+        r < spec.outerTrees + spec.outerWalls + spec.outerHazard
+      ) {
+        hazardAt(x, y, spec.hazard);
       } else if (rand() < 0.03) {
         decor[i] = gid(TILE.bones);
       } else if (rand() < 0.02) {
@@ -346,15 +500,40 @@ function buildCemetery() {
               { tileid: TILE.water2, duration: 600 },
             ],
           },
+          {
+            id: TILE.lava1,
+            animation: [
+              { tileid: TILE.lava1, duration: 450 },
+              { tileid: TILE.lava2, duration: 450 },
+            ],
+          },
         ],
       },
     ],
   };
 }
 
+/** Every hunt map: id, theme and seed (the seed keeps each map stable between runs). */
+const MAPS: [string, Theme, number][] = [
+  ['forgotten_cemetery', 'cemetery', 0x2545f491],
+  ['pale_woods', 'woods', 0x1b873593],
+  ['cracked_crypt', 'crypt', 0x85ebca6b],
+  ['murky_bog', 'swamp', 0xc2b2ae35],
+  ['drowned_village', 'village', 0x27d4eb2f],
+  ['rotting_heart', 'swamp', 0x165667b1],
+  ['ash_gates', 'ash', 0xd3a2646c],
+  ['molten_halls', 'molten', 0xfd7046c5],
+  ['burning_throne', 'ash', 0xb55a4f09],
+];
+
 const root = new URL('../../../assets/', import.meta.url);
 mkdirSync(new URL('sprites/', root), { recursive: true });
 mkdirSync(new URL('maps/', root), { recursive: true });
 writeFileSync(new URL('sprites/placeholder_tiles.png', root), drawTileset().toPng());
-writeFileSync(new URL('maps/forgotten_cemetery.tmj', root), JSON.stringify(buildCemetery()) + '\n');
-console.log('wrote assets/sprites/placeholder_tiles.png and assets/maps/forgotten_cemetery.tmj');
+for (const [id, theme, mapSeed] of MAPS) {
+  writeFileSync(
+    new URL(`maps/${id}.tmj`, root),
+    JSON.stringify(buildHuntMap(theme, mapSeed)) + '\n',
+  );
+}
+console.log(`wrote the tileset and ${MAPS.length} maps`);

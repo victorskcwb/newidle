@@ -1,6 +1,23 @@
 {
   "regions": [
-    { "id": "cinzarra", "nameKey": "region.cinzarra", "levelRange": [1, 30], "order": 0 }
+    {
+      "id": "cinzarra",
+      "nameKey": "region.cinzarra",
+      "levelRange": [1, 30],
+      "order": 0
+    },
+    {
+      "id": "morvel_swamp",
+      "nameKey": "region.morvel_swamp",
+      "levelRange": [30, 60],
+      "order": 1
+    },
+    {
+      "id": "burned_citadel",
+      "nameKey": "region.burned_citadel",
+      "levelRange": [60, 100],
+      "order": 2
+    }
   ],
   "hunts": [
     {
@@ -13,15 +30,283 @@
       "levelRange": [1, 10],
       "ilvl": 5,
       "spawns": [
-        { "monsterId": "bone_walker", "weight": 70 },
-        { "monsterId": "grave_rat", "weight": 30 }
+        {
+          "monsterId": "bone_walker",
+          "weight": 70
+        },
+        {
+          "monsterId": "grave_rat",
+          "weight": 30
+        }
       ],
-      "groupSize": { "min": 1, "max": 3 },
+      "groupSize": {
+        "min": 1,
+        "max": 3
+      },
       "walkSecondsBetweenGroups": 3,
       "travelSeconds": 10,
       "eliteChancePpm": 50000,
-      "boss": { "monsterId": "gravekeeper", "everyKills": 300 },
-      "startUnlocked": true
+      "boss": {
+        "monsterId": "gravekeeper",
+        "everyKills": 300
+      },
+      "startUnlocked": true,
+      "unlocks": "pale_woods"
+    },
+    {
+      "id": "pale_woods",
+      "nameKey": "hunt.pale_woods",
+      "regionId": "cinzarra",
+      "mapId": "maps/pale_woods",
+      "routeLayer": "route",
+      "recommendedLevel": 13,
+      "levelRange": [10, 20],
+      "ilvl": 15,
+      "spawns": [
+        {
+          "monsterId": "grey_wolf",
+          "weight": 55
+        },
+        {
+          "monsterId": "pale_spider",
+          "weight": 45
+        }
+      ],
+      "groupSize": {
+        "min": 1,
+        "max": 3
+      },
+      "walkSecondsBetweenGroups": 3,
+      "travelSeconds": 10,
+      "eliteChancePpm": 50000,
+      "boss": {
+        "monsterId": "spider_matriarch",
+        "everyKills": 300
+      },
+      "unlocks": "cracked_crypt"
+    },
+    {
+      "id": "cracked_crypt",
+      "nameKey": "hunt.cracked_crypt",
+      "regionId": "cinzarra",
+      "mapId": "maps/cracked_crypt",
+      "routeLayer": "route",
+      "recommendedLevel": 23,
+      "levelRange": [20, 30],
+      "ilvl": 25,
+      "spawns": [
+        {
+          "monsterId": "skeleton_archer",
+          "weight": 55
+        },
+        {
+          "monsterId": "ghoul",
+          "weight": 45
+        }
+      ],
+      "groupSize": {
+        "min": 1,
+        "max": 3
+      },
+      "walkSecondsBetweenGroups": 3,
+      "travelSeconds": 10,
+      "eliteChancePpm": 50000,
+      "boss": {
+        "monsterId": "lord_vharok",
+        "everyKills": 300
+      },
+      "unlocks": "murky_bog"
+    },
+    {
+      "id": "murky_bog",
+      "nameKey": "hunt.murky_bog",
+      "regionId": "morvel_swamp",
+      "mapId": "maps/murky_bog",
+      "routeLayer": "route",
+      "recommendedLevel": 33,
+      "levelRange": [30, 40],
+      "ilvl": 35,
+      "spawns": [
+        {
+          "monsterId": "bog_toad",
+          "weight": 55
+        },
+        {
+          "monsterId": "leech_swarm",
+          "weight": 45
+        }
+      ],
+      "groupSize": {
+        "min": 1,
+        "max": 3
+      },
+      "walkSecondsBetweenGroups": 3,
+      "travelSeconds": 12,
+      "eliteChancePpm": 50000,
+      "boss": {
+        "monsterId": "mire_mother",
+        "everyKills": 300
+      },
+      "unlocks": "drowned_village"
+    },
+    {
+      "id": "drowned_village",
+      "nameKey": "hunt.drowned_village",
+      "regionId": "morvel_swamp",
+      "mapId": "maps/drowned_village",
+      "routeLayer": "route",
+      "recommendedLevel": 43,
+      "levelRange": [40, 50],
+      "ilvl": 45,
+      "spawns": [
+        {
+          "monsterId": "drowned_villager",
+          "weight": 55
+        },
+        {
+          "monsterId": "marsh_hag",
+          "weight": 45
+        }
+      ],
+      "groupSize": {
+        "min": 1,
+        "max": 3
+      },
+      "walkSecondsBetweenGroups": 3,
+      "travelSeconds": 12,
+      "eliteChancePpm": 50000,
+      "boss": {
+        "monsterId": "old_drowned",
+        "everyKills": 300
+      },
+      "unlocks": "rotting_heart"
+    },
+    {
+      "id": "rotting_heart",
+      "nameKey": "hunt.rotting_heart",
+      "regionId": "morvel_swamp",
+      "mapId": "maps/rotting_heart",
+      "routeLayer": "route",
+      "recommendedLevel": 53,
+      "levelRange": [50, 60],
+      "ilvl": 55,
+      "spawns": [
+        {
+          "monsterId": "rot_walker",
+          "weight": 55
+        },
+        {
+          "monsterId": "swamp_horror",
+          "weight": 45
+        }
+      ],
+      "groupSize": {
+        "min": 1,
+        "max": 3
+      },
+      "walkSecondsBetweenGroups": 3,
+      "travelSeconds": 12,
+      "eliteChancePpm": 50000,
+      "boss": {
+        "monsterId": "morvel_root",
+        "everyKills": 300
+      },
+      "unlocks": "ash_gates"
+    },
+    {
+      "id": "ash_gates",
+      "nameKey": "hunt.ash_gates",
+      "regionId": "burned_citadel",
+      "mapId": "maps/ash_gates",
+      "routeLayer": "route",
+      "recommendedLevel": 63,
+      "levelRange": [60, 73],
+      "ilvl": 66,
+      "spawns": [
+        {
+          "monsterId": "ember_hound",
+          "weight": 55
+        },
+        {
+          "monsterId": "ash_soldier",
+          "weight": 45
+        }
+      ],
+      "groupSize": {
+        "min": 1,
+        "max": 3
+      },
+      "walkSecondsBetweenGroups": 3,
+      "travelSeconds": 14,
+      "eliteChancePpm": 50000,
+      "boss": {
+        "monsterId": "ashen_captain",
+        "everyKills": 300
+      },
+      "unlocks": "molten_halls"
+    },
+    {
+      "id": "molten_halls",
+      "nameKey": "hunt.molten_halls",
+      "regionId": "burned_citadel",
+      "mapId": "maps/molten_halls",
+      "routeLayer": "route",
+      "recommendedLevel": 76,
+      "levelRange": [73, 86],
+      "ilvl": 80,
+      "spawns": [
+        {
+          "monsterId": "magma_golem",
+          "weight": 55
+        },
+        {
+          "monsterId": "flame_cultist",
+          "weight": 45
+        }
+      ],
+      "groupSize": {
+        "min": 1,
+        "max": 3
+      },
+      "walkSecondsBetweenGroups": 3,
+      "travelSeconds": 14,
+      "eliteChancePpm": 50000,
+      "boss": {
+        "monsterId": "ember_priestess",
+        "everyKills": 300
+      },
+      "unlocks": "burning_throne"
+    },
+    {
+      "id": "burning_throne",
+      "nameKey": "hunt.burning_throne",
+      "regionId": "burned_citadel",
+      "mapId": "maps/burning_throne",
+      "routeLayer": "route",
+      "recommendedLevel": 89,
+      "levelRange": [86, 100],
+      "ilvl": 93,
+      "spawns": [
+        {
+          "monsterId": "cinder_knight",
+          "weight": 55
+        },
+        {
+          "monsterId": "inferno_wraith",
+          "weight": 45
+        }
+      ],
+      "groupSize": {
+        "min": 1,
+        "max": 3
+      },
+      "walkSecondsBetweenGroups": 3,
+      "travelSeconds": 14,
+      "eliteChancePpm": 50000,
+      "boss": {
+        "monsterId": "charred_king",
+        "everyKills": 300
+      }
     }
   ]
 }

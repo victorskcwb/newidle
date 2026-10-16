@@ -1,5 +1,6 @@
 import type { ContentDb, Rarity } from '@abismo/content';
 import {
+  ELITE_DAMAGE_PCT,
   ELITE_DROP_CHANCE_PCT,
   ELITE_MAGIC_FIND_BONUS,
   ELITE_REWARD_PCT,
@@ -54,6 +55,8 @@ export function newCounters(): SimCounters {
     gold: 0,
     goldSpent: 0,
     potionsUsed: {},
+    groups: { normal: 0, elite: 0, boss: 0 },
+    potionsByGroup: { normal: {}, elite: {}, boss: {} },
     potionsBought: {},
     deaths: 0,
     townTrips: 0,
@@ -82,6 +85,35 @@ interface CategoryLoot {
 }
 
 /** Equipment odds for one kill of a monster category, given the hero's magic find. */
+/**
+ * Potions per hour = potions per group of each kind (measured) × groups of that kind per hour
+ * (exact). Elite groups are rare in a sample, so when none was fought they cost as much as
+ * a normal group times the elite damage bonus.
+ */
+function potionRates(
+  c: SimCounters,
+  normalPerHour: number,
+  elitePerHour: number,
+  bossPerHour: number,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  const ids = new Set([
+    ...Object.keys(c.potionsByGroup.normal),
+    ...Object.keys(c.potionsByGroup.elite),
+    ...Object.keys(c.potionsByGroup.boss),
+  ]);
+  for (const id of ids) {
+    const perNormal = (c.potionsByGroup.normal[id] ?? 0) / Math.max(1, c.groups.normal);
+    const perElite =
+      c.groups.elite > 0
+        ? (c.potionsByGroup.elite[id] ?? 0) / c.groups.elite
+        : (perNormal * ELITE_DAMAGE_PCT) / 100;
+    const perBoss = c.groups.boss > 0 ? (c.potionsByGroup.boss[id] ?? 0) / c.groups.boss : 0;
+    out[id] = perNormal * normalPerHour + perElite * elitePerHour + perBoss * bossPerHour;
+  }
+  return out;
+}
+
 /** Average gold of one kill, exactly as killMonster rolls and floors it. */
 export function expectedGold(
   content: ContentDb,
@@ -185,6 +217,9 @@ export function computeRates(
     }
   }
   const kills = normalKills + bossKills;
+  const groupsPerHour = perHour(normalKills / avgGroup);
+  const eliteGroupsPerHour = groupsPerHour * (hunt.eliteChancePpm / PPM);
+  const normalGroupsPerHour = groupsPerHour - eliteGroupsPerHour;
 
   return {
     huntId,
@@ -195,7 +230,12 @@ export function computeRates(
     xpPerHour: perHour(counters.xp),
     goldPerHour,
     goldSpentPerHour: perHour(counters.goldSpent),
-    potionsUsedPerHour: perHourRecord(counters.potionsUsed),
+    potionsUsedPerHour: potionRates(
+      counters,
+      normalGroupsPerHour,
+      eliteGroupsPerHour,
+      bossKills / hours,
+    ),
     potionsBoughtPerHour: perHourRecord(counters.potionsBought),
     deathsPerHour: perHour(counters.deaths),
     townTripsPerHour: perHour(counters.townTrips),

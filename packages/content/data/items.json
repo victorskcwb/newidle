@@ -5,9 +5,67 @@
       "nameKey": "item.sword_rusty",
       "slot": "weapon",
       "ilvl": 1,
-      "requires": { "level": 1, "strength": 10 },
-      "base": { "damageMin": 4, "damageMax": 8, "attacksPerSecond": 1.2 },
+      "requires": {
+        "level": 1,
+        "strength": 10
+      },
+      "base": {
+        "damageMin": 4,
+        "damageMax": 8,
+        "attacksPerSecond": 1.2
+      },
       "icon": "items/sword_rusty",
+      "sprite": "hero/weapon/sword"
+    },
+    {
+      "id": "iron_blade",
+      "nameKey": "item.iron_blade",
+      "slot": "weapon",
+      "ilvl": 20,
+      "requires": {
+        "level": 20,
+        "strength": 40
+      },
+      "base": {
+        "damageMin": 12,
+        "damageMax": 22,
+        "attacksPerSecond": 1.2
+      },
+      "icon": "items/iron_blade",
+      "sprite": "hero/weapon/sword"
+    },
+    {
+      "id": "blackened_sword",
+      "nameKey": "item.blackened_sword",
+      "slot": "weapon",
+      "ilvl": 45,
+      "requires": {
+        "level": 45,
+        "strength": 85
+      },
+      "base": {
+        "damageMin": 30,
+        "damageMax": 54,
+        "attacksPerSecond": 1.25
+      },
+      "icon": "items/blackened_sword",
+      "sprite": "hero/weapon/sword"
+    },
+    {
+      "id": "abyssal_blade",
+      "nameKey": "item.abyssal_blade",
+      "slot": "weapon",
+      "ilvl": 70,
+      "requires": {
+        "level": 70,
+        "strength": 130
+      },
+      "base": {
+        "damageMin": 65,
+        "damageMax": 115,
+        "attacksPerSecond": 1.3
+      },
+      "icon": "items/abyssal_blade",
       "sprite": "hero/weapon/sword"
     },
     {
@@ -15,46 +73,476 @@
       "nameKey": "item.shield_plank",
       "slot": "offhand",
       "ilvl": 1,
-      "requires": { "level": 1 },
-      "base": { "defense": 6 },
+      "requires": {
+        "level": 1
+      },
+      "base": {
+        "defense": 6
+      },
       "icon": "items/shield_plank"
+    },
+    {
+      "id": "shield_iron",
+      "nameKey": "item.shield_iron",
+      "slot": "offhand",
+      "ilvl": 20,
+      "requires": {
+        "level": 20
+      },
+      "base": {
+        "defense": 18
+      },
+      "icon": "items/shield_iron"
+    },
+    {
+      "id": "shield_tower",
+      "nameKey": "item.shield_tower",
+      "slot": "offhand",
+      "ilvl": 45,
+      "requires": {
+        "level": 45
+      },
+      "base": {
+        "defense": 45
+      },
+      "icon": "items/shield_tower"
+    },
+    {
+      "id": "shield_ashen",
+      "nameKey": "item.shield_ashen",
+      "slot": "offhand",
+      "ilvl": 70,
+      "requires": {
+        "level": 70
+      },
+      "base": {
+        "defense": 90
+      },
+      "icon": "items/shield_ashen"
     },
     {
       "id": "helm_leather",
       "nameKey": "item.helm_leather",
       "slot": "helm",
       "ilvl": 1,
-      "requires": { "level": 1 },
-      "base": { "defense": 4 },
+      "requires": {
+        "level": 1
+      },
+      "base": {
+        "defense": 4
+      },
       "icon": "items/helm_leather"
+    },
+    {
+      "id": "helm_iron",
+      "nameKey": "item.helm_iron",
+      "slot": "helm",
+      "ilvl": 20,
+      "requires": {
+        "level": 20
+      },
+      "base": {
+        "defense": 12
+      },
+      "icon": "items/helm_iron"
+    },
+    {
+      "id": "helm_steel",
+      "nameKey": "item.helm_steel",
+      "slot": "helm",
+      "ilvl": 45,
+      "requires": {
+        "level": 45
+      },
+      "base": {
+        "defense": 30
+      },
+      "icon": "items/helm_steel"
+    },
+    {
+      "id": "helm_ashen",
+      "nameKey": "item.helm_ashen",
+      "slot": "helm",
+      "ilvl": 70,
+      "requires": {
+        "level": 70
+      },
+      "base": {
+        "defense": 60
+      },
+      "icon": "items/helm_ashen"
     },
     {
       "id": "vest_leather",
       "nameKey": "item.vest_leather",
       "slot": "chest",
       "ilvl": 1,
-      "requires": { "level": 1 },
-      "base": { "defense": 8 },
+      "requires": {
+        "level": 1
+      },
+      "base": {
+        "defense": 8
+      },
       "icon": "items/vest_leather"
+    },
+    {
+      "id": "chain_shirt",
+      "nameKey": "item.chain_shirt",
+      "slot": "chest",
+      "ilvl": 20,
+      "requires": {
+        "level": 20
+      },
+      "base": {
+        "defense": 24
+      },
+      "icon": "items/chain_shirt"
+    },
+    {
+      "id": "plate_cuirass",
+      "nameKey": "item.plate_cuirass",
+      "slot": "chest",
+      "ilvl": 45,
+      "requires": {
+        "level": 45
+      },
+      "base": {
+        "defense": 60
+      },
+      "icon": "items/plate_cuirass"
+    },
+    {
+      "id": "ashen_cuirass",
+      "nameKey": "item.ashen_cuirass",
+      "slot": "chest",
+      "ilvl": 70,
+      "requires": {
+        "level": 70
+      },
+      "base": {
+        "defense": 120
+      },
+      "icon": "items/ashen_cuirass"
+    },
+    {
+      "id": "gloves_cloth",
+      "nameKey": "item.gloves_cloth",
+      "slot": "gloves",
+      "ilvl": 1,
+      "requires": {
+        "level": 1
+      },
+      "base": {
+        "defense": 3
+      },
+      "icon": "items/gloves_cloth"
+    },
+    {
+      "id": "gauntlets_iron",
+      "nameKey": "item.gauntlets_iron",
+      "slot": "gloves",
+      "ilvl": 20,
+      "requires": {
+        "level": 20
+      },
+      "base": {
+        "defense": 9
+      },
+      "icon": "items/gauntlets_iron"
+    },
+    {
+      "id": "gauntlets_steel",
+      "nameKey": "item.gauntlets_steel",
+      "slot": "gloves",
+      "ilvl": 45,
+      "requires": {
+        "level": 45
+      },
+      "base": {
+        "defense": 22
+      },
+      "icon": "items/gauntlets_steel"
+    },
+    {
+      "id": "gauntlets_ashen",
+      "nameKey": "item.gauntlets_ashen",
+      "slot": "gloves",
+      "ilvl": 70,
+      "requires": {
+        "level": 70
+      },
+      "base": {
+        "defense": 45
+      },
+      "icon": "items/gauntlets_ashen"
+    },
+    {
+      "id": "pants_leather",
+      "nameKey": "item.pants_leather",
+      "slot": "pants",
+      "ilvl": 1,
+      "requires": {
+        "level": 1
+      },
+      "base": {
+        "defense": 6
+      },
+      "icon": "items/pants_leather"
+    },
+    {
+      "id": "greaves_iron",
+      "nameKey": "item.greaves_iron",
+      "slot": "pants",
+      "ilvl": 20,
+      "requires": {
+        "level": 20
+      },
+      "base": {
+        "defense": 18
+      },
+      "icon": "items/greaves_iron"
+    },
+    {
+      "id": "greaves_steel",
+      "nameKey": "item.greaves_steel",
+      "slot": "pants",
+      "ilvl": 45,
+      "requires": {
+        "level": 45
+      },
+      "base": {
+        "defense": 45
+      },
+      "icon": "items/greaves_steel"
+    },
+    {
+      "id": "greaves_ashen",
+      "nameKey": "item.greaves_ashen",
+      "slot": "pants",
+      "ilvl": 70,
+      "requires": {
+        "level": 70
+      },
+      "base": {
+        "defense": 90
+      },
+      "icon": "items/greaves_ashen"
     },
     {
       "id": "boots_worn",
       "nameKey": "item.boots_worn",
       "slot": "boots",
       "ilvl": 1,
-      "requires": { "level": 1 },
-      "base": { "defense": 3 },
+      "requires": {
+        "level": 1
+      },
+      "base": {
+        "defense": 3
+      },
       "icon": "items/boots_worn"
+    },
+    {
+      "id": "boots_iron",
+      "nameKey": "item.boots_iron",
+      "slot": "boots",
+      "ilvl": 20,
+      "requires": {
+        "level": 20
+      },
+      "base": {
+        "defense": 9
+      },
+      "icon": "items/boots_iron"
+    },
+    {
+      "id": "boots_steel",
+      "nameKey": "item.boots_steel",
+      "slot": "boots",
+      "ilvl": 45,
+      "requires": {
+        "level": 45
+      },
+      "base": {
+        "defense": 22
+      },
+      "icon": "items/boots_steel"
+    },
+    {
+      "id": "boots_ashen",
+      "nameKey": "item.boots_ashen",
+      "slot": "boots",
+      "ilvl": 70,
+      "requires": {
+        "level": 70
+      },
+      "base": {
+        "defense": 45
+      },
+      "icon": "items/boots_ashen"
+    },
+    {
+      "id": "belt_rope",
+      "nameKey": "item.belt_rope",
+      "slot": "belt",
+      "ilvl": 1,
+      "requires": {
+        "level": 1
+      },
+      "base": {
+        "defense": 2
+      },
+      "icon": "items/belt_rope"
+    },
+    {
+      "id": "belt_leather",
+      "nameKey": "item.belt_leather",
+      "slot": "belt",
+      "ilvl": 20,
+      "requires": {
+        "level": 20
+      },
+      "base": {
+        "defense": 7
+      },
+      "icon": "items/belt_leather"
+    },
+    {
+      "id": "belt_studded",
+      "nameKey": "item.belt_studded",
+      "slot": "belt",
+      "ilvl": 45,
+      "requires": {
+        "level": 45
+      },
+      "base": {
+        "defense": 18
+      },
+      "icon": "items/belt_studded"
+    },
+    {
+      "id": "belt_ashen",
+      "nameKey": "item.belt_ashen",
+      "slot": "belt",
+      "ilvl": 70,
+      "requires": {
+        "level": 70
+      },
+      "base": {
+        "defense": 36
+      },
+      "icon": "items/belt_ashen"
     },
     {
       "id": "ring_copper",
       "nameKey": "item.ring_copper",
       "slot": "ring",
       "ilvl": 1,
-      "requires": { "level": 1 },
+      "requires": {
+        "level": 1
+      },
       "base": {},
-      "implicit": { "life": 5 },
-      "icon": "items/ring_copper"
+      "icon": "items/ring_copper",
+      "implicit": {
+        "life": 5
+      }
+    },
+    {
+      "id": "ring_silver",
+      "nameKey": "item.ring_silver",
+      "slot": "ring",
+      "ilvl": 20,
+      "requires": {
+        "level": 20
+      },
+      "base": {},
+      "icon": "items/ring_silver",
+      "implicit": {
+        "life": 20
+      }
+    },
+    {
+      "id": "ring_gold",
+      "nameKey": "item.ring_gold",
+      "slot": "ring",
+      "ilvl": 45,
+      "requires": {
+        "level": 45
+      },
+      "base": {},
+      "icon": "items/ring_gold",
+      "implicit": {
+        "life": 50
+      }
+    },
+    {
+      "id": "ring_obsidian",
+      "nameKey": "item.ring_obsidian",
+      "slot": "ring",
+      "ilvl": 70,
+      "requires": {
+        "level": 70
+      },
+      "base": {},
+      "icon": "items/ring_obsidian",
+      "implicit": {
+        "life": 100
+      }
+    },
+    {
+      "id": "amulet_bone",
+      "nameKey": "item.amulet_bone",
+      "slot": "amulet",
+      "ilvl": 1,
+      "requires": {
+        "level": 1
+      },
+      "base": {},
+      "icon": "items/amulet_bone",
+      "implicit": {
+        "damagePct": 2
+      }
+    },
+    {
+      "id": "amulet_bronze",
+      "nameKey": "item.amulet_bronze",
+      "slot": "amulet",
+      "ilvl": 20,
+      "requires": {
+        "level": 20
+      },
+      "base": {},
+      "icon": "items/amulet_bronze",
+      "implicit": {
+        "damagePct": 4
+      }
+    },
+    {
+      "id": "amulet_jade",
+      "nameKey": "item.amulet_jade",
+      "slot": "amulet",
+      "ilvl": 45,
+      "requires": {
+        "level": 45
+      },
+      "base": {},
+      "icon": "items/amulet_jade",
+      "implicit": {
+        "damagePct": 7
+      }
+    },
+    {
+      "id": "amulet_ember",
+      "nameKey": "item.amulet_ember",
+      "slot": "amulet",
+      "ilvl": 70,
+      "requires": {
+        "level": 70
+      },
+      "base": {},
+      "icon": "items/amulet_ember",
+      "implicit": {
+        "damagePct": 10
+      }
     }
   ],
   "affixes": [
@@ -66,9 +554,26 @@
       "minIlvl": 1,
       "weight": 100,
       "tiers": [
-        { "minIlvl": 1, "min": 5, "max": 10 },
-        { "minIlvl": 20, "min": 11, "max": 20 },
-        { "minIlvl": 45, "min": 21, "max": 35 }
+        {
+          "minIlvl": 1,
+          "min": 5,
+          "max": 10
+        },
+        {
+          "minIlvl": 20,
+          "min": 11,
+          "max": 20
+        },
+        {
+          "minIlvl": 45,
+          "min": 21,
+          "max": 35
+        },
+        {
+          "minIlvl": 70,
+          "min": 36,
+          "max": 50
+        }
       ]
     },
     {
@@ -79,9 +584,26 @@
       "minIlvl": 1,
       "weight": 100,
       "tiers": [
-        { "minIlvl": 1, "min": 1, "max": 3 },
-        { "minIlvl": 20, "min": 4, "max": 8 },
-        { "minIlvl": 45, "min": 9, "max": 16 }
+        {
+          "minIlvl": 1,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "minIlvl": 20,
+          "min": 4,
+          "max": 8
+        },
+        {
+          "minIlvl": 45,
+          "min": 9,
+          "max": 16
+        },
+        {
+          "minIlvl": 70,
+          "min": 17,
+          "max": 28
+        }
       ]
     },
     {
@@ -92,9 +614,26 @@
       "minIlvl": 1,
       "weight": 120,
       "tiers": [
-        { "minIlvl": 1, "min": 5, "max": 15 },
-        { "minIlvl": 20, "min": 16, "max": 40 },
-        { "minIlvl": 45, "min": 41, "max": 80 }
+        {
+          "minIlvl": 1,
+          "min": 5,
+          "max": 15
+        },
+        {
+          "minIlvl": 20,
+          "min": 16,
+          "max": 40
+        },
+        {
+          "minIlvl": 45,
+          "min": 41,
+          "max": 80
+        },
+        {
+          "minIlvl": 70,
+          "min": 81,
+          "max": 140
+        }
       ]
     },
     {
@@ -105,9 +644,26 @@
       "minIlvl": 1,
       "weight": 100,
       "tiers": [
-        { "minIlvl": 1, "min": 2, "max": 6 },
-        { "minIlvl": 20, "min": 7, "max": 15 },
-        { "minIlvl": 45, "min": 16, "max": 30 }
+        {
+          "minIlvl": 1,
+          "min": 2,
+          "max": 6
+        },
+        {
+          "minIlvl": 20,
+          "min": 7,
+          "max": 15
+        },
+        {
+          "minIlvl": 45,
+          "min": 16,
+          "max": 30
+        },
+        {
+          "minIlvl": 70,
+          "min": 31,
+          "max": 55
+        }
       ]
     },
     {
@@ -118,9 +674,26 @@
       "minIlvl": 1,
       "weight": 60,
       "tiers": [
-        { "minIlvl": 1, "min": 3, "max": 6 },
-        { "minIlvl": 20, "min": 7, "max": 10 },
-        { "minIlvl": 45, "min": 11, "max": 15 }
+        {
+          "minIlvl": 1,
+          "min": 3,
+          "max": 6
+        },
+        {
+          "minIlvl": 20,
+          "min": 7,
+          "max": 10
+        },
+        {
+          "minIlvl": 45,
+          "min": 11,
+          "max": 15
+        },
+        {
+          "minIlvl": 70,
+          "min": 16,
+          "max": 20
+        }
       ]
     },
     {
@@ -131,8 +704,21 @@
       "minIlvl": 5,
       "weight": 40,
       "tiers": [
-        { "minIlvl": 5, "min": 1, "max": 2 },
-        { "minIlvl": 30, "min": 3, "max": 4 }
+        {
+          "minIlvl": 5,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "minIlvl": 30,
+          "min": 3,
+          "max": 4
+        },
+        {
+          "minIlvl": 60,
+          "min": 5,
+          "max": 6
+        }
       ]
     },
     {
@@ -143,9 +729,26 @@
       "minIlvl": 1,
       "weight": 50,
       "tiers": [
-        { "minIlvl": 1, "min": 2, "max": 5 },
-        { "minIlvl": 20, "min": 6, "max": 10 },
-        { "minIlvl": 45, "min": 11, "max": 15 }
+        {
+          "minIlvl": 1,
+          "min": 2,
+          "max": 5
+        },
+        {
+          "minIlvl": 20,
+          "min": 6,
+          "max": 10
+        },
+        {
+          "minIlvl": 45,
+          "min": 11,
+          "max": 15
+        },
+        {
+          "minIlvl": 70,
+          "min": 16,
+          "max": 20
+        }
       ]
     },
     {
@@ -156,9 +759,386 @@
       "minIlvl": 1,
       "weight": 50,
       "tiers": [
-        { "minIlvl": 1, "min": 5, "max": 10 },
-        { "minIlvl": 20, "min": 11, "max": 20 },
-        { "minIlvl": 45, "min": 21, "max": 35 }
+        {
+          "minIlvl": 1,
+          "min": 5,
+          "max": 10
+        },
+        {
+          "minIlvl": 20,
+          "min": 11,
+          "max": 20
+        },
+        {
+          "minIlvl": 45,
+          "min": 21,
+          "max": 35
+        },
+        {
+          "minIlvl": 70,
+          "min": 36,
+          "max": 50
+        }
+      ]
+    },
+    {
+      "id": "crit_chance",
+      "textKey": "affix.crit_chance",
+      "stat": "critChancePct",
+      "slots": ["weapon", "gloves", "ring", "amulet"],
+      "minIlvl": 5,
+      "weight": 60,
+      "tiers": [
+        {
+          "minIlvl": 5,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "minIlvl": 25,
+          "min": 3,
+          "max": 4
+        },
+        {
+          "minIlvl": 50,
+          "min": 5,
+          "max": 7
+        },
+        {
+          "minIlvl": 75,
+          "min": 8,
+          "max": 10
+        }
+      ]
+    },
+    {
+      "id": "crit_damage",
+      "textKey": "affix.crit_damage",
+      "stat": "critDamagePct",
+      "slots": ["weapon", "amulet", "gloves"],
+      "minIlvl": 10,
+      "weight": 50,
+      "tiers": [
+        {
+          "minIlvl": 10,
+          "min": 5,
+          "max": 10
+        },
+        {
+          "minIlvl": 30,
+          "min": 11,
+          "max": 20
+        },
+        {
+          "minIlvl": 55,
+          "min": 21,
+          "max": 35
+        },
+        {
+          "minIlvl": 80,
+          "min": 36,
+          "max": 50
+        }
+      ]
+    },
+    {
+      "id": "inc_gold",
+      "textKey": "affix.inc_gold",
+      "stat": "goldPct",
+      "slots": ["helm", "gloves", "ring", "amulet"],
+      "minIlvl": 1,
+      "weight": 60,
+      "tiers": [
+        {
+          "minIlvl": 1,
+          "min": 5,
+          "max": 10
+        },
+        {
+          "minIlvl": 20,
+          "min": 11,
+          "max": 20
+        },
+        {
+          "minIlvl": 45,
+          "min": 21,
+          "max": 30
+        },
+        {
+          "minIlvl": 70,
+          "min": 31,
+          "max": 45
+        }
+      ]
+    },
+    {
+      "id": "flat_mana",
+      "textKey": "affix.flat_mana",
+      "stat": "mana",
+      "slots": ["helm", "chest", "ring", "amulet"],
+      "minIlvl": 1,
+      "weight": 60,
+      "tiers": [
+        {
+          "minIlvl": 1,
+          "min": 5,
+          "max": 10
+        },
+        {
+          "minIlvl": 20,
+          "min": 11,
+          "max": 25
+        },
+        {
+          "minIlvl": 45,
+          "min": 26,
+          "max": 50
+        },
+        {
+          "minIlvl": 70,
+          "min": 51,
+          "max": 90
+        }
+      ]
+    },
+    {
+      "id": "inc_life",
+      "textKey": "affix.inc_life",
+      "stat": "lifePct",
+      "slots": ["chest", "belt", "amulet"],
+      "minIlvl": 15,
+      "weight": 50,
+      "tiers": [
+        {
+          "minIlvl": 15,
+          "min": 2,
+          "max": 4
+        },
+        {
+          "minIlvl": 35,
+          "min": 5,
+          "max": 8
+        },
+        {
+          "minIlvl": 55,
+          "min": 9,
+          "max": 12
+        },
+        {
+          "minIlvl": 80,
+          "min": 13,
+          "max": 16
+        }
+      ]
+    },
+    {
+      "id": "inc_defense",
+      "textKey": "affix.inc_defense",
+      "stat": "defensePct",
+      "slots": ["offhand", "chest", "helm", "pants"],
+      "minIlvl": 10,
+      "weight": 60,
+      "tiers": [
+        {
+          "minIlvl": 10,
+          "min": 5,
+          "max": 10
+        },
+        {
+          "minIlvl": 30,
+          "min": 11,
+          "max": 20
+        },
+        {
+          "minIlvl": 50,
+          "min": 21,
+          "max": 30
+        },
+        {
+          "minIlvl": 75,
+          "min": 31,
+          "max": 40
+        }
+      ]
+    },
+    {
+      "id": "flat_accuracy",
+      "textKey": "affix.flat_accuracy",
+      "stat": "accuracy",
+      "slots": ["weapon", "gloves", "helm", "ring"],
+      "minIlvl": 1,
+      "weight": 70,
+      "tiers": [
+        {
+          "minIlvl": 1,
+          "min": 5,
+          "max": 15
+        },
+        {
+          "minIlvl": 20,
+          "min": 16,
+          "max": 40
+        },
+        {
+          "minIlvl": 45,
+          "min": 41,
+          "max": 80
+        },
+        {
+          "minIlvl": 70,
+          "min": 81,
+          "max": 130
+        }
+      ]
+    },
+    {
+      "id": "flat_evasion",
+      "textKey": "affix.flat_evasion",
+      "stat": "evasion",
+      "slots": ["boots", "pants", "belt", "gloves"],
+      "minIlvl": 1,
+      "weight": 70,
+      "tiers": [
+        {
+          "minIlvl": 1,
+          "min": 3,
+          "max": 8
+        },
+        {
+          "minIlvl": 20,
+          "min": 9,
+          "max": 20
+        },
+        {
+          "minIlvl": 45,
+          "min": 21,
+          "max": 40
+        },
+        {
+          "minIlvl": 70,
+          "min": 41,
+          "max": 65
+        }
+      ]
+    },
+    {
+      "id": "add_strength",
+      "textKey": "affix.add_strength",
+      "stat": "strength",
+      "slots": ["weapon", "belt", "ring", "amulet", "gloves"],
+      "minIlvl": 1,
+      "weight": 70,
+      "tiers": [
+        {
+          "minIlvl": 1,
+          "min": 2,
+          "max": 4
+        },
+        {
+          "minIlvl": 20,
+          "min": 5,
+          "max": 9
+        },
+        {
+          "minIlvl": 45,
+          "min": 10,
+          "max": 16
+        },
+        {
+          "minIlvl": 70,
+          "min": 17,
+          "max": 25
+        }
+      ]
+    },
+    {
+      "id": "add_dexterity",
+      "textKey": "affix.add_dexterity",
+      "stat": "dexterity",
+      "slots": ["gloves", "boots", "ring", "amulet"],
+      "minIlvl": 1,
+      "weight": 60,
+      "tiers": [
+        {
+          "minIlvl": 1,
+          "min": 2,
+          "max": 4
+        },
+        {
+          "minIlvl": 20,
+          "min": 5,
+          "max": 9
+        },
+        {
+          "minIlvl": 45,
+          "min": 10,
+          "max": 16
+        },
+        {
+          "minIlvl": 70,
+          "min": 17,
+          "max": 25
+        }
+      ]
+    },
+    {
+      "id": "add_vitality",
+      "textKey": "affix.add_vitality",
+      "stat": "vitality",
+      "slots": ["chest", "belt", "pants", "ring", "amulet"],
+      "minIlvl": 1,
+      "weight": 70,
+      "tiers": [
+        {
+          "minIlvl": 1,
+          "min": 2,
+          "max": 4
+        },
+        {
+          "minIlvl": 20,
+          "min": 5,
+          "max": 9
+        },
+        {
+          "minIlvl": 45,
+          "min": 10,
+          "max": 16
+        },
+        {
+          "minIlvl": 70,
+          "min": 17,
+          "max": 25
+        }
+      ]
+    },
+    {
+      "id": "add_energy",
+      "textKey": "affix.add_energy",
+      "stat": "energy",
+      "slots": ["helm", "amulet", "ring"],
+      "minIlvl": 1,
+      "weight": 50,
+      "tiers": [
+        {
+          "minIlvl": 1,
+          "min": 2,
+          "max": 4
+        },
+        {
+          "minIlvl": 20,
+          "min": 5,
+          "max": 9
+        },
+        {
+          "minIlvl": 45,
+          "min": 10,
+          "max": 16
+        },
+        {
+          "minIlvl": 70,
+          "min": 17,
+          "max": 25
+        }
       ]
     }
   ]

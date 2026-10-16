@@ -5,12 +5,34 @@
       "sprites": {
         "warrior": {
           "animations": {
-            "idle": { "frames": 2, "frameMs": 400, "loop": true },
-            "walk": { "frames": 4, "frameMs": 120, "loop": true },
-            "attack": { "frames": 4, "frameMs": 70, "impactFrame": 2 },
-            "cast": { "frames": 4, "frameMs": 90, "impactFrame": 3 },
-            "hurt": { "frames": 2, "frameMs": 80 },
-            "die": { "frames": 4, "frameMs": 150 }
+            "idle": {
+              "frames": 2,
+              "frameMs": 400,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 120,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 70,
+              "impactFrame": 2
+            },
+            "cast": {
+              "frames": 4,
+              "frameMs": 90,
+              "impactFrame": 3
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 150
+            }
           }
         }
       }
@@ -20,32 +42,849 @@
       "sprites": {
         "bone_walker": {
           "animations": {
-            "idle": { "frames": 2, "frameMs": 450, "loop": true },
-            "walk": { "frames": 4, "frameMs": 140, "loop": true },
-            "attack": { "frames": 4, "frameMs": 80, "impactFrame": 2 },
-            "hurt": { "frames": 2, "frameMs": 80 },
-            "die": { "frames": 4, "frameMs": 120 },
-            "spawn": { "frames": 4, "frameMs": 120 }
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 140,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
           }
         },
         "grave_rat": {
           "animations": {
-            "idle": { "frames": 2, "frameMs": 300, "loop": true },
-            "walk": { "frames": 4, "frameMs": 90, "loop": true },
-            "attack": { "frames": 3, "frameMs": 70, "impactFrame": 1 },
-            "hurt": { "frames": 2, "frameMs": 80 },
-            "die": { "frames": 4, "frameMs": 100 },
-            "spawn": { "frames": 3, "frameMs": 100 }
+            "idle": {
+              "frames": 2,
+              "frameMs": 300,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 90,
+              "loop": true
+            },
+            "attack": {
+              "frames": 3,
+              "frameMs": 70,
+              "impactFrame": 1
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 100
+            },
+            "spawn": {
+              "frames": 3,
+              "frameMs": 100
+            }
           }
         },
         "gravekeeper": {
           "animations": {
-            "idle": { "frames": 2, "frameMs": 500, "loop": true },
-            "walk": { "frames": 4, "frameMs": 160, "loop": true },
-            "attack": { "frames": 5, "frameMs": 90, "impactFrame": 3 },
-            "hurt": { "frames": 2, "frameMs": 90 },
-            "die": { "frames": 6, "frameMs": 140 },
-            "spawn": { "frames": 6, "frameMs": 150 }
+            "idle": {
+              "frames": 2,
+              "frameMs": 500,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 160,
+              "loop": true
+            },
+            "attack": {
+              "frames": 5,
+              "frameMs": 90,
+              "impactFrame": 3
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 90
+            },
+            "die": {
+              "frames": 6,
+              "frameMs": 140
+            },
+            "spawn": {
+              "frames": 6,
+              "frameMs": 150
+            }
+          }
+        },
+        "grey_wolf": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "pale_spider": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "spider_matriarch": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "skeleton_archer": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "ghoul": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "lord_vharok": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        }
+      }
+    },
+    "region_morvel": {
+      "placeholder": true,
+      "sprites": {
+        "bog_toad": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "leech_swarm": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "mire_mother": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "drowned_villager": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "marsh_hag": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "old_drowned": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "rot_walker": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "swamp_horror": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "morvel_root": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        }
+      }
+    },
+    "region_citadel": {
+      "placeholder": true,
+      "sprites": {
+        "ember_hound": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "ash_soldier": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "ashen_captain": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "magma_golem": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "flame_cultist": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "ember_priestess": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "cinder_knight": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "inferno_wraith": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          }
+        },
+        "charred_king": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
           }
         }
       }

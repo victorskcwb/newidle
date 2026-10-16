@@ -1,3 +1,4 @@
+import { SAVE_VERSION } from '@abismo/engine';
 import { expect, test } from '@playwright/test';
 import { createHero, waitForLoot } from './helpers.ts';
 
@@ -44,7 +45,10 @@ test('export and import the save as text', async ({ page }) => {
   await createHero(page, 'Exportado');
   await page.getByTestId('menu-button').click();
   const text = await page.getByTestId('export-text').inputValue();
-  expect(JSON.parse(text)).toMatchObject({ version: 1, state: { hero: { name: 'Exportado' } } });
+  expect(JSON.parse(text)).toMatchObject({
+    version: SAVE_VERSION,
+    state: { hero: { name: 'Exportado' } },
+  });
 
   await page.getByTestId('import-text').fill('isto não é um save');
   await page.getByRole('button', { name: 'Importar', exact: true }).click();

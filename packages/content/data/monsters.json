@@ -37,7 +37,12 @@
       "gold": [1, 3],
       "tags": ["beast"],
       "lootTableId": "loot_cemetery",
-      "sprite": { "atlas": "region_cinzarra", "key": "grave_rat", "tint": "#8a6f5a", "scale": 0.75 }
+      "sprite": {
+        "atlas": "region_cinzarra",
+        "key": "grave_rat",
+        "tint": "#8a6f5a",
+        "scale": 0.75
+      }
     },
     {
       "id": "gravekeeper",
@@ -62,6 +67,539 @@
         "tint": "#5e7d6a",
         "scale": 1.5
       }
+    },
+    {
+      "id": "grey_wolf",
+      "nameKey": "monster.grey_wolf",
+      "level": 13,
+      "hp": 58,
+      "damageMin": 6,
+      "damageMax": 11,
+      "attacksPerSecond": 1.2,
+      "accuracy": 170,
+      "defense": 32,
+      "evasion": 21,
+      "xp": 22,
+      "gold": [13, 39],
+      "tags": ["beast"],
+      "lootTableId": "loot_pale_woods",
+      "sprite": {
+        "atlas": "region_cinzarra",
+        "key": "grey_wolf",
+        "tint": "#8f8f96"
+      }
+    },
+    {
+      "id": "pale_spider",
+      "nameKey": "monster.pale_spider",
+      "level": 16,
+      "hp": 79,
+      "damageMin": 10,
+      "damageMax": 17,
+      "attacksPerSecond": 0.9,
+      "accuracy": 200,
+      "defense": 40,
+      "evasion": 24,
+      "xp": 24,
+      "gold": [16, 48],
+      "tags": ["beast"],
+      "lootTableId": "loot_pale_woods",
+      "sprite": {
+        "atlas": "region_cinzarra",
+        "key": "pale_spider",
+        "tint": "#d9d4e6",
+        "scale": 0.9
+      }
+    },
+    {
+      "id": "spider_matriarch",
+      "nameKey": "monster.spider_matriarch",
+      "level": 19,
+      "hp": 1046,
+      "damageMin": 26,
+      "damageMax": 44,
+      "attacksPerSecond": 0.7,
+      "accuracy": 230,
+      "defense": 48,
+      "evasion": 28,
+      "xp": 504,
+      "gold": [475, 1425],
+      "tags": ["boss"],
+      "lootTableId": "loot_spider_matriarch",
+      "sprite": {
+        "atlas": "region_cinzarra",
+        "key": "spider_matriarch",
+        "tint": "#b8a9d9",
+        "spawnAnim": "rise",
+        "scale": 1.6
+      },
+      "boss": true
+    },
+    {
+      "id": "skeleton_archer",
+      "nameKey": "monster.skeleton_archer",
+      "level": 23,
+      "hp": 211,
+      "damageMin": 12,
+      "damageMax": 20,
+      "attacksPerSecond": 1.0,
+      "accuracy": 270,
+      "defense": 58,
+      "evasion": 32,
+      "xp": 27,
+      "gold": [23, 69],
+      "tags": ["undead"],
+      "lootTableId": "loot_cracked_crypt",
+      "sprite": {
+        "atlas": "region_cinzarra",
+        "key": "skeleton_archer",
+        "tint": "#cfc8b0"
+      }
+    },
+    {
+      "id": "ghoul",
+      "nameKey": "monster.ghoul",
+      "level": 26,
+      "hp": 284,
+      "damageMin": 15,
+      "damageMax": 24,
+      "attacksPerSecond": 0.9,
+      "accuracy": 300,
+      "defense": 65,
+      "evasion": 36,
+      "xp": 29,
+      "gold": [26, 78],
+      "tags": ["undead"],
+      "lootTableId": "loot_cracked_crypt",
+      "sprite": {
+        "atlas": "region_cinzarra",
+        "key": "ghoul",
+        "tint": "#7d8f6a"
+      }
+    },
+    {
+      "id": "lord_vharok",
+      "nameKey": "monster.lord_vharok",
+      "level": 30,
+      "hp": 5913,
+      "damageMin": 47,
+      "damageMax": 78,
+      "attacksPerSecond": 0.7,
+      "accuracy": 340,
+      "defense": 75,
+      "evasion": 41,
+      "xp": 940,
+      "gold": [1200, 3600],
+      "tags": ["boss"],
+      "lootTableId": "loot_lord_vharok",
+      "sprite": {
+        "atlas": "region_cinzarra",
+        "key": "lord_vharok",
+        "tint": "#9c3b3b",
+        "spawnAnim": "rise",
+        "scale": 1.8
+      },
+      "boss": true
+    },
+    {
+      "id": "bog_toad",
+      "nameKey": "monster.bog_toad",
+      "level": 33,
+      "hp": 256,
+      "damageMin": 16,
+      "damageMax": 27,
+      "attacksPerSecond": 1.0,
+      "accuracy": 370,
+      "defense": 82,
+      "evasion": 45,
+      "xp": 33,
+      "gold": [33, 99],
+      "tags": ["beast"],
+      "lootTableId": "loot_murky_bog",
+      "sprite": {
+        "atlas": "region_morvel",
+        "key": "bog_toad",
+        "tint": "#5f7a3a"
+      }
+    },
+    {
+      "id": "leech_swarm",
+      "nameKey": "monster.leech_swarm",
+      "level": 36,
+      "hp": 331,
+      "damageMin": 13,
+      "damageMax": 22,
+      "attacksPerSecond": 1.3,
+      "accuracy": 400,
+      "defense": 90,
+      "evasion": 49,
+      "xp": 35,
+      "gold": [36, 108],
+      "tags": ["beast"],
+      "lootTableId": "loot_murky_bog",
+      "sprite": {
+        "atlas": "region_morvel",
+        "key": "leech_swarm",
+        "tint": "#4a2f3a",
+        "scale": 0.8
+      }
+    },
+    {
+      "id": "mire_mother",
+      "nameKey": "monster.mire_mother",
+      "level": 40,
+      "hp": 4498,
+      "damageMin": 49,
+      "damageMax": 82,
+      "attacksPerSecond": 0.7,
+      "accuracy": 440,
+      "defense": 100,
+      "evasion": 54,
+      "xp": 764,
+      "gold": [1000, 3000],
+      "tags": ["boss"],
+      "lootTableId": "loot_mire_mother",
+      "sprite": {
+        "atlas": "region_morvel",
+        "key": "mire_mother",
+        "tint": "#3f5f3a",
+        "spawnAnim": "rise",
+        "scale": 1.6
+      },
+      "boss": true
+    },
+    {
+      "id": "drowned_villager",
+      "nameKey": "monster.drowned_villager",
+      "level": 43,
+      "hp": 332,
+      "damageMin": 23,
+      "damageMax": 38,
+      "attacksPerSecond": 0.9,
+      "accuracy": 470,
+      "defense": 108,
+      "evasion": 58,
+      "xp": 41,
+      "gold": [43, 129],
+      "tags": ["undead"],
+      "lootTableId": "loot_drowned_village",
+      "sprite": {
+        "atlas": "region_morvel",
+        "key": "drowned_villager",
+        "tint": "#6a8a9a"
+      }
+    },
+    {
+      "id": "marsh_hag",
+      "nameKey": "monster.marsh_hag",
+      "level": 46,
+      "hp": 342,
+      "damageMin": 22,
+      "damageMax": 36,
+      "attacksPerSecond": 1.0,
+      "accuracy": 500,
+      "defense": 115,
+      "evasion": 62,
+      "xp": 43,
+      "gold": [46, 138],
+      "tags": ["human"],
+      "lootTableId": "loot_drowned_village",
+      "sprite": {
+        "atlas": "region_morvel",
+        "key": "marsh_hag",
+        "tint": "#7a5a8a"
+      }
+    },
+    {
+      "id": "old_drowned",
+      "nameKey": "monster.old_drowned",
+      "level": 50,
+      "hp": 12841,
+      "damageMin": 60,
+      "damageMax": 101,
+      "attacksPerSecond": 0.7,
+      "accuracy": 540,
+      "defense": 125,
+      "evasion": 68,
+      "xp": 931,
+      "gold": [1250, 3750],
+      "tags": ["boss"],
+      "lootTableId": "loot_old_drowned",
+      "sprite": {
+        "atlas": "region_morvel",
+        "key": "old_drowned",
+        "tint": "#3a5a6a",
+        "spawnAnim": "rise",
+        "scale": 1.7
+      },
+      "boss": true
+    },
+    {
+      "id": "rot_walker",
+      "nameKey": "monster.rot_walker",
+      "level": 53,
+      "hp": 943,
+      "damageMin": 27,
+      "damageMax": 46,
+      "attacksPerSecond": 0.9,
+      "accuracy": 570,
+      "defense": 132,
+      "evasion": 72,
+      "xp": 49,
+      "gold": [53, 159],
+      "tags": ["undead"],
+      "lootTableId": "loot_rotting_heart",
+      "sprite": {
+        "atlas": "region_morvel",
+        "key": "rot_walker",
+        "tint": "#6a6a3a"
+      }
+    },
+    {
+      "id": "swamp_horror",
+      "nameKey": "monster.swamp_horror",
+      "level": 56,
+      "hp": 1110,
+      "damageMin": 26,
+      "damageMax": 43,
+      "attacksPerSecond": 1.0,
+      "accuracy": 600,
+      "defense": 140,
+      "evasion": 76,
+      "xp": 52,
+      "gold": [56, 168],
+      "tags": ["beast"],
+      "lootTableId": "loot_rotting_heart",
+      "sprite": {
+        "atlas": "region_morvel",
+        "key": "swamp_horror",
+        "tint": "#2f4a3a",
+        "scale": 1.2
+      }
+    },
+    {
+      "id": "morvel_root",
+      "nameKey": "monster.morvel_root",
+      "level": 60,
+      "hp": 22737,
+      "damageMin": 87,
+      "damageMax": 145,
+      "attacksPerSecond": 0.7,
+      "accuracy": 640,
+      "defense": 150,
+      "evasion": 82,
+      "xp": 1703,
+      "gold": [2400, 7200],
+      "tags": ["boss"],
+      "lootTableId": "loot_morvel_root",
+      "sprite": {
+        "atlas": "region_morvel",
+        "key": "morvel_root",
+        "tint": "#4a3a2a",
+        "spawnAnim": "rise",
+        "scale": 2.0
+      },
+      "boss": true
+    },
+    {
+      "id": "ember_hound",
+      "nameKey": "monster.ember_hound",
+      "level": 64,
+      "hp": 979,
+      "damageMin": 23,
+      "damageMax": 38,
+      "attacksPerSecond": 1.3,
+      "accuracy": 680,
+      "defense": 160,
+      "evasion": 88,
+      "xp": 61,
+      "gold": [64, 192],
+      "tags": ["beast", "fire"],
+      "lootTableId": "loot_ash_gates",
+      "sprite": {
+        "atlas": "region_citadel",
+        "key": "ember_hound",
+        "tint": "#d9642a"
+      }
+    },
+    {
+      "id": "ash_soldier",
+      "nameKey": "monster.ash_soldier",
+      "level": 68,
+      "hp": 1263,
+      "damageMin": 35,
+      "damageMax": 58,
+      "attacksPerSecond": 0.9,
+      "accuracy": 720,
+      "defense": 170,
+      "evasion": 95,
+      "xp": 67,
+      "gold": [68, 204],
+      "tags": ["undead"],
+      "lootTableId": "loot_ash_gates",
+      "sprite": {
+        "atlas": "region_citadel",
+        "key": "ash_soldier",
+        "tint": "#7a7a7a"
+      }
+    },
+    {
+      "id": "ashen_captain",
+      "nameKey": "monster.ashen_captain",
+      "level": 73,
+      "hp": 37394,
+      "damageMin": 86,
+      "damageMax": 143,
+      "attacksPerSecond": 0.7,
+      "accuracy": 770,
+      "defense": 182,
+      "evasion": 103,
+      "xp": 1469,
+      "gold": [1825, 5475],
+      "tags": ["boss"],
+      "lootTableId": "loot_ashen_captain",
+      "sprite": {
+        "atlas": "region_citadel",
+        "key": "ashen_captain",
+        "tint": "#5a5a6a",
+        "spawnAnim": "rise",
+        "scale": 1.7
+      },
+      "boss": true
+    },
+    {
+      "id": "magma_golem",
+      "nameKey": "monster.magma_golem",
+      "level": 77,
+      "hp": 3359,
+      "damageMin": 50,
+      "damageMax": 83,
+      "attacksPerSecond": 0.7,
+      "accuracy": 810,
+      "defense": 192,
+      "evasion": 109,
+      "xp": 79,
+      "gold": [77, 231],
+      "tags": ["construct", "fire"],
+      "lootTableId": "loot_molten_halls",
+      "sprite": {
+        "atlas": "region_citadel",
+        "key": "magma_golem",
+        "tint": "#b8401a",
+        "scale": 1.3
+      }
+    },
+    {
+      "id": "flame_cultist",
+      "nameKey": "monster.flame_cultist",
+      "level": 81,
+      "hp": 2586,
+      "damageMin": 33,
+      "damageMax": 56,
+      "attacksPerSecond": 1.1,
+      "accuracy": 850,
+      "defense": 202,
+      "evasion": 116,
+      "xp": 86,
+      "gold": [81, 243],
+      "tags": ["human", "fire"],
+      "lootTableId": "loot_molten_halls",
+      "sprite": {
+        "atlas": "region_citadel",
+        "key": "flame_cultist",
+        "tint": "#e09a3a"
+      }
+    },
+    {
+      "id": "ember_priestess",
+      "nameKey": "monster.ember_priestess",
+      "level": 86,
+      "hp": 42131,
+      "damageMin": 100,
+      "damageMax": 167,
+      "attacksPerSecond": 0.7,
+      "accuracy": 900,
+      "defense": 215,
+      "evasion": 125,
+      "xp": 1900,
+      "gold": [2150, 6450],
+      "tags": ["boss"],
+      "lootTableId": "loot_ember_priestess",
+      "sprite": {
+        "atlas": "region_citadel",
+        "key": "ember_priestess",
+        "tint": "#ff7a2a",
+        "spawnAnim": "rise",
+        "scale": 1.7
+      },
+      "boss": true
+    },
+    {
+      "id": "cinder_knight",
+      "nameKey": "monster.cinder_knight",
+      "level": 90,
+      "hp": 3433,
+      "damageMin": 45,
+      "damageMax": 75,
+      "attacksPerSecond": 0.9,
+      "accuracy": 940,
+      "defense": 225,
+      "evasion": 132,
+      "xp": 103,
+      "gold": [90, 270],
+      "tags": ["undead"],
+      "lootTableId": "loot_burning_throne",
+      "sprite": {
+        "atlas": "region_citadel",
+        "key": "cinder_knight",
+        "tint": "#4a4a5a",
+        "scale": 1.1
+      }
+    },
+    {
+      "id": "inferno_wraith",
+      "nameKey": "monster.inferno_wraith",
+      "level": 95,
+      "hp": 2835,
+      "damageMin": 36,
+      "damageMax": 59,
+      "attacksPerSecond": 1.2,
+      "accuracy": 990,
+      "defense": 238,
+      "evasion": 141,
+      "xp": 114,
+      "gold": [95, 285],
+      "tags": ["undead", "fire"],
+      "lootTableId": "loot_burning_throne",
+      "sprite": {
+        "atlas": "region_citadel",
+        "key": "inferno_wraith",
+        "tint": "#ff5a3a"
+      }
+    },
+    {
+      "id": "charred_king",
+      "nameKey": "monster.charred_king",
+      "level": 100,
+      "hp": 72356,
+      "damageMin": 141,
+      "damageMax": 235,
+      "attacksPerSecond": 0.7,
+      "accuracy": 1040,
+      "defense": 250,
+      "evasion": 150,
+      "xp": 3760,
+      "gold": [4000, 12000],
+      "tags": ["boss"],
+      "lootTableId": "loot_charred_king",
+      "sprite": {
+        "atlas": "region_citadel",
+        "key": "charred_king",
+        "tint": "#2a1a1a",
+        "spawnAnim": "rise",
+        "scale": 2.0
+      },
+      "boss": true
     }
   ],
   "lootTables": [
@@ -69,14 +607,54 @@
       "id": "loot_cemetery",
       "equipmentDropChancePpm": 120000,
       "bases": [
-        { "itemBaseId": "sword_rusty", "weight": 30 },
-        { "itemBaseId": "shield_plank", "weight": 15 },
-        { "itemBaseId": "helm_leather", "weight": 20 },
-        { "itemBaseId": "vest_leather", "weight": 15 },
-        { "itemBaseId": "boots_worn", "weight": 15 },
-        { "itemBaseId": "ring_copper", "weight": 5 }
+        {
+          "itemBaseId": "sword_rusty",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_plank",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_leather",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "vest_leather",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gloves_cloth",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "pants_leather",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_worn",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_rope",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_copper",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_bone",
+          "weight": 10
+        }
       ],
-      "extras": [{ "itemId": "potion_hp_small", "chancePpm": 50000, "qty": [1, 2] }]
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 50000,
+          "qty": [1, 2]
+        }
+      ]
     },
     {
       "id": "loot_gravekeeper",
@@ -84,14 +662,1523 @@
       "rolls": 2,
       "minRarity": "magic",
       "bases": [
-        { "itemBaseId": "sword_rusty", "weight": 30 },
-        { "itemBaseId": "shield_plank", "weight": 15 },
-        { "itemBaseId": "helm_leather", "weight": 20 },
-        { "itemBaseId": "vest_leather", "weight": 15 },
-        { "itemBaseId": "boots_worn", "weight": 15 },
-        { "itemBaseId": "ring_copper", "weight": 15 }
+        {
+          "itemBaseId": "sword_rusty",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_plank",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_leather",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "vest_leather",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gloves_cloth",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "pants_leather",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_worn",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_rope",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_copper",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_bone",
+          "weight": 10
+        }
       ],
-      "extras": [{ "itemId": "potion_hp_small", "chancePpm": 1000000, "qty": [2, 4] }]
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 1000000,
+          "qty": [2, 4]
+        },
+        {
+          "itemId": "refine_charm",
+          "chancePpm": 150000,
+          "qty": [1, 1]
+        }
+      ]
+    },
+    {
+      "id": "loot_pale_woods",
+      "equipmentDropChancePpm": 120000,
+      "bases": [
+        {
+          "itemBaseId": "sword_rusty",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_plank",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_leather",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "vest_leather",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gloves_cloth",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "pants_leather",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_worn",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_rope",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_copper",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_bone",
+          "weight": 10
+        }
+      ],
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 50000,
+          "qty": [1, 2]
+        }
+      ]
+    },
+    {
+      "id": "loot_spider_matriarch",
+      "equipmentDropChancePpm": 1000000,
+      "rolls": 2,
+      "minRarity": "magic",
+      "bases": [
+        {
+          "itemBaseId": "sword_rusty",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_plank",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_leather",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "vest_leather",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gloves_cloth",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "pants_leather",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_worn",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_rope",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_copper",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_bone",
+          "weight": 10
+        }
+      ],
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 1000000,
+          "qty": [3, 6]
+        },
+        {
+          "itemId": "refine_charm",
+          "chancePpm": 150000,
+          "qty": [1, 1]
+        }
+      ]
+    },
+    {
+      "id": "loot_cracked_crypt",
+      "equipmentDropChancePpm": 120000,
+      "bases": [
+        {
+          "itemBaseId": "sword_rusty",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "iron_blade",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_plank",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "shield_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "helm_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "vest_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "chain_shirt",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gloves_cloth",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "gauntlets_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "pants_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "greaves_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_worn",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "boots_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_rope",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "belt_leather",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_copper",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ring_silver",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_bone",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "amulet_bronze",
+          "weight": 10
+        }
+      ],
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 50000,
+          "qty": [1, 2]
+        }
+      ]
+    },
+    {
+      "id": "loot_lord_vharok",
+      "equipmentDropChancePpm": 1000000,
+      "rolls": 3,
+      "minRarity": "rare",
+      "bases": [
+        {
+          "itemBaseId": "sword_rusty",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "iron_blade",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_plank",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "shield_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "helm_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "vest_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "chain_shirt",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gloves_cloth",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "gauntlets_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "pants_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "greaves_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_worn",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "boots_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_rope",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "belt_leather",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_copper",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ring_silver",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_bone",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "amulet_bronze",
+          "weight": 10
+        }
+      ],
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 1000000,
+          "qty": [3, 6]
+        },
+        {
+          "itemId": "refine_charm",
+          "chancePpm": 500000,
+          "qty": [1, 1]
+        }
+      ]
+    },
+    {
+      "id": "loot_murky_bog",
+      "equipmentDropChancePpm": 120000,
+      "bases": [
+        {
+          "itemBaseId": "sword_rusty",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "iron_blade",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_plank",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "shield_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "helm_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "vest_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "chain_shirt",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gloves_cloth",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "gauntlets_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "pants_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "greaves_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_worn",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "boots_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_rope",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "belt_leather",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_copper",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ring_silver",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_bone",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "amulet_bronze",
+          "weight": 10
+        }
+      ],
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 50000,
+          "qty": [1, 2]
+        }
+      ]
+    },
+    {
+      "id": "loot_mire_mother",
+      "equipmentDropChancePpm": 1000000,
+      "rolls": 2,
+      "minRarity": "magic",
+      "bases": [
+        {
+          "itemBaseId": "sword_rusty",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "iron_blade",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_plank",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "shield_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "helm_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "vest_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "chain_shirt",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gloves_cloth",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "gauntlets_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "pants_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "greaves_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_worn",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "boots_iron",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_rope",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "belt_leather",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_copper",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ring_silver",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_bone",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "amulet_bronze",
+          "weight": 10
+        }
+      ],
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 1000000,
+          "qty": [3, 6]
+        },
+        {
+          "itemId": "refine_charm",
+          "chancePpm": 150000,
+          "qty": [1, 1]
+        }
+      ]
+    },
+    {
+      "id": "loot_drowned_village",
+      "equipmentDropChancePpm": 120000,
+      "bases": [
+        {
+          "itemBaseId": "iron_blade",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "blackened_sword",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "shield_tower",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "helm_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "chain_shirt",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "plate_cuirass",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gauntlets_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "gauntlets_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "greaves_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "greaves_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "boots_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "belt_studded",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_silver",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ring_gold",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_bronze",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "amulet_jade",
+          "weight": 10
+        }
+      ],
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 50000,
+          "qty": [1, 2]
+        }
+      ]
+    },
+    {
+      "id": "loot_old_drowned",
+      "equipmentDropChancePpm": 1000000,
+      "rolls": 2,
+      "minRarity": "magic",
+      "bases": [
+        {
+          "itemBaseId": "iron_blade",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "blackened_sword",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "shield_tower",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "helm_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "chain_shirt",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "plate_cuirass",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gauntlets_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "gauntlets_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "greaves_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "greaves_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "boots_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "belt_studded",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_silver",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ring_gold",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_bronze",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "amulet_jade",
+          "weight": 10
+        }
+      ],
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 1000000,
+          "qty": [3, 6]
+        },
+        {
+          "itemId": "refine_charm",
+          "chancePpm": 150000,
+          "qty": [1, 1]
+        }
+      ]
+    },
+    {
+      "id": "loot_rotting_heart",
+      "equipmentDropChancePpm": 120000,
+      "bases": [
+        {
+          "itemBaseId": "iron_blade",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "blackened_sword",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "shield_tower",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "helm_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "chain_shirt",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "plate_cuirass",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gauntlets_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "gauntlets_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "greaves_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "greaves_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "boots_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "belt_studded",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_silver",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ring_gold",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_bronze",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "amulet_jade",
+          "weight": 10
+        }
+      ],
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 50000,
+          "qty": [1, 2]
+        }
+      ]
+    },
+    {
+      "id": "loot_morvel_root",
+      "equipmentDropChancePpm": 1000000,
+      "rolls": 3,
+      "minRarity": "rare",
+      "bases": [
+        {
+          "itemBaseId": "iron_blade",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "blackened_sword",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "shield_tower",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "helm_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "chain_shirt",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "plate_cuirass",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gauntlets_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "gauntlets_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "greaves_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "greaves_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "boots_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "belt_studded",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_silver",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ring_gold",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_bronze",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "amulet_jade",
+          "weight": 10
+        }
+      ],
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 1000000,
+          "qty": [3, 6]
+        },
+        {
+          "itemId": "refine_charm",
+          "chancePpm": 500000,
+          "qty": [1, 1]
+        }
+      ]
+    },
+    {
+      "id": "loot_ash_gates",
+      "equipmentDropChancePpm": 120000,
+      "bases": [
+        {
+          "itemBaseId": "iron_blade",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "blackened_sword",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "shield_tower",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "helm_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "chain_shirt",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "plate_cuirass",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gauntlets_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "gauntlets_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "greaves_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "greaves_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "boots_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "belt_studded",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_silver",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ring_gold",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_bronze",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "amulet_jade",
+          "weight": 10
+        }
+      ],
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 50000,
+          "qty": [1, 2]
+        }
+      ]
+    },
+    {
+      "id": "loot_ashen_captain",
+      "equipmentDropChancePpm": 1000000,
+      "rolls": 2,
+      "minRarity": "magic",
+      "bases": [
+        {
+          "itemBaseId": "iron_blade",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "blackened_sword",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "shield_tower",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "helm_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "chain_shirt",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "plate_cuirass",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gauntlets_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "gauntlets_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "greaves_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "greaves_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_iron",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "boots_steel",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_leather",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "belt_studded",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_silver",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ring_gold",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_bronze",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "amulet_jade",
+          "weight": 10
+        }
+      ],
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 1000000,
+          "qty": [3, 6]
+        },
+        {
+          "itemId": "refine_charm",
+          "chancePpm": 150000,
+          "qty": [1, 1]
+        }
+      ]
+    },
+    {
+      "id": "loot_molten_halls",
+      "equipmentDropChancePpm": 120000,
+      "bases": [
+        {
+          "itemBaseId": "blackened_sword",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "abyssal_blade",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_tower",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "shield_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_steel",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "helm_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "plate_cuirass",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ashen_cuirass",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gauntlets_steel",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "gauntlets_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "greaves_steel",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "greaves_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_steel",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "boots_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_studded",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "belt_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_gold",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ring_obsidian",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_jade",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "amulet_ember",
+          "weight": 10
+        }
+      ],
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 50000,
+          "qty": [1, 2]
+        }
+      ]
+    },
+    {
+      "id": "loot_ember_priestess",
+      "equipmentDropChancePpm": 1000000,
+      "rolls": 2,
+      "minRarity": "magic",
+      "bases": [
+        {
+          "itemBaseId": "blackened_sword",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "abyssal_blade",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_tower",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "shield_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_steel",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "helm_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "plate_cuirass",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ashen_cuirass",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gauntlets_steel",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "gauntlets_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "greaves_steel",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "greaves_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_steel",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "boots_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_studded",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "belt_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_gold",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ring_obsidian",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_jade",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "amulet_ember",
+          "weight": 10
+        }
+      ],
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 1000000,
+          "qty": [3, 6]
+        },
+        {
+          "itemId": "refine_charm",
+          "chancePpm": 150000,
+          "qty": [1, 1]
+        }
+      ]
+    },
+    {
+      "id": "loot_burning_throne",
+      "equipmentDropChancePpm": 120000,
+      "bases": [
+        {
+          "itemBaseId": "blackened_sword",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "abyssal_blade",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_tower",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "shield_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_steel",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "helm_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "plate_cuirass",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ashen_cuirass",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gauntlets_steel",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "gauntlets_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "greaves_steel",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "greaves_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_steel",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "boots_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_studded",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "belt_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_gold",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ring_obsidian",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_jade",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "amulet_ember",
+          "weight": 10
+        }
+      ],
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 50000,
+          "qty": [1, 2]
+        }
+      ]
+    },
+    {
+      "id": "loot_charred_king",
+      "equipmentDropChancePpm": 1000000,
+      "rolls": 3,
+      "minRarity": "rare",
+      "bases": [
+        {
+          "itemBaseId": "blackened_sword",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "abyssal_blade",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "shield_tower",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "shield_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "helm_steel",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "helm_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "plate_cuirass",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ashen_cuirass",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "gauntlets_steel",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "gauntlets_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "greaves_steel",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "greaves_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "boots_steel",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "boots_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "belt_studded",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "belt_ashen",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "ring_gold",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "ring_obsidian",
+          "weight": 10
+        },
+        {
+          "itemBaseId": "amulet_jade",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "amulet_ember",
+          "weight": 10
+        }
+      ],
+      "extras": [
+        {
+          "itemId": "potion_hp_small",
+          "chancePpm": 1000000,
+          "qty": [3, 6]
+        },
+        {
+          "itemId": "refine_charm",
+          "chancePpm": 500000,
+          "qty": [1, 1]
+        }
+      ]
     }
   ]
 }
