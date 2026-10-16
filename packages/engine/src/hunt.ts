@@ -343,6 +343,51 @@ function pickSkill(s: GameState, content: ContentDb, t: number) {
   return null;
 }
 
+/** Sum of one numeric parameter over the hero's unique effects of a kind. */
+function uniqueSum(stats: HeroStats, kind: 'thorns' | 'calm_regen'): number {
+  let n = 0;
+  for (const u of stats.uniques) {
+    if (u.kind === 'thorns' && kind === 'thorns') n += u.pct;
+    if (u.kind === 'calm_regen' && kind === 'calm_regen') n += u.multiplier;
+  }
+  return n;
+}
+
+function skillBonus(stats: HeroStats, skillId: string) {
+  let damagePct = 0;
+  let extraTargets = 0;
+  for (const u of stats.uniques) {
+    if (u.kind === 'skill_bonus' && u.skillId === skillId) {
+      damagePct += u.damagePct;
+      extraTargets += u.extraTargets;
+    }
+  }
+  return damagePct > 0 || extraTargets > 0 ? { damagePct, extraTargets } : null;
+}
+
+/** Extra damage % of one hit from unique effects (execute, first strike, last stand). */
+function uniqueHitPct(
+  stats: HeroStats,
+  heroHp: number,
+  target: MonsterInstance,
+  group: MonsterInstance[],
+): number {
+  let pct = 0;
+  for (const u of stats.uniques) {
+    if (u.kind === 'execute' && target.hp * 100 < target.maxHp * u.thresholdPct) pct += u.damagePct;
+    if (u.kind === 'first_strike' && group.every((m) => m.hp === m.maxHp)) pct += u.damagePct;
+    if (u.kind === 'last_stand' && heroHp * 100 < stats.maxHp * u.thresholdPct) pct += u.damagePct;
+  }
+  return pct;
+}
+
+/** Life healed by a critical hit (unique effect). */
+function critHeal(stats: HeroStats): number {
+  let pct = 0;
+  for (const u of stats.uniques) if (u.kind === 'crit_heal') pct += u.pctOfMaxHp;
+  return Math.floor((stats.maxHp * pct) / 100);
+}
+
 /** Extra damage % from buffs active at tick t. */
 function buffDamagePct(s: GameState, content: ContentDb, t: number): number {
   let pct = 0;
@@ -421,7 +466,14 @@ function killMonster(
       out?.push({ type: 'MaterialsGained', tick: t, materialId, qty });
     }
   }
-  const card = rollCard(s, content, m.monsterId, m.elite, (ppm) => rngChance(s.rng, ppm));
+  const card = rollCard(
+    s,
+    content,
+    m.monsterId,
+    m.elite,
+    (ppm) => rngChance(s.rng, ppm),
+    stats.cardLuckPct,
+  );
   if (card) {
     if (o.counters) o.counters.cards[card.cardId] = (o.counters.cards[card.cardId] ?? 0) + 1;
     out?.push({ type: 'CardDropped', tick: t, fromUid: m.uid, ...card });
@@ -488,7 +540,9 @@ function heroStrike(
       damageMax: stats.damageMax,
       critChancePpm: stats.critChancePpm,
       critDamagePct: stats.critDamagePct,
-      damagePct: Math.floor((skillPct * (100 + undead)) / 100),
+      damagePct: Math.floor(
+        (skillPct * (100 + undead) * (100 + uniqueHitPct(stats, hero.hp, m, group))) / 10_000,
+      ),
     };
     const armorPct = 100 + affixTotal(content, m, 'defensePct');
     const hit = rollHit(s.rng, atk, {
@@ -499,6 +553,7 @@ function heroStrike(
     m.hp -= hit.damage;
     leech += Math.floor((dealt * stats.lifeLeechPct) / 100);
     hits.push({ uid: m.uid, damage: hit.damage, crit: hit.crit, miss: hit.miss });
+    if (hit.crit) leech += critHeal(stats);
   }
   if (leech > 0) hero.hp = Math.min(stats.maxHp, hero.hp + leech);
   c.nextAttackTick = t + stats.attackIntervalTicks;
@@ -532,7 +587,8 @@ function fight(
 
   if (t >= c.nextAttackTick) {
     const picked = pickSkill(s, content, t);
-    const maxTargets = picked ? picked.skill.maxTargets : 1;
+    const bonus = picked ? skillBonus(stats, picked.skill.id) : null;
+    const maxTargets = (picked ? picked.skill.maxTargets : 1) + (bonus?.extraTargets ?? 0);
     let skillPct = 100;
     if (picked) {
       hero.mana -= picked.cost;
@@ -540,6 +596,7 @@ function fight(
         t + Math.round(picked.skill.cooldownSeconds * TICKS_PER_SECOND);
       const base = picked.skill.damagePct + picked.skill.damagePctPerLevel * (picked.level - 1);
       skillPct = Math.floor((base * (1000 + stats.skillDamagePermille)) / 1000);
+      if (bonus) skillPct = Math.floor((skillPct * (100 + bonus.damagePct)) / 100);
     }
     const buff = picked?.skill.kind === 'active' ? picked.skill.buff : undefined;
     if (picked && buff) {
@@ -572,6 +629,11 @@ function fight(
     hero.hp -= hit.damage;
     const leech = m.affixes.length > 0 ? affixTotal(content, m, 'leechPct') : 0;
     if (leech > 0) m.hp = Math.min(m.maxHp, m.hp + Math.floor((hit.damage * leech) / 100));
+    const thorns = uniqueSum(stats, 'thorns');
+    if (thorns > 0 && hit.damage > 0 && m.hp > 0) {
+      m.hp -= Math.max(1, Math.floor((hit.damage * thorns) / 100));
+      if (m.hp <= 0) killMonster(s, content, stats, m, t, out, o);
+    }
     out?.push({ type: 'MonsterAttack', tick: t, uid: m.uid, damage: hit.damage, miss: hit.miss });
     if (hero.hp <= 0) {
       die(s, t, out, o);
@@ -595,8 +657,10 @@ function fight(
 
 function regenerate(s: GameState, stats: HeroStats) {
   const hero = s.hero;
-  hero.hp = Math.min(stats.maxHp, hero.hp + stats.hpRegenPerSecond);
-  hero.mana = Math.min(stats.maxMana, hero.mana + stats.manaRegenPerSecond);
+  // "Coroa do Vigia": regeneration multiplied outside fights.
+  const calm = s.activity.kind === 'fighting' ? 1 : Math.max(1, uniqueSum(stats, 'calm_regen'));
+  hero.hp = Math.min(stats.maxHp, hero.hp + stats.hpRegenPerSecond * calm);
+  hero.mana = Math.min(stats.maxMana, hero.mana + stats.manaRegenPerSecond * calm);
 }
 
 /** Advances the simulation by one tick. */

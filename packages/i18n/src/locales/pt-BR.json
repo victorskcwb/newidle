@@ -519,5 +519,22 @@
   "smith.reforged": "Novo afixo: {affix}",
   "smith.reforgeBlock.no_affix": "Escolha um afixo.",
   "smith.reforgeBlock.gold": "Falta ouro.",
-  "smith.reforgeBlock.materials": "Faltam materiais."
+  "smith.reforgeBlock.materials": "Faltam materiais.",
+  "unique.vortex_edge": "Fio do Vórtice",
+  "unique.vortex_edge.desc": "Golpe giratório causa +{damagePct}% de dano e atinge +{extraTargets} alvos.",
+  "unique.executioner": "Cutelo do Carrasco",
+  "unique.executioner.desc": "+{damagePct}% de dano contra inimigos abaixo de {thresholdPct}% de vida.",
+  "unique.thornmail": "Couraça de Espinhos",
+  "unique.thornmail.desc": "Devolve {pct}% do dano recebido a quem atacou.",
+  "unique.blood_amulet": "Amuleto Sanguíneo",
+  "unique.blood_amulet.desc": "Golpes críticos curam {pctOfMaxHp}% da vida máxima.",
+  "unique.first_drop": "Manoplas da Primeira Gota",
+  "unique.first_drop.desc": "O primeiro golpe em cada grupo causa +{damagePct}% de dano.",
+  "unique.last_breath": "Cinto do Último Fôlego",
+  "unique.last_breath.desc": "+{damagePct}% de dano com menos de {thresholdPct}% de vida.",
+  "unique.dark_fortune": "Anel da Fortuna Sombria",
+  "unique.dark_fortune.desc": "+{pct}% de chance de cartas.",
+  "unique.watcher_crown": "Coroa do Vigia",
+  "unique.watcher_crown.desc": "Fora de combate, a regeneração é {multiplier}× maior.",
+  "item.unique": "Efeito único"
 }

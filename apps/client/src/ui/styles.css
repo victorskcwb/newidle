@@ -1001,3 +1001,8 @@ input[type='range'] {
   display: grid;
   gap: 2px;
 }
+
+.item-lines .unique {
+  color: #ff8c1a;
+  font-weight: 600;
+}

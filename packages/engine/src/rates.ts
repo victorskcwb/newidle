@@ -213,7 +213,8 @@ export function computeRates(
     const card = cardId ? content.cards.get(cardId) : undefined;
     if (card) {
       cardsPerHour[card.id] =
-        (cardsPerHour[card.id] ?? 0) + (killsPerHour * cardChancePpm(card, elite, false)) / PPM;
+        (cardsPerHour[card.id] ?? 0) +
+        (killsPerHour * cardChancePpm(card, elite, false, stats.cardLuckPct)) / PPM;
     }
     categories.push({ monsterId, elite, killsPerHour });
     const loot = categoryLoot(content, monsterId, elite, stats.magicFindPct);

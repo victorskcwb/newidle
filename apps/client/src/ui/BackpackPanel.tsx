@@ -64,6 +64,11 @@ export function ItemCard({
         {lines.base.map((l) => (
           <li key={l}>{l}</li>
         ))}
+        {lines.unique && (
+          <li className="unique" data-testid="unique-effect">
+            {t('item.unique')}: {lines.unique}
+          </li>
+        )}
         {lines.affixes.map((l) => (
           <li key={l} className="affix" data-testid="affix">
             {l}

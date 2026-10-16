@@ -14,6 +14,7 @@ import {
   type Region,
   type ResetUpgrade,
   type MonsterAffix,
+  type UniqueItem,
   type Skill,
 } from './schema.ts';
 
@@ -31,6 +32,7 @@ export interface ContentDb {
   readonly hunts: ReadonlyMap<string, Hunt>;
   readonly resetUpgrades: ReadonlyMap<string, ResetUpgrade>;
   readonly monsterAffixes: ReadonlyMap<string, MonsterAffix>;
+  readonly uniqueItems: ReadonlyMap<string, UniqueItem>;
   /** Material yielded by salvaging each rarity. */
   readonly salvageMaterial: Readonly<Record<Rarity, Material>>;
 }
@@ -69,6 +71,7 @@ export function mergeContentFiles(files: readonly Partial<ContentFile>[]): Conte
     hunts: [],
     resetUpgrades: [],
     monsterAffixes: [],
+    uniqueItems: [],
   };
   for (const file of files) {
     for (const k of Object.keys(merged) as (keyof ContentFile)[]) {
@@ -103,6 +106,7 @@ export function buildContentDb(raw: unknown): ContentDb {
     hunts: indexById('hunt', c.hunts, problems),
     resetUpgrades: indexById('resetUpgrade', c.resetUpgrades, problems),
     monsterAffixes: indexById('monsterAffix', c.monsterAffixes, problems),
+    uniqueItems: indexById('uniqueItem', c.uniqueItems, problems),
   };
 
   const ref = (ok: boolean, message: string) => {
@@ -150,6 +154,11 @@ export function buildContentDb(raw: unknown): ContentDb {
       c.monsters.some((m) => m.cardId === card.id),
       `card ${card.id}: no monster drops it`,
     );
+  }
+  for (const u of c.uniqueItems) {
+    if (u.effect.kind === 'skill_bonus') {
+      ref(db.skills.has(u.effect.skillId), `unique ${u.id}: unknown skill ${u.effect.skillId}`);
+    }
   }
   for (const sk of c.skills) {
     for (const r of sk.requires) {
@@ -207,5 +216,6 @@ export function translationKeys(db: ContentDb): string[] {
   for (const h of db.hunts.values()) keys.push(h.nameKey);
   for (const u of db.resetUpgrades.values()) keys.push(u.nameKey, u.descKey);
   for (const a of db.monsterAffixes.values()) keys.push(a.nameKey);
+  for (const u of db.uniqueItems.values()) keys.push(u.nameKey, u.descKey);
   return keys;
 }

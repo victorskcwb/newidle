@@ -17,9 +17,12 @@ export function pityThreshold(card: Card): number {
  * Chance (ppm) of a card from one kill: the card's base chance, ×4 for elites (1/2,000 →
  * 1/500), doubled while the pity rule is active. Bosses use their own card's chance.
  */
-export function cardChancePpm(card: Card, elite: boolean, pity: boolean): number {
+export function cardChancePpm(card: Card, elite: boolean, pity: boolean, luckPct = 0): number {
   const pct = elite ? CARD_ELITE_KILL_PCT : 100;
-  return Math.min(PPM, Math.floor((card.chancePpm * pct * (pity ? 2 : 1)) / 100));
+  return Math.min(
+    PPM,
+    Math.floor((card.chancePpm * pct * (pity ? 2 : 1) * (100 + luckPct)) / 10_000),
+  );
 }
 
 /** Monsters of a region (spawns and bosses of its hunts). */
@@ -77,6 +80,7 @@ export function rollCard(
   monsterId: string,
   elite: boolean,
   draw: (ppm: number) => boolean,
+  luckPct = 0,
 ): CardRoll | null {
   const cardId = content.monsters.get(monsterId)?.cardId;
   const card = cardId ? content.cards.get(cardId) : undefined;
@@ -84,7 +88,7 @@ export function rollCard(
   const copies = s.hero.cards[card.id] ?? 0;
   if (copies >= card.maxCopies) return null;
   const since = s.cardPity[card.id] ?? 0;
-  if (draw(cardChancePpm(card, elite, since >= pityThreshold(card)))) {
+  if (draw(cardChancePpm(card, elite, since >= pityThreshold(card), luckPct))) {
     s.hero.cards[card.id] = copies + 1;
     s.cardPity[card.id] = 0;
     return { cardId: card.id, copies: copies + 1 };

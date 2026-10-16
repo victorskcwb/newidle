@@ -88,6 +88,7 @@ function rollOfflineCards(
   elite: boolean,
   kills: number,
   report: OfflineReport,
+  luckPct: number,
 ) {
   const cardId = content.monsters.get(monsterId)?.cardId;
   const card = cardId ? content.cards.get(cardId) : undefined;
@@ -97,8 +98,8 @@ function rollOfflineCards(
   const since = s.cardPity[card.id] ?? 0;
   const beforePity = Math.max(0, Math.min(kills, pityThreshold(card) - since));
   const hits =
-    rngBinomial(s.rng, beforePity, cardChancePpm(card, elite, false)) +
-    rngBinomial(s.rng, kills - beforePity, cardChancePpm(card, elite, true));
+    rngBinomial(s.rng, beforePity, cardChancePpm(card, elite, false, luckPct)) +
+    rngBinomial(s.rng, kills - beforePity, cardChancePpm(card, elite, true, luckPct));
   const gained = Math.min(hits, card.maxCopies - copies);
   if (gained > 0) {
     s.hero.cards[card.id] = copies + gained;
@@ -268,7 +269,7 @@ export function resolveOffline(
       salvage(r, leftover);
     }
     // Cards: binomial over the kills, with the pity rule from the kill where it starts.
-    rollOfflineCards(s, content, c.monsterId, c.elite, c.n, report);
+    rollOfflineCards(s, content, c.monsterId, c.elite, c.n, report, stats.cardLuckPct);
     // 5. Extras (potions dropped by monsters).
     for (const e of table.extras) {
       const hits = rngBinomial(rng, c.n, e.chancePpm);

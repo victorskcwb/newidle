@@ -1,0 +1,104 @@
+{
+  "uniqueItems": [
+    {
+      "id": "vortex_edge",
+      "nameKey": "unique.vortex_edge",
+      "descKey": "unique.vortex_edge.desc",
+      "slot": "weapon",
+      "minIlvl": 1,
+      "weight": 100,
+      "effect": {
+        "kind": "skill_bonus",
+        "skillId": "whirlwind",
+        "damagePct": 60,
+        "extraTargets": 2
+      }
+    },
+    {
+      "id": "executioner",
+      "nameKey": "unique.executioner",
+      "descKey": "unique.executioner.desc",
+      "slot": "weapon",
+      "minIlvl": 20,
+      "weight": 100,
+      "effect": {
+        "kind": "execute",
+        "thresholdPct": 25,
+        "damagePct": 100
+      }
+    },
+    {
+      "id": "thornmail",
+      "nameKey": "unique.thornmail",
+      "descKey": "unique.thornmail.desc",
+      "slot": "chest",
+      "minIlvl": 1,
+      "weight": 100,
+      "effect": {
+        "kind": "thorns",
+        "pct": 30
+      }
+    },
+    {
+      "id": "blood_amulet",
+      "nameKey": "unique.blood_amulet",
+      "descKey": "unique.blood_amulet.desc",
+      "slot": "amulet",
+      "minIlvl": 1,
+      "weight": 100,
+      "effect": {
+        "kind": "crit_heal",
+        "pctOfMaxHp": 3
+      }
+    },
+    {
+      "id": "first_drop",
+      "nameKey": "unique.first_drop",
+      "descKey": "unique.first_drop.desc",
+      "slot": "gloves",
+      "minIlvl": 1,
+      "weight": 100,
+      "effect": {
+        "kind": "first_strike",
+        "damagePct": 150
+      }
+    },
+    {
+      "id": "last_breath",
+      "nameKey": "unique.last_breath",
+      "descKey": "unique.last_breath.desc",
+      "slot": "belt",
+      "minIlvl": 1,
+      "weight": 100,
+      "effect": {
+        "kind": "last_stand",
+        "thresholdPct": 30,
+        "damagePct": 50
+      }
+    },
+    {
+      "id": "dark_fortune",
+      "nameKey": "unique.dark_fortune",
+      "descKey": "unique.dark_fortune.desc",
+      "slot": "ring",
+      "minIlvl": 1,
+      "weight": 100,
+      "effect": {
+        "kind": "card_luck",
+        "pct": 50
+      }
+    },
+    {
+      "id": "watcher_crown",
+      "nameKey": "unique.watcher_crown",
+      "descKey": "unique.watcher_crown.desc",
+      "slot": "helm",
+      "minIlvl": 1,
+      "weight": 100,
+      "effect": {
+        "kind": "calm_regen",
+        "multiplier": 3
+      }
+    }
+  ]
+}

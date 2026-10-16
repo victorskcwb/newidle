@@ -11,7 +11,8 @@ import { t } from '../i18n.ts';
 
 export function itemName(content: ContentDb, item: ItemInstance): string {
   const base = content.itemBases.get(item.baseId);
-  const name = base ? t(base.nameKey) : item.baseId;
+  const unique = item.uniqueId ? content.uniqueItems.get(item.uniqueId) : undefined;
+  const name = unique ? t(unique.nameKey) : base ? t(base.nameKey) : item.baseId;
   return item.refine > 0 ? `${name} ${t('item.refine', { n: item.refine })}` : name;
 }
 
@@ -19,7 +20,7 @@ export function itemName(content: ContentDb, item: ItemInstance): string {
 export function itemLines(
   content: ContentDb,
   item: ItemInstance,
-): { base: string[]; affixes: string[] } {
+): { base: string[]; affixes: string[]; unique: string | null } {
   const s = itemStats(item, content);
   const base: string[] = [];
   if (s.damageMin !== undefined && s.damageMax !== undefined) {
@@ -36,7 +37,18 @@ export function itemLines(
     const affix = content.affixes.get(a.affixId);
     return affix ? t(affix.textKey, { value: a.value }) : a.affixId;
   });
-  return { base, affixes };
+  return { base, affixes, unique: uniqueText(content, item) };
+}
+
+/** The unique legendary effect of an item, as text (null for regular items). */
+export function uniqueText(content: ContentDb, item: ItemInstance): string | null {
+  const unique = item.uniqueId ? content.uniqueItems.get(item.uniqueId) : undefined;
+  if (!unique) return null;
+  // The effect's numbers (damagePct, thresholdPct…) fill the description's placeholders.
+  const values = Object.fromEntries(
+    Object.entries(unique.effect).filter((e): e is [string, number] => typeof e[1] === 'number'),
+  );
+  return t(unique.descKey, values);
 }
 
 export function requirementText(content: ContentDb, hero: Hero, item: ItemInstance): string | null {

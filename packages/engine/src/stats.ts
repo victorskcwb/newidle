@@ -1,4 +1,10 @@
-import { EQUIPMENT_SLOTS, type ContentDb, type EquipmentSlot, type Stat } from '@abismo/content';
+import {
+  EQUIPMENT_SLOTS,
+  type ContentDb,
+  type EquipmentSlot,
+  type Stat,
+  type UniqueEffect,
+} from '@abismo/content';
 import {
   ACCURACY_PER_LEVEL,
   ACCURACY_PERMILLE_PER_DEXTERITY,
@@ -119,6 +125,10 @@ export interface HeroStats {
   magicFindPct: number;
   damageVsUndeadPct: number;
   inactiveSlots: EquipmentSlot[];
+  /** Unique legendary effects of active equipped items. */
+  uniques: UniqueEffect[];
+  /** Extra card chance in percent (unique effect). */
+  cardLuckPct: number;
 }
 
 const cache = new WeakMap<Hero, { key: string; stats: HeroStats }>();
@@ -129,7 +139,7 @@ function statsKey(hero: Hero): string {
     const it = hero.equipment[s];
     // Affixes are part of the key because reforging changes them in place.
     return it
-      ? `${it.uid}.${it.refine}.${it.affixes.map((a) => a.affixId + a.value).join('.')}`
+      ? `${it.uid}.${it.refine}.${it.uniqueId ?? ''}.${it.affixes.map((a) => a.affixId + a.value).join('.')}`
       : '-';
   }).join(',');
   const a = hero.allocated;
@@ -162,6 +172,7 @@ export function computeHeroStats(hero: Hero, content: ContentDb): HeroStats {
   };
   let weapon: ItemStats | null = null;
   let armorDefense = 0;
+  const uniques: UniqueEffect[] = [];
   const inactiveSlots: EquipmentSlot[] = [];
   for (const slot of EQUIPMENT_SLOTS) {
     const item = hero.equipment[slot];
@@ -174,6 +185,8 @@ export function computeHeroStats(hero: Hero, content: ContentDb): HeroStats {
     add(s.mods);
     if (slot === 'weapon') weapon = s;
     armorDefense += s.defense ?? 0;
+    const unique = item.uniqueId ? content.uniqueItems.get(item.uniqueId) : undefined;
+    if (unique) uniques.push(unique.effect);
   }
   // Passive skills of the tree.
   for (const [id, level] of Object.entries(hero.skillLevels)) {
@@ -241,6 +254,8 @@ export function computeHeroStats(hero: Hero, content: ContentDb): HeroStats {
     goldPct: m('goldPct'),
     magicFindPct: m('magicFindPct'),
     damageVsUndeadPct: m('damageVsUndeadPct'),
+    uniques,
+    cardLuckPct: uniques.reduce((n, u) => n + (u.kind === 'card_luck' ? u.pct : 0), 0),
     inactiveSlots,
   };
 }

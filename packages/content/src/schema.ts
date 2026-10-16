@@ -262,6 +262,42 @@ export const monsterAffixSchema = z.strictObject({
 });
 export type MonsterAffix = z.infer<typeof monsterAffixSchema>;
 
+/**
+ * Unique legendary effects (section 7.3): a legendary of a slot rolls one of these on top of
+ * its 4 affixes. Each kind is implemented in the engine; content only sets its numbers.
+ */
+export const uniqueEffectSchema = z.discriminatedUnion('kind', [
+  z.strictObject({
+    kind: z.literal('skill_bonus'),
+    skillId: id,
+    damagePct: nonNegInt,
+    extraTargets: nonNegInt,
+  }),
+  z.strictObject({ kind: z.literal('execute'), thresholdPct: posInt.max(99), damagePct: posInt }),
+  z.strictObject({ kind: z.literal('thorns'), pct: posInt.max(200) }),
+  z.strictObject({ kind: z.literal('crit_heal'), pctOfMaxHp: posInt.max(50) }),
+  z.strictObject({ kind: z.literal('first_strike'), damagePct: posInt }),
+  z.strictObject({
+    kind: z.literal('last_stand'),
+    thresholdPct: posInt.max(99),
+    damagePct: posInt,
+  }),
+  z.strictObject({ kind: z.literal('card_luck'), pct: posInt }),
+  z.strictObject({ kind: z.literal('calm_regen'), multiplier: posInt.max(10) }),
+]);
+export type UniqueEffect = z.infer<typeof uniqueEffectSchema>;
+
+export const uniqueItemSchema = z.strictObject({
+  id,
+  nameKey: key,
+  descKey: key,
+  slot: slotSchema,
+  minIlvl: posInt,
+  weight: posInt,
+  effect: uniqueEffectSchema,
+});
+export type UniqueItem = z.infer<typeof uniqueItemSchema>;
+
 export const cardSchema = z.strictObject({
   id,
   nameKey: key,
@@ -344,5 +380,6 @@ export const contentSchema = z.strictObject({
   hunts: z.array(huntSchema),
   resetUpgrades: z.array(resetUpgradeSchema),
   monsterAffixes: z.array(monsterAffixSchema),
+  uniqueItems: z.array(uniqueItemSchema),
 });
 export type ContentFile = z.infer<typeof contentSchema>;

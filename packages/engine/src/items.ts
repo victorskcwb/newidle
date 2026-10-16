@@ -149,7 +149,7 @@ export function generateItem(
     typeof rarity === 'string'
       ? rarity
       : rollRarity(rng, rarityTable(rarity.magicFindPct, table.minRarity));
-  return {
+  const item: ItemInstance = {
     uid,
     baseId: base.id,
     ilvl,
@@ -157,6 +157,14 @@ export function generateItem(
     affixes: rollAffixes(rng, content, base, ilvl, finalRarity),
     refine: 0,
   };
+  if (finalRarity === 'legendary') {
+    // A legendary of a slot with unique effects gets one of them (one more RNG draw).
+    const uniques = [...content.uniqueItems.values()].filter(
+      (u) => u.slot === base.slot && u.minIlvl <= ilvl,
+    );
+    if (uniques.length > 0) item.uniqueId = pickWeighted(rng, uniques, (u) => u.weight).id;
+  }
+  return item;
 }
 
 /** True when the loot filter keeps the item; false means it is salvaged on the spot. */

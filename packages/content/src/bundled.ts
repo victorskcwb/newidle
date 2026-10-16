@@ -4,6 +4,7 @@ import items from '../data/items.json' with { type: 'json' };
 import monsters from '../data/monsters.json' with { type: 'json' };
 import resets from '../data/resets.json' with { type: 'json' };
 import skills from '../data/skills.json' with { type: 'json' };
+import uniques from '../data/uniques.json' with { type: 'json' };
 import world from '../data/world.json' with { type: 'json' };
 import { buildContentDb, mergeContentFiles, type ContentDb } from './db.ts';
 import type { ContentFile } from './schema.ts';
@@ -17,6 +18,7 @@ export const CONTENT_FILES = {
   world,
   resets,
   elites,
+  uniques,
 } as unknown as Record<string, Partial<ContentFile>>;
 
 let cached: ContentDb | undefined;

@@ -21,6 +21,8 @@ export interface ItemInstance {
   affixes: RolledAffix[];
   /** Refine level, 0..15. */
   refine: number;
+  /** Unique legendary effect, if any (content uniqueItems id). */
+  uniqueId?: string;
 }
 
 /** Progress across reset cycles (section 8). */
@@ -138,7 +140,7 @@ export interface Lifetime {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 4;
+  version: 5;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;

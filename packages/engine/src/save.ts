@@ -8,7 +8,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 export interface SaveFile {
   version: number;
@@ -37,6 +37,7 @@ const item: z.ZodType<ItemInstance> = z.strictObject({
   rarity,
   affixes: z.array(z.strictObject({ affixId: id, tier: nonNeg, value: int })),
   refine: int.min(0).max(15),
+  uniqueId: id.optional(),
 });
 
 const monster = z.strictObject({
@@ -63,7 +64,7 @@ const attributes = z.strictObject({
 });
 
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(4),
+  version: z.literal(5),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -196,6 +197,8 @@ export const SAVE_MIGRATIONS: Record<
       : state.activity;
     return { ...raw, state: { ...state, version: 4, activity } };
   },
+  /** v4 → v5: unique legendary effects (optional on items; nothing to convert). */
+  4: (raw) => ({ ...raw, state: { ...(raw.state as object), version: 5 } }),
 };
 
 export function encodeSave(state: GameState, savedAt: number): string {
@@ -229,6 +232,8 @@ export function unknownContentRefs(state: GameState, content: ContentDb): string
     for (const a of it.affixes) {
       if (!content.affixes.has(a.affixId)) problems.push(`affix ${a.affixId}`);
     }
+    if (it.uniqueId && !content.uniqueItems.has(it.uniqueId))
+      problems.push(`unique ${it.uniqueId}`);
   }
   for (const h of state.unlockedHunts) if (!content.hunts.has(h)) problems.push(`hunt ${h}`);
   for (const id of Object.keys(state.hero.cards)) {
