@@ -1,7 +1,6 @@
 import type { ContentDb, Rarity } from '@abismo/content';
 import {
   DEATH_XP_LOSS_PCT,
-  OFFLINE_CAP_TICKS,
   OFFLINE_ITEM_LIMIT,
   PPM,
   RARITY_ORDER,
@@ -13,6 +12,7 @@ import { addXp } from './progression.ts';
 import { categoryLoot, potionHoursLeft, type RateSheet } from './rates.ts';
 import { rngBinomial, rngChance, rngInt, type RngState } from './rng.ts';
 import { heroStats } from './stats.ts';
+import { offlineCapTicks } from './upgrades.ts';
 import type { GameState, ItemInstance } from './types.ts';
 
 /** Offline XP is applied in this many time slices (see resolveOffline). */
@@ -83,7 +83,7 @@ export function resolveOffline(
   content: ContentDb,
   rates: RateSheet | null,
   elapsedTicks: number,
-  capTicks = OFFLINE_CAP_TICKS,
+  capTicks = offlineCapTicks(s.hero, content),
 ): OfflineReport {
   const rng = s.rng;
   const resolvedTicks = Math.max(0, Math.min(elapsedTicks, capTicks));
@@ -260,6 +260,7 @@ export function resolveOffline(
       s.lifetime.bossKills += report.bossKills;
       if (!s.defeatedBosses.includes(hunt.boss.monsterId)) {
         s.defeatedBosses.push(hunt.boss.monsterId);
+        s.hero.resets.newBossesThisCycle++;
         report.newBosses.push(hunt.boss.monsterId);
       }
       if (hunt.unlocks && !s.unlockedHunts.includes(hunt.unlocks)) {

@@ -12,6 +12,7 @@ import {
   type Monster,
   type Rarity,
   type Region,
+  type ResetUpgrade,
   type Skill,
 } from './schema.ts';
 
@@ -27,6 +28,7 @@ export interface ContentDb {
   readonly cards: ReadonlyMap<string, Card>;
   readonly regions: ReadonlyMap<string, Region>;
   readonly hunts: ReadonlyMap<string, Hunt>;
+  readonly resetUpgrades: ReadonlyMap<string, ResetUpgrade>;
   /** Material yielded by salvaging each rarity. */
   readonly salvageMaterial: Readonly<Record<Rarity, Material>>;
 }
@@ -63,6 +65,7 @@ export function mergeContentFiles(files: readonly Partial<ContentFile>[]): Conte
     cards: [],
     regions: [],
     hunts: [],
+    resetUpgrades: [],
   };
   for (const file of files) {
     for (const k of Object.keys(merged) as (keyof ContentFile)[]) {
@@ -95,6 +98,7 @@ export function buildContentDb(raw: unknown): ContentDb {
     cards: indexById('card', c.cards, problems),
     regions: indexById('region', c.regions, problems),
     hunts: indexById('hunt', c.hunts, problems),
+    resetUpgrades: indexById('resetUpgrade', c.resetUpgrades, problems),
   };
 
   const ref = (ok: boolean, message: string) => {
@@ -133,6 +137,33 @@ export function buildContentDb(raw: unknown): ContentDb {
     c.hunts.some((h) => h.startUnlocked),
     'no hunt has startUnlocked: true (a new hero would have nowhere to hunt)',
   );
+  for (const sk of c.skills) {
+    for (const r of sk.requires) {
+      const req = db.skills.get(r.skillId);
+      ref(!!req, `skill ${sk.id}: unknown required skill ${r.skillId}`);
+      if (req)
+        ref(r.level <= req.maxLevel, `skill ${sk.id}: requires ${r.skillId} above its max level`);
+    }
+  }
+  // Prerequisite cycles would make skills impossible to learn.
+  const visiting = new Set<string>();
+  const done = new Set<string>();
+  const visit = (skillId: string): boolean => {
+    if (done.has(skillId)) return true;
+    if (visiting.has(skillId)) return false;
+    visiting.add(skillId);
+    const ok = (db.skills.get(skillId)?.requires ?? []).every((r) => visit(r.skillId));
+    visiting.delete(skillId);
+    done.add(skillId);
+    return ok;
+  };
+  for (const sk of c.skills) ref(visit(sk.id), `skill ${sk.id}: prerequisite cycle`);
+  const positions = new Set<string>();
+  for (const sk of c.skills) {
+    const pos = `${sk.classId}:${sk.position.row},${sk.position.col}`;
+    ref(!positions.has(pos), `skill ${sk.id}: tree position taken`);
+    positions.add(pos);
+  }
   for (const a of c.affixes) {
     ref(a.tiers[0]?.minIlvl === a.minIlvl, `affix ${a.id}: first tier must start at minIlvl`);
   }
@@ -160,5 +191,6 @@ export function translationKeys(db: ContentDb): string[] {
   for (const x of db.cards.values()) keys.push(x.nameKey);
   for (const r of db.regions.values()) keys.push(r.nameKey);
   for (const h of db.hunts.values()) keys.push(h.nameKey);
+  for (const u of db.resetUpgrades.values()) keys.push(u.nameKey, u.descKey);
   return keys;
 }

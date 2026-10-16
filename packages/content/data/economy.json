@@ -4,17 +4,26 @@
       "id": "potion_hp_small",
       "nameKey": "consumable.potion_hp_small",
       "kind": "hp",
-      "restore": 60,
+      "restore": 40,
       "price": 10,
-      "icon": "items/potion_hp_small"
+      "icon": "items/potion_hp_small",
+      "restorePct": 25
     },
     {
       "id": "potion_mana_small",
       "nameKey": "consumable.potion_mana_small",
       "kind": "mana",
-      "restore": 30,
+      "restore": 20,
       "price": 10,
-      "icon": "items/potion_mana_small"
+      "icon": "items/potion_mana_small",
+      "restorePct": 25
+    },
+    {
+      "id": "refine_charm",
+      "nameKey": "consumable.refine_charm",
+      "kind": "refine_protection",
+      "restore": 0,
+      "icon": "items/refine_charm"
     }
   ],
   "materials": [

@@ -1,9 +1,17 @@
-import type { ContentDb, EquipmentSlot } from '@abismo/content';
-import { TICKS_PER_SECOND } from './constants.ts';
-import { rollSalvage } from './items.ts';
-import { IntentError } from './progression.ts';
+import type { ContentDb, EquipmentSlot, Rarity } from '@abismo/content';
+import { MAX_LEVEL, TICKS_PER_SECOND } from './constants.ts';
+import { rarityRank, rollSalvage } from './items.ts';
+import { IntentError, addXp, autoAllocate } from './progression.ts';
 import { heroStats } from './stats.ts';
-import type { GameEvent, GameState, ItemInstance } from './types.ts';
+import type {
+  AutoAllocateProfile,
+  GameEvent,
+  GameState,
+  ItemInstance,
+  LootFilter,
+} from './types.ts';
+import { upgradeTotal } from './upgrades.ts';
+import { xpToNext } from './xp.ts';
 
 /**
  * Player intents. Each validates, mutates the state at the current tick and returns the
@@ -89,4 +97,77 @@ function clampVitals(s: GameState, content: ContentDb) {
   const stats = heroStats(s.hero, content);
   s.hero.hp = Math.min(s.hero.hp, stats.maxHp);
   s.hero.mana = Math.min(s.hero.mana, stats.maxMana);
+}
+
+/** Loot filter rules. "Always keep affix" rules need the reset shop's Automação. */
+export function setLootFilter(s: GameState, content: ContentDb, filter: LootFilter) {
+  if (filter.alwaysKeepAffixes.length > 0 && upgradeTotal(s.hero, content, 'automation') <= 0) {
+    throw new IntentError('needs_automation');
+  }
+  for (const id of filter.alwaysKeepAffixes) {
+    if (!content.affixes.has(id)) throw new IntentError('unknown_affix');
+  }
+  s.settings.lootFilter = {
+    keepFromRarity: filter.keepFromRarity,
+    alwaysKeepAffixes: [...filter.alwaysKeepAffixes],
+  };
+}
+
+export interface PotionSettings {
+  potionThresholdPct: number;
+  manaPotionThresholdPct: number;
+  potionTarget: number;
+  returnWhenOutOfPotions: boolean;
+  autoReturnAfterDeath: boolean;
+}
+
+export function setPotionSettings(s: GameState, settings: PotionSettings) {
+  const pct = (n: number) => Number.isInteger(n) && n >= 0 && n <= 95;
+  if (!pct(settings.potionThresholdPct) || !pct(settings.manaPotionThresholdPct)) {
+    throw new IntentError('invalid_threshold');
+  }
+  if (
+    !Number.isInteger(settings.potionTarget) ||
+    settings.potionTarget < 0 ||
+    settings.potionTarget > 500
+  ) {
+    throw new IntentError('invalid_potion_target');
+  }
+  Object.assign(s.settings, settings);
+}
+
+export function setAutoAllocate(s: GameState, profile: AutoAllocateProfile) {
+  s.hero.autoAllocate = profile;
+  autoAllocate(s.hero);
+}
+
+/**
+ * Salvages every item in the backpack and stash up to a rarity (blacksmith's bulk salvage).
+ * Equipped items are never touched.
+ */
+export function salvageUpTo(s: GameState, content: ContentDb, maxRarity: Rarity) {
+  const max = rarityRank(maxRarity);
+  const gained: Record<string, number> = {};
+  let count = 0;
+  for (const list of ['backpack', 'stash'] as const) {
+    const keep: ItemInstance[] = [];
+    for (const item of s[list]) {
+      if (rarityRank(item.rarity) > max) {
+        keep.push(item);
+        continue;
+      }
+      const { materialId, qty } = rollSalvage(s.rng, content, item.rarity);
+      s.materials[materialId] = (s.materials[materialId] ?? 0n) + BigInt(qty);
+      gained[materialId] = (gained[materialId] ?? 0) + qty;
+      count++;
+    }
+    s[list] = keep;
+  }
+  return { count, gained };
+}
+
+/** Debug only (development builds): jump to a level, e.g. 100 to test the reset. */
+export function debugSetLevel(s: GameState, content: ContentDb, level: number) {
+  const target = Math.max(1, Math.min(MAX_LEVEL, Math.floor(level)));
+  while (s.hero.level < target) addXp(s, content, xpToNext(s.hero.level) - s.hero.xp, s.tick, null);
 }

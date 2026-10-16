@@ -22,6 +22,7 @@ import {
   UNARMED,
 } from './constants.ts';
 import { ATTRIBUTES, type Attributes, type Hero, type ItemInstance } from './types.ts';
+import { upgradeTotal } from './upgrades.ts';
 
 export type StatMods = Partial<Record<Stat, number>>;
 
@@ -57,10 +58,14 @@ export function itemStats(item: ItemInstance, content: ContentDb): ItemStats {
   return out;
 }
 
-/** Attributes from the starting value and allocated points (no item bonuses). */
-export function baseAttributes(hero: Hero): Attributes {
+/**
+ * Attributes from the starting value, the reset shop's "Poder ancestral" and allocated
+ * points (no item bonuses).
+ */
+export function baseAttributes(hero: Hero, content: ContentDb): Attributes {
+  const start = STARTING_ATTRIBUTE + upgradeTotal(hero, content, 'startingAttributes');
   const out = {} as Attributes;
-  for (const a of ATTRIBUTES) out[a] = STARTING_ATTRIBUTE + hero.allocated[a];
+  for (const a of ATTRIBUTES) out[a] = start + hero.allocated[a];
   return out;
 }
 
@@ -80,7 +85,7 @@ export function inactiveReason(
   const base = content.itemBases.get(item.baseId);
   if (!base) throw new Error(`unknown item base ${item.baseId}`);
   if (hero.level < base.requires.level) return { kind: 'level', required: base.requires.level };
-  const attrs = baseAttributes(hero);
+  const attrs = baseAttributes(hero, content);
   for (const a of ATTRIBUTES) {
     const required = base.requires[a];
     if (required !== undefined && attrs[a] < required) {
@@ -124,7 +129,13 @@ function statsKey(hero: Hero): string {
     return it ? `${it.uid}.${it.refine}` : '-';
   }).join(',');
   const a = hero.allocated;
-  return `${hero.level}|${a.strength},${a.dexterity},${a.vitality},${a.energy}|${items}`;
+  const skills = Object.entries(hero.skillLevels)
+    .map(([id, l]) => `${id}${l}`)
+    .join(',');
+  const ups = Object.entries(hero.resets.upgrades)
+    .map(([id, l]) => `${id}${l}`)
+    .join(',');
+  return `${hero.level}|${a.strength},${a.dexterity},${a.vitality},${a.energy}|${items}|${skills}|${ups}`;
 }
 
 /** Derived stats of the hero. Cached per hero object; the cache key covers every input. */
@@ -157,9 +168,20 @@ export function computeHeroStats(hero: Hero, content: ContentDb): HeroStats {
     if (slot === 'weapon') weapon = s;
     armorDefense += s.defense ?? 0;
   }
+  // Passive skills of the tree.
+  for (const [id, level] of Object.entries(hero.skillLevels)) {
+    const skill = content.skills.get(id);
+    if (skill?.kind === 'passive' && level > 0) add({ [skill.stat]: skill.perLevel * level });
+  }
+  // Reset shop bonuses.
+  add({
+    xpPct: upgradeTotal(hero, content, 'xpPct'),
+    goldPct: upgradeTotal(hero, content, 'goldPct'),
+    magicFindPct: upgradeTotal(hero, content, 'magicFindPct'),
+  });
   const m = (k: Stat) => mods[k] ?? 0;
 
-  const base = baseAttributes(hero);
+  const base = baseAttributes(hero, content);
   const attributes: Attributes = {
     strength: base.strength + m('strength'),
     dexterity: base.dexterity + m('dexterity'),

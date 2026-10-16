@@ -31,7 +31,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
     refine: 0,
   };
   const s: GameState = {
-    version: 1,
+    version: 2,
     tick: 0,
     rng: createRng(hero.seed),
     nextUid: 2,
@@ -50,6 +50,9 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
       hp: 1,
       mana: 0,
       equipment: content.itemBases.has(STARTER_WEAPON) ? { weapon: sword } : {},
+      respecs: 0,
+      freeRespec: false,
+      resets: { count: 0, points: 0, upgrades: {}, newBossesThisCycle: 0 },
     },
     backpack: [],
     stash: [],
@@ -70,7 +73,13 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
     },
     hunt: null,
     activity: { kind: 'idle_town' },
-    combat: { nextAttackTick: 0, potionReadyTick: 0, manaPotionReadyTick: 0, skillReadyTick: {} },
+    combat: {
+      nextAttackTick: 0,
+      potionReadyTick: 0,
+      manaPotionReadyTick: 0,
+      skillReadyTick: {},
+      buffUntil: {},
+    },
     lifetime: {
       kills: 0n,
       deaths: 0,
@@ -79,6 +88,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
       itemsByRarity: { common: 0, magic: 0, rare: 0, epic: 0, legendary: 0 },
       bossKills: 0,
     },
+    flags: [],
   };
   const stats = heroStats(s.hero, content);
   s.hero.hp = stats.maxHp;

@@ -2,6 +2,7 @@ import type { ContentDb, Rarity } from '@abismo/content';
 import {
   ELITE_DROP_CHANCE_PCT,
   ELITE_MAGIC_FIND_BONUS,
+  ELITE_REWARD_PCT,
   PPM,
   RARITY_ORDER,
   RATE_SAMPLE_TICKS,
@@ -81,6 +82,22 @@ interface CategoryLoot {
 }
 
 /** Equipment odds for one kill of a monster category, given the hero's magic find. */
+/** Average gold of one kill, exactly as killMonster rolls and floors it. */
+export function expectedGold(
+  content: ContentDb,
+  monsterId: string,
+  elite: boolean,
+  goldPct: number,
+): number {
+  const def = content.monsters.get(monsterId)!;
+  const rewardPct = elite ? ELITE_REWARD_PCT : 100;
+  let total = 0;
+  for (let roll = def.gold[0]; roll <= def.gold[1]; roll++) {
+    total += Math.floor((roll * rewardPct * (100 + goldPct)) / 10_000);
+  }
+  return total / (def.gold[1] - def.gold[0] + 1);
+}
+
 export function categoryLoot(
   content: ContentDb,
   monsterId: string,
@@ -150,9 +167,11 @@ export function computeRates(
   if (hunt.boss && bossKills > 0)
     mix.push({ monsterId: hunt.boss.monsterId, elite: false, n: bossKills });
 
+  let goldPerHour = 0;
   for (const { monsterId, elite, n } of mix) {
     if (n <= 0) continue;
     const killsPerHour = perHour(n);
+    goldPerHour += killsPerHour * expectedGold(content, monsterId, elite, stats.goldPct);
     categories.push({ monsterId, elite, killsPerHour });
     const loot = categoryLoot(content, monsterId, elite, stats.magicFindPct);
     for (const r of RARITY_ORDER) {
@@ -174,7 +193,7 @@ export function computeRates(
     killsPerHour: perHour(kills),
     categories,
     xpPerHour: perHour(counters.xp),
-    goldPerHour: perHour(counters.gold),
+    goldPerHour,
     goldSpentPerHour: perHour(counters.goldSpent),
     potionsUsedPerHour: perHourRecord(counters.potionsUsed),
     potionsBoughtPerHour: perHourRecord(counters.potionsBought),

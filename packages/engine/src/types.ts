@@ -23,6 +23,17 @@ export interface ItemInstance {
   refine: number;
 }
 
+/** Progress across reset cycles (section 8). */
+export interface ResetProgress {
+  count: number;
+  /** Unspent reset points. */
+  points: number;
+  /** Reset shop upgrade levels by id. */
+  upgrades: Record<string, number>;
+  /** Bosses defeated for the first time ever during the current cycle (worth reset points). */
+  newBossesThisCycle: number;
+}
+
 export type AutoAllocateProfile = 'off' | 'balanced' | 'strength' | 'vitality';
 
 export interface Hero {
@@ -43,6 +54,11 @@ export interface Hero {
   hp: number;
   mana: number;
   equipment: Partial<Record<EquipmentSlot, ItemInstance>>;
+  /** Paid skill redistributions so far (the price grows with each). */
+  respecs: number;
+  /** A free redistribution is available (after a reset). */
+  freeRespec: boolean;
+  resets: ResetProgress;
 }
 
 export interface LootFilter {
@@ -100,6 +116,8 @@ export interface Combat {
   potionReadyTick: number;
   manaPotionReadyTick: number;
   skillReadyTick: Record<string, number>;
+  /** Buff skills active until these ticks. */
+  buffUntil: Record<string, number>;
 }
 
 export interface Lifetime {
@@ -116,7 +134,7 @@ export interface Lifetime {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 1;
+  version: 2;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;
@@ -135,6 +153,8 @@ export interface GameState {
   activity: Activity;
   combat: Combat;
   lifetime: Lifetime;
+  /** One-time events already done (e.g. the guaranteed first magic item). */
+  flags: string[];
 }
 
 // --- Events ---------------------------------------------------------------------------------

@@ -170,14 +170,24 @@ export const lootTableSchema = z.strictObject({
 });
 export type LootTable = z.infer<typeof lootTableSchema>;
 
-export const consumableSchema = z.strictObject({
-  id,
-  nameKey: key,
-  kind: z.enum(['hp', 'mana']),
-  restore: posInt,
-  price: posInt,
-  icon: z.string().min(1),
-});
+export const consumableSchema = z
+  .strictObject({
+    id,
+    nameKey: key,
+    /** hp/mana potions are drunk automatically; refine_protection is spent by the blacksmith. */
+    kind: z.enum(['hp', 'mana', 'refine_protection']),
+    /** Flat amount restored. */
+    restore: nonNegInt,
+    /** Extra percent of the maximum restored, so potions stay useful at every level. */
+    restorePct: z.number().int().min(0).max(100).optional(),
+    /** Price at the potion seller; absent = not sold. */
+    price: posInt.optional(),
+    icon: z.string().min(1),
+  })
+  .refine(
+    (c) => c.kind === 'refine_protection' || c.restore > 0 || (c.restorePct ?? 0) > 0,
+    'potions must restore something',
+  );
 export type Consumable = z.infer<typeof consumableSchema>;
 
 export const materialSchema = z.strictObject({
@@ -190,23 +200,50 @@ export const materialSchema = z.strictObject({
 });
 export type Material = z.infer<typeof materialSchema>;
 
-export const skillSchema = z.strictObject({
+const skillCommon = {
   id,
   nameKey: key,
   descKey: key,
   classId: id,
-  kind: z.enum(['active', 'passive']),
   maxLevel: posInt.max(10),
-  manaCost: nonNegInt,
-  manaCostPerLevel: nonNegInt,
-  cooldownSeconds: z.number().min(0).max(120),
-  /** Damage of the skill hit as a percent of a normal hit. */
-  damagePct: nonNegInt,
-  damagePctPerLevel: nonNegInt,
-  /** 1 = single target; more = area hitting up to N monsters of the group. */
-  maxTargets: posInt.max(8),
-  effect: z.string().min(1),
-});
+  /** Skills that must reach a level before this one can be learned. */
+  requires: z.array(z.strictObject({ skillId: id, level: posInt })),
+  /** Place in the tree (rows top to bottom, columns left to right). */
+  position: z.strictObject({ row: nonNegInt, col: nonNegInt }),
+};
+
+export const skillSchema = z.discriminatedUnion('kind', [
+  z.strictObject({
+    ...skillCommon,
+    kind: z.literal('active'),
+    manaCost: nonNegInt,
+    manaCostPerLevel: nonNegInt,
+    cooldownSeconds: z.number().min(0).max(120),
+    /** Damage of the skill hit as a percent of a normal hit (0 = no hit, e.g. a buff). */
+    damagePct: nonNegInt,
+    damagePctPerLevel: nonNegInt,
+    /** 1 = single target; more = area hitting up to N monsters of the group. */
+    maxTargets: posInt.max(8),
+    /** Self buff while it lasts: +value% (plus perLevel per extra level) of a stat. */
+    buff: z
+      .strictObject({
+        stat: z.literal('damagePct'),
+        value: posInt,
+        perLevel: nonNegInt,
+        durationSeconds: z.number().positive().max(120),
+      })
+      .optional(),
+    /** Seconds the first target cannot attack after being hit. */
+    stunSeconds: z.number().positive().max(10).optional(),
+    effect: z.string().min(1),
+  }),
+  z.strictObject({
+    ...skillCommon,
+    kind: z.literal('passive'),
+    stat: statSchema,
+    perLevel: posInt,
+  }),
+]);
 export type Skill = z.infer<typeof skillSchema>;
 
 export const cardSchema = z.strictObject({
@@ -253,6 +290,28 @@ export const huntSchema = z
 export type Hunt = z.infer<typeof huntSchema>;
 
 /** Every content file, merged. Each file in data/ contributes one or more of these arrays. */
+/** Permanent upgrades bought with reset points (section 8.2). */
+export const RESET_EFFECTS = [
+  'xpPct',
+  'startingAttributes',
+  'startingSkillPoints',
+  'goldPct',
+  'magicFindPct',
+  'backpackSlots',
+  'offlineHours',
+  'automation',
+] as const;
+export const resetUpgradeSchema = z.strictObject({
+  id,
+  nameKey: key,
+  descKey: key,
+  maxLevel: posInt,
+  /** Cost of level n is baseCost × n. */
+  baseCost: posInt,
+  effects: z.array(z.strictObject({ effect: z.enum(RESET_EFFECTS), perLevel: posInt })).min(1),
+});
+export type ResetUpgrade = z.infer<typeof resetUpgradeSchema>;
+
 export const contentSchema = z.strictObject({
   itemBases: z.array(itemBaseSchema),
   affixes: z.array(affixSchema),
@@ -264,5 +323,6 @@ export const contentSchema = z.strictObject({
   cards: z.array(cardSchema),
   regions: z.array(regionSchema),
   hunts: z.array(huntSchema),
+  resetUpgrades: z.array(resetUpgradeSchema),
 });
 export type ContentFile = z.infer<typeof contentSchema>;

@@ -1,7 +1,6 @@
-import type { ContentDb, Hunt, Monster } from '@abismo/content';
+import type { Consumable, ContentDb, Hunt, Monster } from '@abismo/content';
 import { rollHit, type AttackProfile } from './combat.ts';
 import {
-  BACKPACK_SIZE,
   BASE_CRIT_CHANCE_PPM,
   BASE_CRIT_DAMAGE_PCT,
   DEATH_XP_LOSS_PCT,
@@ -10,6 +9,7 @@ import {
   ELITE_LIFE_PCT,
   ELITE_MAGIC_FIND_BONUS,
   ELITE_REWARD_PCT,
+  FIRST_MAGIC_ITEM_KILL,
   MAX_CONSECUTIVE_AUTO_RETURNS,
   POTION_COOLDOWN_TICKS,
   PPM,
@@ -22,6 +22,7 @@ import { addXp } from './progression.ts';
 import { rngChance, rngInt } from './rng.ts';
 import { heroStats, type HeroStats } from './stats.ts';
 import type { GameEvent, GameState, HitResult, MonsterInstance, TownReason } from './types.ts';
+import { backpackSize } from './upgrades.ts';
 import { xpGapPct } from './xp.ts';
 
 /** Counters a rate-sampling run collects; the normal game passes none. */
@@ -143,7 +144,7 @@ function visitTown(s: GameState, content: ContentDb, stats: HeroStats, o: StepOp
   s.hero.mana = stats.maxMana;
   const potion = content.consumables.get(s.settings.hpPotionId);
   let bought = 0;
-  if (potion) {
+  if (potion?.price) {
     const have = s.consumables[potion.id] ?? 0;
     const want = Math.max(0, s.settings.potionTarget - have);
     const price = BigInt(potion.price);
@@ -221,6 +222,11 @@ function die(s: GameState, t: number, out: GameEvent[] | null, o: StepOptions) {
   out?.push({ type: 'HeroDied', tick: t, xpLost });
 }
 
+/** Flat amount plus a share of the maximum, so potions stay useful at every level. */
+export function potionAmount(potion: Consumable, max: number): number {
+  return potion.restore + Math.floor((max * (potion.restorePct ?? 0)) / 100);
+}
+
 function usePotions(
   s: GameState,
   content: ContentDb,
@@ -237,7 +243,7 @@ function usePotions(
     const potion = content.consumables.get(id);
     if (potion && have > 0) {
       s.consumables[id] = have - 1;
-      const amount = Math.min(potion.restore, stats.maxHp - hero.hp);
+      const amount = Math.min(potionAmount(potion, stats.maxHp), stats.maxHp - hero.hp);
       hero.hp += amount;
       c.potionReadyTick = t + POTION_COOLDOWN_TICKS;
       if (o.counters) o.counters.potionsUsed[id] = (o.counters.potionsUsed[id] ?? 0) + 1;
@@ -255,7 +261,7 @@ function usePotions(
     const potion = content.consumables.get(id);
     if (potion && have > 0) {
       s.consumables[id] = have - 1;
-      const amount = Math.min(potion.restore, stats.maxMana - hero.mana);
+      const amount = Math.min(potionAmount(potion, stats.maxMana), stats.maxMana - hero.mana);
       hero.mana += amount;
       c.manaPotionReadyTick = t + POTION_COOLDOWN_TICKS;
       if (o.counters) o.counters.potionsUsed[id] = (o.counters.potionsUsed[id] ?? 0) + 1;
@@ -274,9 +280,24 @@ function pickSkill(s: GameState, content: ContentDb, t: number) {
     const cost = skill.manaCost + skill.manaCostPerLevel * (level - 1);
     if (s.hero.mana < cost) continue;
     if (t < (s.combat.skillReadyTick[id] ?? 0)) continue;
+    // A buff is not recast while it is still running.
+    if (skill.buff && t < (s.combat.buffUntil[id] ?? 0)) continue;
     return { skill, level, cost };
   }
   return null;
+}
+
+/** Extra damage % from buffs active at tick t. */
+function buffDamagePct(s: GameState, content: ContentDb, t: number): number {
+  let pct = 0;
+  for (const [id, until] of Object.entries(s.combat.buffUntil)) {
+    if (t >= until) continue;
+    const skill = content.skills.get(id);
+    if (skill?.kind !== 'active' || !skill.buff) continue;
+    const level = s.hero.skillLevels[id] ?? 1;
+    pct += skill.buff.value + skill.buff.perLevel * (level - 1);
+  }
+  return pct;
 }
 
 /** XP for one kill: base × level-gap penalty × elite reward × (1 + XP bonus), floored. */
@@ -324,11 +345,17 @@ function killMonster(
     Math.floor((table.equipmentDropChancePpm * (m.elite ? ELITE_DROP_CHANCE_PCT : 100)) / 100),
   );
   const magicFindPct = stats.magicFindPct + (m.elite ? ELITE_MAGIC_FIND_BONUS : 0);
-  for (let r = 0; r < rolls; r++) {
-    if (!rngChance(s.rng, dropPpm)) continue;
-    const item = generateItem(s.rng, content, table, hunt.ilvl, s.nextUid++, { magicFindPct });
+  const bagSize = backpackSize(s.hero, content);
+  // A new hero's 5th kill always drops a magic item (first ten minutes, section 11.4).
+  const firstMagic = s.lifetime.kills === FIRST_MAGIC_ITEM_KILL && !s.flags.includes('first_magic');
+  if (firstMagic) s.flags.push('first_magic');
+  for (let r = 0; r < rolls + (firstMagic ? 1 : 0); r++) {
+    const forced = firstMagic && r === rolls;
+    if (!forced && !rngChance(s.rng, dropPpm)) continue;
+    const rarity = forced ? ('magic' as const) : { magicFindPct };
+    const item = generateItem(s.rng, content, table, hunt.ilvl, s.nextUid++, rarity);
     s.lifetime.itemsByRarity[item.rarity]++;
-    const kept = filterKeeps(s.settings.lootFilter, item) && s.backpack.length < BACKPACK_SIZE;
+    const kept = filterKeeps(s.settings.lootFilter, item) && s.backpack.length < bagSize;
     out?.push({ type: 'ItemDropped', tick: t, fromUid: m.uid, item, kept });
     if (kept) {
       s.backpack.push(item);
@@ -356,7 +383,10 @@ function killMonster(
     progress.killsSinceBoss = 0;
     s.lifetime.bossKills++;
     const firstTime = !s.defeatedBosses.includes(m.monsterId);
-    if (firstTime) s.defeatedBosses.push(m.monsterId);
+    if (firstTime) {
+      s.defeatedBosses.push(m.monsterId);
+      s.hero.resets.newBossesThisCycle++;
+    }
     out?.push({ type: 'BossDefeated', tick: t, monsterId: m.monsterId, firstTime });
     if (hunt.unlocks && !s.unlockedHunts.includes(hunt.unlocks)) {
       s.unlockedHunts.push(hunt.unlocks);
@@ -364,6 +394,62 @@ function killMonster(
     }
   } else {
     progress.killsSinceBoss++;
+  }
+}
+
+/** One swing of the hero (a normal attack or a damaging skill) against the group. */
+function heroStrike(
+  s: GameState,
+  content: ContentDb,
+  stats: HeroStats,
+  group: MonsterInstance[],
+  t: number,
+  out: GameEvent[] | null,
+  o: StepOptions,
+  picked: ReturnType<typeof pickSkill>,
+  maxTargets: number,
+  baseSkillPct: number,
+) {
+  const hero = s.hero;
+  const c = s.combat;
+  const skillPct = Math.floor((baseSkillPct * (100 + buffDamagePct(s, content, t))) / 100);
+  const hits: HitResult[] = [];
+  let leech = 0;
+  for (const m of group) {
+    if (hits.length >= maxTargets) break;
+    if (m.hp <= 0) continue;
+    const def = content.monsters.get(m.monsterId)!;
+    const undead = def.tags.includes('undead') ? stats.damageVsUndeadPct : 0;
+    const atk: AttackProfile = {
+      level: hero.level,
+      accuracy: stats.accuracy,
+      damageMin: stats.damageMin,
+      damageMax: stats.damageMax,
+      critChancePpm: stats.critChancePpm,
+      critDamagePct: stats.critDamagePct,
+      damagePct: Math.floor((skillPct * (100 + undead)) / 100),
+    };
+    const hit = rollHit(s.rng, atk, def);
+    const dealt = Math.min(hit.damage, m.hp);
+    m.hp -= hit.damage;
+    leech += Math.floor((dealt * stats.lifeLeechPct) / 100);
+    hits.push({ uid: m.uid, damage: hit.damage, crit: hit.crit, miss: hit.miss });
+  }
+  if (leech > 0) hero.hp = Math.min(stats.maxHp, hero.hp + leech);
+  c.nextAttackTick = t + stats.attackIntervalTicks;
+  const stun = picked?.skill.kind === 'active' ? picked.skill.stunSeconds : undefined;
+  const first = hits[0];
+  const stunned = stun && first && !first.miss ? group.find((m) => m.uid === first.uid) : undefined;
+  if (stunned && stun) {
+    stunned.nextAttackTick = Math.max(
+      stunned.nextAttackTick,
+      t + Math.round(stun * TICKS_PER_SECOND),
+    );
+  }
+  out?.push({ type: 'HeroAttack', tick: t, skillId: picked?.skill.id ?? null, hits, leech });
+  for (const m of group) {
+    if (m.hp <= 0 && hits.some((h) => h.uid === m.uid))
+      killMonster(s, content, stats, m, t, out, o);
   }
 }
 
@@ -390,34 +476,14 @@ function fight(
       const base = picked.skill.damagePct + picked.skill.damagePctPerLevel * (picked.level - 1);
       skillPct = Math.floor((base * (1000 + stats.skillDamagePermille)) / 1000);
     }
-    const hits: HitResult[] = [];
-    let leech = 0;
-    for (const m of group) {
-      if (hits.length >= maxTargets) break;
-      if (m.hp <= 0) continue;
-      const def = content.monsters.get(m.monsterId)!;
-      const undead = def.tags.includes('undead') ? stats.damageVsUndeadPct : 0;
-      const atk: AttackProfile = {
-        level: hero.level,
-        accuracy: stats.accuracy,
-        damageMin: stats.damageMin,
-        damageMax: stats.damageMax,
-        critChancePpm: stats.critChancePpm,
-        critDamagePct: stats.critDamagePct,
-        damagePct: Math.floor((skillPct * (100 + undead)) / 100),
-      };
-      const hit = rollHit(s.rng, atk, def);
-      const dealt = Math.min(hit.damage, m.hp);
-      m.hp -= hit.damage;
-      leech += Math.floor((dealt * stats.lifeLeechPct) / 100);
-      hits.push({ uid: m.uid, damage: hit.damage, crit: hit.crit, miss: hit.miss });
-    }
-    if (leech > 0) hero.hp = Math.min(stats.maxHp, hero.hp + leech);
-    c.nextAttackTick = t + stats.attackIntervalTicks;
-    out?.push({ type: 'HeroAttack', tick: t, skillId: picked?.skill.id ?? null, hits, leech });
-    for (const m of group) {
-      if (m.hp <= 0 && hits.some((h) => h.uid === m.uid))
-        killMonster(s, content, stats, m, t, out, o);
+    const buff = picked?.skill.kind === 'active' ? picked.skill.buff : undefined;
+    if (picked && buff) {
+      // Buff skills spend the swing on the cast and hit nothing.
+      c.buffUntil[picked.skill.id] = t + Math.round(buff.durationSeconds * TICKS_PER_SECOND);
+      c.nextAttackTick = t + stats.attackIntervalTicks;
+      out?.push({ type: 'HeroAttack', tick: t, skillId: picked.skill.id, hits: [], leech: 0 });
+    } else {
+      heroStrike(s, content, stats, group, t, out, o, picked, maxTargets, skillPct);
     }
   }
 
@@ -451,7 +517,8 @@ function fight(
   if (group.every((m) => m.hp <= 0)) {
     s.hunt!.consecutiveDeaths = 0;
     const noPotions = (s.consumables[s.settings.hpPotionId] ?? 0) === 0;
-    if (s.backpack.length >= BACKPACK_SIZE) goToTown(s, content, t, 'backpack_full', out, o);
+    if (s.backpack.length >= backpackSize(hero, content))
+      goToTown(s, content, t, 'backpack_full', out, o);
     else if (noPotions && s.settings.returnWhenOutOfPotions)
       goToTown(s, content, t, 'no_potions', out, o);
     else startWalking(s, content, t, out, o);

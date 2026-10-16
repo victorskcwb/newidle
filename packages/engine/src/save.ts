@@ -8,7 +8,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export interface SaveFile {
   version: number;
@@ -62,7 +62,7 @@ const attributes = z.strictObject({
 });
 
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(1),
+  version: z.literal(2),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -81,6 +81,14 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
     hp: int,
     mana: int,
     equipment: z.partialRecord(z.enum(EQUIPMENT_SLOTS), item),
+    respecs: nonNeg,
+    freeRespec: z.boolean(),
+    resets: z.strictObject({
+      count: nonNeg,
+      points: nonNeg,
+      upgrades: z.record(z.string(), nonNeg),
+      newBossesThisCycle: nonNeg,
+    }),
   }),
   backpack: z.array(item),
   stash: z.array(item),
@@ -120,6 +128,7 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
     potionReadyTick: nonNeg,
     manaPotionReadyTick: nonNeg,
     skillReadyTick: z.record(z.string(), nonNeg),
+    buffUntil: z.record(z.string(), nonNeg),
   }),
   lifetime: z.strictObject({
     kills: z.bigint().nonnegative(),
@@ -135,6 +144,7 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
     }),
     bossKills: nonNeg,
   }),
+  flags: z.array(z.string()),
 });
 
 /**
@@ -144,7 +154,30 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
 export const SAVE_MIGRATIONS: Record<
   number,
   (raw: Record<string, unknown>) => Record<string, unknown>
-> = {};
+> = {
+  /** v1 → v2: skill tree, buffs, reset progress and one-time flags. */
+  1: (raw) => {
+    const state = raw.state as Record<string, Record<string, unknown>>;
+    const hero = state.hero!;
+    const lifetime = state.lifetime as { kills?: bigint };
+    return {
+      ...raw,
+      state: {
+        ...state,
+        version: 2,
+        hero: {
+          ...hero,
+          respecs: 0,
+          freeRespec: false,
+          resets: { count: 0, points: 0, upgrades: {}, newBossesThisCycle: 0 },
+        },
+        combat: { ...state.combat, buffUntil: {} },
+        // Heroes past their 5th kill already had their chance at the first magic item.
+        flags: (lifetime.kills ?? 0n) >= 5n ? ['first_magic'] : [],
+      },
+    };
+  },
+};
 
 export function encodeSave(state: GameState, savedAt: number): string {
   const file: SaveFile = { version: SAVE_VERSION, savedAt, state };

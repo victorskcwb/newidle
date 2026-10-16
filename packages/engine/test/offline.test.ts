@@ -26,8 +26,10 @@ function setup(): GameState {
   s.hero.level = 30;
   s.hero.allocated = { strength: 8, dexterity: 4, vitality: 8, energy: 0 };
   s.gold = 500n;
-  // Drink on any damage, so potion use is large enough to compare.
+  // Drink on any damage, so potion use is large enough to compare; a big stock keeps
+  // potion runs (and the town trips they cause) out of the comparison.
   s.settings.potionThresholdPct = 99;
+  s.consumables.potion_hp_small = 5_000;
   return s;
 }
 

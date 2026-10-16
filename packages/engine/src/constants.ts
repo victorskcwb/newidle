@@ -66,6 +66,8 @@ export const RESPAWN_TICKS = 5 * TICKS_PER_SECOND;
 export const DEATH_XP_LOSS_PCT = 10;
 export const MAX_CONSECUTIVE_AUTO_RETURNS = 3;
 export const STARTING_POTIONS = 10;
+/** The 5th kill of a new hero drops a guaranteed magic item (section 11.4). */
+export const FIRST_MAGIC_ITEM_KILL = 5n;
 export const DEFAULT_POTION_TARGET = 10;
 
 // --- Items ----------------------------------------------------------------------------------
@@ -92,7 +94,31 @@ export const REFINE_PCT_PER_LEVEL = 5;
 
 // --- Offline --------------------------------------------------------------------------------
 export const OFFLINE_CAP_TICKS = 12 * TICKS_PER_HOUR;
+/** The offline cap never goes beyond this, whatever the upgrades. */
+export const OFFLINE_MAX_TICKS = 24 * TICKS_PER_HOUR;
 /** Most items generated with affixes by one offline resolution; the rest are salvaged. */
 export const OFFLINE_ITEM_LIMIT = 200;
 /** Hunting time simulated to build a rate sheet. */
 export const RATE_SAMPLE_TICKS = 4 * TICKS_PER_HOUR;
+
+// --- Skills ---------------------------------------------------------------------------------
+export const SKILL_SLOTS = 4;
+export const RESET_FOR_FIFTH_SKILL_SLOT = 3;
+/** Paid redistribution n costs RESPEC_BASE_COST × n² gold. */
+export const RESPEC_BASE_COST = 200;
+
+// --- Refine (section 7.5) -------------------------------------------------------------------
+export const MAX_REFINE = 15;
+/** Failed attempts for this level and above drop the item one level. */
+export const REFINE_LOSES_LEVEL_FROM = 10;
+/** Success chance by target level (index = target, 1..15), in ppm. */
+export const REFINE_SUCCESS_PPM: readonly number[] = [
+  0, 1_000_000, 1_000_000, 1_000_000, 1_000_000, 1_000_000, 1_000_000, 800_000, 700_000, 600_000,
+  500_000, 400_000, 350_000, 300_000, 250_000, 200_000,
+];
+
+// --- Reset (section 8) ----------------------------------------------------------------------
+export const RESET_BASE_COST = 100_000;
+export const RESET_BASE_POINTS = 10;
+export const RESET_POINTS_PER_NEW_BOSS = 2;
+export const RESETS_FOR_SHOP = 1;

@@ -1,12 +1,32 @@
 {
   "skills": [
     {
+      "id": "sword_mastery",
+      "nameKey": "skill.sword_mastery",
+      "descKey": "skill.sword_mastery.desc",
+      "classId": "warrior",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [],
+      "position": {
+        "row": 0,
+        "col": 0
+      },
+      "stat": "damagePct",
+      "perLevel": 3
+    },
+    {
       "id": "heavy_strike",
       "nameKey": "skill.heavy_strike",
       "descKey": "skill.heavy_strike.desc",
       "classId": "warrior",
       "kind": "active",
       "maxLevel": 10,
+      "requires": [],
+      "position": {
+        "row": 0,
+        "col": 1
+      },
       "manaCost": 6,
       "manaCostPerLevel": 1,
       "cooldownSeconds": 4,
@@ -16,12 +36,128 @@
       "effect": "fx/heavy_strike"
     },
     {
+      "id": "toughness",
+      "nameKey": "skill.toughness",
+      "descKey": "skill.toughness.desc",
+      "classId": "warrior",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [],
+      "position": {
+        "row": 0,
+        "col": 2
+      },
+      "stat": "lifePct",
+      "perLevel": 4
+    },
+    {
+      "id": "precision",
+      "nameKey": "skill.precision",
+      "descKey": "skill.precision.desc",
+      "classId": "warrior",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "sword_mastery",
+          "level": 2
+        }
+      ],
+      "position": {
+        "row": 1,
+        "col": 0
+      },
+      "stat": "accuracy",
+      "perLevel": 8
+    },
+    {
+      "id": "war_cry",
+      "nameKey": "skill.war_cry",
+      "descKey": "skill.war_cry.desc",
+      "classId": "warrior",
+      "kind": "active",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "heavy_strike",
+          "level": 1
+        }
+      ],
+      "position": {
+        "row": 1,
+        "col": 1
+      },
+      "manaCost": 15,
+      "manaCostPerLevel": 2,
+      "cooldownSeconds": 20,
+      "damagePct": 0,
+      "damagePctPerLevel": 0,
+      "maxTargets": 1,
+      "effect": "fx/war_cry",
+      "buff": {
+        "stat": "damagePct",
+        "value": 20,
+        "perLevel": 4,
+        "durationSeconds": 8
+      }
+    },
+    {
+      "id": "iron_skin",
+      "nameKey": "skill.iron_skin",
+      "descKey": "skill.iron_skin.desc",
+      "classId": "warrior",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "toughness",
+          "level": 2
+        }
+      ],
+      "position": {
+        "row": 1,
+        "col": 2
+      },
+      "stat": "defensePct",
+      "perLevel": 5
+    },
+    {
+      "id": "fury",
+      "nameKey": "skill.fury",
+      "descKey": "skill.fury.desc",
+      "classId": "warrior",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "precision",
+          "level": 3
+        }
+      ],
+      "position": {
+        "row": 2,
+        "col": 0
+      },
+      "stat": "attackSpeedPct",
+      "perLevel": 2
+    },
+    {
       "id": "whirlwind",
       "nameKey": "skill.whirlwind",
       "descKey": "skill.whirlwind.desc",
       "classId": "warrior",
       "kind": "active",
       "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "heavy_strike",
+          "level": 3
+        }
+      ],
+      "position": {
+        "row": 2,
+        "col": 1
+      },
       "manaCost": 12,
       "manaCostPerLevel": 2,
       "cooldownSeconds": 6,
@@ -29,6 +165,96 @@
       "damagePctPerLevel": 8,
       "maxTargets": 4,
       "effect": "fx/whirlwind"
+    },
+    {
+      "id": "bloodthirst",
+      "nameKey": "skill.bloodthirst",
+      "descKey": "skill.bloodthirst.desc",
+      "classId": "warrior",
+      "kind": "passive",
+      "maxLevel": 5,
+      "requires": [
+        {
+          "skillId": "iron_skin",
+          "level": 3
+        }
+      ],
+      "position": {
+        "row": 2,
+        "col": 2
+      },
+      "stat": "lifeLeechPct",
+      "perLevel": 1
+    },
+    {
+      "id": "critical_eye",
+      "nameKey": "skill.critical_eye",
+      "descKey": "skill.critical_eye.desc",
+      "classId": "warrior",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "fury",
+          "level": 3
+        }
+      ],
+      "position": {
+        "row": 3,
+        "col": 0
+      },
+      "stat": "critChancePct",
+      "perLevel": 1
+    },
+    {
+      "id": "charge",
+      "nameKey": "skill.charge",
+      "descKey": "skill.charge.desc",
+      "classId": "warrior",
+      "kind": "active",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "war_cry",
+          "level": 3
+        },
+        {
+          "skillId": "whirlwind",
+          "level": 1
+        }
+      ],
+      "position": {
+        "row": 3,
+        "col": 1
+      },
+      "manaCost": 10,
+      "manaCostPerLevel": 1,
+      "cooldownSeconds": 8,
+      "damagePct": 150,
+      "damagePctPerLevel": 12,
+      "maxTargets": 1,
+      "effect": "fx/charge",
+      "stunSeconds": 1.5
+    },
+    {
+      "id": "undead_bane",
+      "nameKey": "skill.undead_bane",
+      "descKey": "skill.undead_bane.desc",
+      "classId": "warrior",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "bloodthirst",
+          "level": 2
+        }
+      ],
+      "position": {
+        "row": 3,
+        "col": 2
+      },
+      "stat": "damageVsUndeadPct",
+      "perLevel": 5
     }
   ],
   "cards": []

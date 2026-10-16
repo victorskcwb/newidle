@@ -1,0 +1,99 @@
+{
+  "resetUpgrades": [
+    {
+      "id": "wisdom",
+      "nameKey": "reset.wisdom",
+      "descKey": "reset.wisdom.desc",
+      "maxLevel": 20,
+      "baseCost": 4,
+      "effects": [
+        {
+          "effect": "xpPct",
+          "perLevel": 10
+        }
+      ]
+    },
+    {
+      "id": "ancestral_power",
+      "nameKey": "reset.ancestral_power",
+      "descKey": "reset.ancestral_power.desc",
+      "maxLevel": 10,
+      "baseCost": 5,
+      "effects": [
+        {
+          "effect": "startingAttributes",
+          "perLevel": 5
+        }
+      ]
+    },
+    {
+      "id": "master",
+      "nameKey": "reset.master",
+      "descKey": "reset.master.desc",
+      "maxLevel": 5,
+      "baseCost": 8,
+      "effects": [
+        {
+          "effect": "startingSkillPoints",
+          "perLevel": 1
+        }
+      ]
+    },
+    {
+      "id": "fortune",
+      "nameKey": "reset.fortune",
+      "descKey": "reset.fortune.desc",
+      "maxLevel": 10,
+      "baseCost": 4,
+      "effects": [
+        {
+          "effect": "goldPct",
+          "perLevel": 5
+        },
+        {
+          "effect": "magicFindPct",
+          "perLevel": 2
+        }
+      ]
+    },
+    {
+      "id": "deep_pack",
+      "nameKey": "reset.deep_pack",
+      "descKey": "reset.deep_pack.desc",
+      "maxLevel": 6,
+      "baseCost": 6,
+      "effects": [
+        {
+          "effect": "backpackSlots",
+          "perLevel": 5
+        }
+      ]
+    },
+    {
+      "id": "patience",
+      "nameKey": "reset.patience",
+      "descKey": "reset.patience.desc",
+      "maxLevel": 12,
+      "baseCost": 3,
+      "effects": [
+        {
+          "effect": "offlineHours",
+          "perLevel": 1
+        }
+      ]
+    },
+    {
+      "id": "automation",
+      "nameKey": "reset.automation",
+      "descKey": "reset.automation.desc",
+      "maxLevel": 1,
+      "baseCost": 10,
+      "effects": [
+        {
+          "effect": "automation",
+          "perLevel": 1
+        }
+      ]
+    }
+  ]
+}

@@ -71,6 +71,19 @@ describe('validation', () => {
   });
 });
 
+describe('skill tree validation', () => {
+  it('rejects unknown prerequisites and cycles', () => {
+    const c = merged();
+    const strike = c.skills.find((sk) => sk.id === 'heavy_strike')!;
+    strike.requires = [{ skillId: 'charge', level: 1 }];
+    const problems = problemsOf(c);
+    expect(problems).toContain('skill heavy_strike: prerequisite cycle');
+    const c2 = merged();
+    c2.skills[0]!.requires = [{ skillId: 'nope', level: 1 }];
+    expect(problemsOf(c2)).toContain(`skill ${c2.skills[0]!.id}: unknown required skill nope`);
+  });
+});
+
 describe('hunt maps', () => {
   const load = (): TiledMap =>
     tiledMapSchema.parse(
