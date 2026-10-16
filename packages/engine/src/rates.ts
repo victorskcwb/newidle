@@ -11,7 +11,7 @@ import {
 } from './constants.ts';
 import { stepQuiet, type SimCounters } from './hunt.ts';
 import { cardChancePpm } from './cards.ts';
-import { rarityTable } from './items.ts';
+import { legendaryAllowed, rarityTable } from './items.ts';
 import { cloneState } from './state.ts';
 import { heroStats } from './stats.ts';
 import type { GameState } from './types.ts';
@@ -139,6 +139,7 @@ export function categoryLoot(
   monsterId: string,
   elite: boolean,
   magicFindPct: number,
+  huntIlvl: number,
 ): CategoryLoot {
   const monster = content.monsters.get(monsterId)!;
   const table = content.lootTables.get(monster.lootTableId)!;
@@ -150,7 +151,7 @@ export function categoryLoot(
   return {
     rolls: table.rolls ?? 1,
     dropPpm,
-    rarity: rarityTable(mf, table.minRarity),
+    rarity: rarityTable(mf, table.minRarity, legendaryAllowed(huntIlvl)),
     lootTableId: table.id,
   };
 }
@@ -217,7 +218,7 @@ export function computeRates(
         (killsPerHour * cardChancePpm(card, elite, false, stats.cardLuckPct)) / PPM;
     }
     categories.push({ monsterId, elite, killsPerHour });
-    const loot = categoryLoot(content, monsterId, elite, stats.magicFindPct);
+    const loot = categoryLoot(content, monsterId, elite, stats.magicFindPct, hunt.ilvl);
     for (const r of RARITY_ORDER) {
       dropsPerHour[r] += (killsPerHour * loot.rolls * loot.dropPpm * loot.rarity[r]) / (PPM * PPM);
     }

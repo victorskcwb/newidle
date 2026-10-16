@@ -93,6 +93,8 @@ describe('offline resolution vs tick simulation (section 9.3)', () => {
     const within = (label: string, offTotal: number, refTotal: number, tolerance = 0.05) => {
       const o = mean(offTotal, RUNS);
       const t = mean(refTotal, REF_RUNS);
+      // Nothing expected on either side (e.g. legendaries below hunt item level 45).
+      if (o === 0 && t === 0) return;
       const err = Math.abs(o - t) / t;
       // OFFLINE_REPORT=1 pnpm test prints the margins (docs/plan-marco-1.md quotes them).
       if (process.env.OFFLINE_REPORT) {

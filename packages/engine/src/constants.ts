@@ -89,6 +89,8 @@ export const AFFIX_COUNT: Readonly<Record<Rarity, readonly [number, number]>> = 
   epic: [4, 5],
   legendary: [4, 4],
 };
+/** Legendaries only drop in hunts of at least this item level (from the Aldeia Afogada on). */
+export const LEGENDARY_MIN_HUNT_ILVL = 45;
 /** Drop item level = hunt ilvl ± this. */
 export const ILVL_SPREAD = 2;
 /** Refine: +5% base stats per level. */

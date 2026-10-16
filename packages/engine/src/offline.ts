@@ -240,7 +240,7 @@ export function resolveOffline(
   let generated = 0;
   for (const c of kills) {
     if (c.n === 0) continue;
-    const loot = categoryLoot(content, c.monsterId, c.elite, stats.magicFindPct);
+    const loot = categoryLoot(content, c.monsterId, c.elite, stats.magicFindPct, hunt.ilvl);
     const table = content.lootTables.get(loot.lootTableId)!;
     for (const r of RARITY_ORDER) {
       const perRollPpm = Math.floor((loot.dropPpm * loot.rarity[r]) / PPM);

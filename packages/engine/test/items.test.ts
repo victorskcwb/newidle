@@ -59,6 +59,19 @@ describe('rarity', () => {
   });
 });
 
+describe('legendary gate', () => {
+  it('hunts below item level 45 turn the legendary share into epic', () => {
+    const early = rarityTable(0, undefined, false);
+    expect(early.legendary).toBe(0);
+    expect(early.epic).toBe(9_000 + 1_000);
+    const rng = createRng([9, 9, 9, 9]);
+    for (let i = 0; i < 20_000; i++) {
+      const item = generateItem(rng, content, table, 5, i, { magicFindPct: 1_000 });
+      expect(item.rarity).not.toBe('legendary');
+    }
+  });
+});
+
 describe('item generation', () => {
   it('never repeats an affix, respects counts, slots and tiers', () => {
     fc.assert(

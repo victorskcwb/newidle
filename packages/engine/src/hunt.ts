@@ -66,7 +66,10 @@ function countPotion(s: GameState, o: StepOptions, id: string) {
 }
 
 export interface StepOptions {
-  /** Rate sampling: XP is counted but levels do not change, so the sample measures one setup. */
+  /**
+   * Rate sampling: XP is counted but levels do not change and no cards are collected, so the
+   * sample measures one setup (card rates are computed exactly by the rate sheet).
+   */
   freezeLevel?: boolean;
   counters?: SimCounters;
 }
@@ -472,14 +475,9 @@ function killMonster(
       out?.push({ type: 'MaterialsGained', tick: t, materialId, qty });
     }
   }
-  const card = rollCard(
-    s,
-    content,
-    m.monsterId,
-    m.elite,
-    (ppm) => rngChance(s.rng, ppm),
-    stats.cardLuckPct,
-  );
+  const card = o.freezeLevel
+    ? null
+    : rollCard(s, content, m.monsterId, m.elite, (ppm) => rngChance(s.rng, ppm), stats.cardLuckPct);
   if (card) {
     if (o.counters) o.counters.cards[card.cardId] = (o.counters.cards[card.cardId] ?? 0) + 1;
     out?.push({ type: 'CardDropped', tick: t, fromUid: m.uid, ...card });

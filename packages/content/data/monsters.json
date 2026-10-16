@@ -632,7 +632,7 @@
   "lootTables": [
     {
       "id": "loot_cemetery",
-      "equipmentDropChancePpm": 120000,
+      "equipmentDropChancePpm": 60000,
       "bases": [
         {
           "itemBaseId": "sword_rusty",
@@ -745,7 +745,7 @@
     },
     {
       "id": "loot_pale_woods",
-      "equipmentDropChancePpm": 120000,
+      "equipmentDropChancePpm": 60000,
       "bases": [
         {
           "itemBaseId": "sword_rusty",
@@ -858,7 +858,7 @@
     },
     {
       "id": "loot_cracked_crypt",
-      "equipmentDropChancePpm": 120000,
+      "equipmentDropChancePpm": 60000,
       "bases": [
         {
           "itemBaseId": "sword_rusty",
@@ -1051,7 +1051,7 @@
     },
     {
       "id": "loot_murky_bog",
-      "equipmentDropChancePpm": 120000,
+      "equipmentDropChancePpm": 60000,
       "bases": [
         {
           "itemBaseId": "sword_rusty",
@@ -1244,7 +1244,7 @@
     },
     {
       "id": "loot_drowned_village",
-      "equipmentDropChancePpm": 120000,
+      "equipmentDropChancePpm": 60000,
       "bases": [
         {
           "itemBaseId": "iron_blade",
@@ -1437,7 +1437,7 @@
     },
     {
       "id": "loot_rotting_heart",
-      "equipmentDropChancePpm": 120000,
+      "equipmentDropChancePpm": 60000,
       "bases": [
         {
           "itemBaseId": "iron_blade",
@@ -1630,7 +1630,7 @@
     },
     {
       "id": "loot_ash_gates",
-      "equipmentDropChancePpm": 120000,
+      "equipmentDropChancePpm": 60000,
       "bases": [
         {
           "itemBaseId": "iron_blade",
@@ -1823,7 +1823,7 @@
     },
     {
       "id": "loot_molten_halls",
-      "equipmentDropChancePpm": 120000,
+      "equipmentDropChancePpm": 60000,
       "bases": [
         {
           "itemBaseId": "blackened_sword",
@@ -2016,7 +2016,7 @@
     },
     {
       "id": "loot_burning_throne",
-      "equipmentDropChancePpm": 120000,
+      "equipmentDropChancePpm": 60000,
       "bases": [
         {
           "itemBaseId": "blackened_sword",

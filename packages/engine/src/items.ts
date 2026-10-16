@@ -2,6 +2,7 @@ import type { Affix, ContentDb, ItemBase, LootTable, Rarity } from '@abismo/cont
 import {
   AFFIX_COUNT,
   ILVL_SPREAD,
+  LEGENDARY_MIN_HUNT_ILVL,
   MAX_LEVEL,
   PPM,
   RARITY_BASE_PPM,
@@ -12,6 +13,10 @@ import type { ItemInstance, LootFilter, RolledAffix } from './types.ts';
 
 export function rarityRank(r: Rarity): number {
   return RARITY_ORDER.indexOf(r);
+}
+
+export function legendaryAllowed(huntIlvl: number): boolean {
+  return huntIlvl >= LEGENDARY_MIN_HUNT_ILVL;
 }
 
 /** Picks an index by integer weights. Consumes exactly one RNG draw. */
@@ -41,7 +46,12 @@ export function effectiveMagicFindPct(magicFindPct: number): number {
  * non-common rarity up by the effective bonus; common takes what is left. `minRarity` folds
  * the lower rarities into it.
  */
-export function rarityTable(magicFindPct: number, minRarity?: Rarity): Record<Rarity, number> {
+export function rarityTable(
+  magicFindPct: number,
+  minRarity?: Rarity,
+  /** False in early hunts: the legendary share becomes epic. */
+  legendaryAllowed = true,
+): Record<Rarity, number> {
   const eff = effectiveMagicFindPct(magicFindPct);
   const out = { common: 0, magic: 0, rare: 0, epic: 0, legendary: 0 } as Record<Rarity, number>;
   let rest = PPM;
@@ -51,6 +61,10 @@ export function rarityTable(magicFindPct: number, minRarity?: Rarity): Record<Ra
     rest -= out[r];
   }
   out.common = rest;
+  if (!legendaryAllowed) {
+    out.epic += out.legendary;
+    out.legendary = 0;
+  }
   if (minRarity) {
     const minRank = rarityRank(minRarity);
     for (const r of RARITY_ORDER) {
@@ -148,7 +162,10 @@ export function generateItem(
   const finalRarity =
     typeof rarity === 'string'
       ? rarity
-      : rollRarity(rng, rarityTable(rarity.magicFindPct, table.minRarity));
+      : rollRarity(
+          rng,
+          rarityTable(rarity.magicFindPct, table.minRarity, legendaryAllowed(huntIlvl)),
+        );
   const item: ItemInstance = {
     uid,
     baseId: base.id,
