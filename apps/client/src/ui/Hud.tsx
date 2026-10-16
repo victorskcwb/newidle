@@ -1,4 +1,4 @@
-import { backpackSize, potionHoursLeft } from '@abismo/engine';
+import { TICKS_PER_SECOND, backpackSize, potionHoursLeft } from '@abismo/engine';
 import { formatDuration, formatNumber, t } from '../i18n.ts';
 import { ZOOM_LEVELS } from '../scene/GameScene.ts';
 import { useUi } from '../state/store.ts';
@@ -134,20 +134,54 @@ function HuntPanel() {
 
 function SkillBar() {
   const sim = useSim();
+  const tick = useUi((u) => u.presented?.tick ?? 0);
+  const c = sim.state.combat;
   return (
-    <section className="skill-bar" aria-label="skills">
+    <section className="skill-bar" aria-label={t('screen.skills')}>
       {sim.state.hero.activeSkills.map((id, i) => {
         const skill = id ? sim.content.skills.get(id) : undefined;
+        const ready = id ? (c.skillReadyTick[id] ?? 0) : 0;
+        const total =
+          skill?.kind === 'active'
+            ? Math.max(1, Math.round(skill.cooldownSeconds * TICKS_PER_SECOND))
+            : 1;
+        const left = Math.max(0, Math.min(1, (ready - tick) / total));
         return (
           <div
             key={i}
             className="skill-slot"
             title={skill ? t(skill.nameKey) : t('hud.skillEmpty')}
+            style={left > 0 ? { ['--cd' as string]: `${Math.round(left * 360)}deg` } : undefined}
+            data-cooldown={left > 0 ? 'on' : undefined}
           >
             {skill ? t(skill.nameKey).slice(0, 2) : ''}
           </div>
         );
       })}
+    </section>
+  );
+}
+
+function BossBar() {
+  const boss = useUi((u) => u.boss);
+  if (!boss) return null;
+  const pct = Math.max(0, (boss.hp / boss.maxHp) * 100);
+  return (
+    <section
+      className="panel boss-bar"
+      role="meter"
+      aria-label={boss.name}
+      aria-valuenow={boss.hp}
+      aria-valuemax={boss.maxHp}
+      data-testid="boss-bar"
+    >
+      <div className="pixel boss-name">{boss.name}</div>
+      <div className="bar bar-hp">
+        <div className="bar-fill" style={{ width: `${pct}%` }} />
+        <span className="bar-text">
+          {formatNumber(boss.hp)} / {formatNumber(boss.maxHp)}
+        </span>
+      </div>
     </section>
   );
 }
@@ -226,6 +260,7 @@ export function Hud() {
       <HeroPanel />
       <HuntPanel />
       <SkillBar />
+      <BossBar />
       <Corner />
     </>
   );

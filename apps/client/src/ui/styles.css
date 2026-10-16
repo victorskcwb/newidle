@@ -918,3 +918,45 @@ input[type='range'] {
     bottom: calc(max(8px, env(safe-area-inset-bottom)) + 164px);
   }
 }
+
+/* Skill cooldown: a darkening sweep over the slot (section 11.1). */
+.skill-slot {
+  position: relative;
+  overflow: hidden;
+}
+
+.skill-slot[data-cooldown='on']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(rgba(0, 0, 0, 0.7) var(--cd), transparent 0);
+}
+
+/* Boss life bar at the top of the screen (section 4.3). */
+.boss-bar {
+  position: absolute;
+  left: 50%;
+  top: max(8px, env(safe-area-inset-top));
+  translate: -50% 0;
+  width: min(360px, calc(100vw - 2 * var(--gutter) - 340px));
+  min-width: 160px;
+  border-color: #9c3b3b;
+  text-align: center;
+}
+
+.boss-name {
+  color: #ff6b6b;
+  font-size: 13px;
+}
+
+.boss-bar .bar {
+  height: 14px;
+}
+
+@media (max-width: 600px) {
+  .boss-bar {
+    top: auto;
+    bottom: calc(max(8px, env(safe-area-inset-bottom)) + 210px);
+    width: calc(100vw - 2 * var(--gutter));
+  }
+}

@@ -25,6 +25,8 @@ interface UiState {
   tab: 'backpack' | 'stash';
   selectedUid: number | null;
   town: TownView;
+  /** The boss being fought, for the big life bar at the top (section 4.3). */
+  boss: { name: string; hp: number; maxHp: number } | null;
   zoom: number;
   /** Bumped by the sim when inventory, equipment or rates change. */
   simVersion: number;
@@ -36,6 +38,7 @@ interface UiState {
   setTab: (tab: 'backpack' | 'stash') => void;
   select: (uid: number | null) => void;
   setTown: (town: TownView) => void;
+  setBoss: (boss: { name: string; hp: number; maxHp: number } | null) => void;
   setZoom: (zoom: number) => void;
   bump: () => void;
 }
@@ -52,6 +55,7 @@ export const useUi = create<UiState>((set) => ({
   tab: 'backpack',
   selectedUid: null,
   town: null,
+  boss: null,
   zoom: 2,
   simVersion: 0,
   setPresented: (presented) => set({ presented }),
@@ -63,6 +67,7 @@ export const useUi = create<UiState>((set) => ({
   setTab: (tab) => set({ tab, selectedUid: null }),
   select: (selectedUid) => set({ selectedUid }),
   setTown: (town) => set({ town }),
+  setBoss: (boss) => set({ boss }),
   setZoom: (zoom) => set({ zoom }),
   bump: () => set((s) => ({ simVersion: s.simVersion + 1 })),
 }));

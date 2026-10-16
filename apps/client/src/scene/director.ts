@@ -223,6 +223,7 @@ export class Director {
               continue;
             }
             v.hp = Math.max(0, v.hp - hit.damage);
+            if (v.def.boss) this.showBoss(v);
             v.actor.setHp(v.hp / v.maxHp);
             v.actor.hurt();
             this.fx.number(
@@ -256,6 +257,7 @@ export class Director {
         const v = this.monsters.get(e.uid);
         if (!v) break;
         v.alive = false;
+        if (v.def.boss) this.showBoss(null);
         this.scene.time.delayedCall(180, () => v.actor.die(() => this.release(v)));
         this.log(
           t('log.killed', { monster: this.monsterName(v.def, false), xp: e.xp, gold: e.gold }),
@@ -399,6 +401,8 @@ export class Director {
       this.mode === 'walk_route' ? this.loopIndex : this.nearestLoopIndex(this.hero.tile);
     const center = this.loop[(from + ahead) % this.loop.length]!;
     this.placeGroup(e.monsters, center, true);
+    const bossView = this.group.map((uid) => this.monsters.get(uid)).find((v) => v?.def.boss);
+    this.showBoss(bossView ?? null);
     const boss = e.monsters.find((m) => m.boss);
     if (boss) {
       this.log(
@@ -470,6 +474,12 @@ export class Director {
     );
   }
 
+  private showBoss(v: MonsterView | null) {
+    useUi
+      .getState()
+      .setBoss(v && v.alive ? { name: t(v.def.nameKey), hp: v.hp, maxHp: v.maxHp } : null);
+  }
+
   private release(v: MonsterView) {
     if (this.monsters.get(v.uid) !== v) return;
     this.monsters.delete(v.uid);
@@ -478,6 +488,7 @@ export class Director {
   }
 
   private clearMonsters(fade: boolean) {
+    this.showBoss(null);
     for (const v of [...this.monsters.values()]) {
       v.alive = false;
       if (fade) {
