@@ -11,6 +11,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@abismo/content": "workspace:*"
+    "@abismo/content": "workspace:*",
+    "zod": "4.6.7"
   }
 }

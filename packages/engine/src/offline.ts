@@ -8,11 +8,15 @@ import {
   TICKS_PER_HOUR,
 } from './constants.ts';
 import { filterKeeps, generateItem, rarityRank } from './items.ts';
+import { killXp } from './hunt.ts';
 import { addXp } from './progression.ts';
 import { categoryLoot, potionHoursLeft, type RateSheet } from './rates.ts';
 import { rngBinomial, rngChance, rngInt, type RngState } from './rng.ts';
 import { heroStats } from './stats.ts';
 import type { GameState, ItemInstance } from './types.ts';
+
+/** Offline XP is applied in this many time slices (see resolveOffline). */
+const OFFLINE_XP_SLICES = 48;
 
 export type OfflineStop = 'no_potions' | 'too_many_deaths';
 
@@ -143,7 +147,6 @@ export function resolveOffline(
   }
 
   // 3. XP, gold, potions, deaths.
-  report.xp = rngRound(rng, rates.xpPerHour * hours);
   const gold = rngRound(rng, rates.goldPerHour * hours);
   const spent = rngRound(rng, rates.goldSpentPerHour * hours);
   report.gold = BigInt(gold);
@@ -165,16 +168,29 @@ export function resolveOffline(
       (s.consumables[id] ?? 0) + (report.potionsBought[id] ?? 0) - (report.potionsUsed[id] ?? 0);
     s.consumables[id] = Math.max(0, next);
   }
-  addXp(s, content, report.xp, s.tick, null);
-  if (rates.deathsPerHour > 1) {
-    report.deaths = rngRound(rng, rates.deathsPerHour * hours);
-    for (let i = 0; i < report.deaths; i++) {
-      const lost = Math.floor((s.hero.xp * DEATH_XP_LOSS_PCT) / 100);
-      s.hero.xp -= lost;
-      report.xpLost += lost;
+  // XP in time slices, so the level-gap penalty follows the levels gained while away
+  // (each kill gives exactly what killMonster would give at the hero's current level).
+  const xpPct = heroStats(s.hero, content).xpPct;
+  for (let i = 0; i < OFFLINE_XP_SLICES; i++) {
+    let xp = 0;
+    for (const c of kills) {
+      const n =
+        Math.floor((c.n * (i + 1)) / OFFLINE_XP_SLICES) - Math.floor((c.n * i) / OFFLINE_XP_SLICES);
+      if (n === 0) continue;
+      xp += n * killXp(content.monsters.get(c.monsterId)!, c.elite, s.hero.level, xpPct);
     }
-    s.lifetime.deaths += report.deaths;
+    report.xp += xp;
+    addXp(s, content, xp, s.tick, null);
   }
+  // Deaths at the sampled rate, whatever it is (decisions.md #24): each costs 10% of the
+  // XP inside the current level, never a level or items.
+  report.deaths = rngRound(rng, rates.deathsPerHour * hours);
+  for (let i = 0; i < report.deaths; i++) {
+    const lost = Math.floor((s.hero.xp * DEATH_XP_LOSS_PCT) / 100);
+    s.hero.xp -= lost;
+    report.xpLost += lost;
+  }
+  s.lifetime.deaths += report.deaths;
   s.lifetime.kills += BigInt(report.kills);
   report.levelAfter = s.hero.level;
 

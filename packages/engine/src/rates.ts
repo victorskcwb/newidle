@@ -127,17 +127,33 @@ export function computeRates(
     number
   >;
   const extrasPerHour: Record<string, number> = {};
-  let kills = 0;
+  // Kill counts come from the sample; the mix of monsters is exact from the hunt's content
+  // (spawn weights, group sizes, elite chance), so rare elite drops do not depend on a lucky
+  // sample. Bosses come from the sample (they only count when the hero actually wins).
+  const hunt = content.hunts.get(huntId)!;
+  let normalKills = 0;
   let bossKills = 0;
-  // Sorted keys keep the category order (and so offline RNG use) independent of kill order.
-  for (const key of [...counters.kills.keys()].sort()) {
-    const n = counters.kills.get(key)!;
-    const [monsterId, eliteFlag] = key.split('|') as [string, string];
-    const elite = eliteFlag === '1';
+  for (const [key, n] of counters.kills) {
+    const monsterId = key.split('|')[0]!;
+    if (content.monsters.get(monsterId)?.boss) bossKills += n;
+    else normalKills += n;
+  }
+  const avgGroup = (hunt.groupSize.min + hunt.groupSize.max) / 2;
+  const eliteKills = (normalKills / avgGroup) * (hunt.eliteChancePpm / PPM);
+  const totalWeight = hunt.spawns.reduce((sum, sp) => sum + sp.weight, 0);
+  const mix: { monsterId: string; elite: boolean; n: number }[] = [];
+  for (const sp of hunt.spawns) {
+    const share = sp.weight / totalWeight;
+    mix.push({ monsterId: sp.monsterId, elite: false, n: (normalKills - eliteKills) * share });
+    mix.push({ monsterId: sp.monsterId, elite: true, n: eliteKills * share });
+  }
+  if (hunt.boss && bossKills > 0)
+    mix.push({ monsterId: hunt.boss.monsterId, elite: false, n: bossKills });
+
+  for (const { monsterId, elite, n } of mix) {
+    if (n <= 0) continue;
     const killsPerHour = perHour(n);
     categories.push({ monsterId, elite, killsPerHour });
-    kills += n;
-    if (content.monsters.get(monsterId)?.boss) bossKills += n;
     const loot = categoryLoot(content, monsterId, elite, stats.magicFindPct);
     for (const r of RARITY_ORDER) {
       dropsPerHour[r] += (killsPerHour * loot.rolls * loot.dropPpm * loot.rarity[r]) / (PPM * PPM);
@@ -149,6 +165,7 @@ export function computeRates(
         (extrasPerHour[e.itemId] ?? 0) + (killsPerHour * e.chancePpm * avg) / PPM;
     }
   }
+  const kills = normalKills + bossKills;
 
   return {
     huntId,

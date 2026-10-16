@@ -279,6 +279,14 @@ function pickSkill(s: GameState, content: ContentDb, t: number) {
   return null;
 }
 
+/** XP for one kill: base × level-gap penalty × elite reward × (1 + XP bonus), floored. */
+export function killXp(def: Monster, elite: boolean, heroLevel: number, xpPct: number): number {
+  const rewardPct = elite ? ELITE_REWARD_PCT : 100;
+  return Math.floor(
+    (((def.xp * xpGapPct(heroLevel, def.level)) / 100) * rewardPct * (100 + xpPct)) / 10_000,
+  );
+}
+
 function killMonster(
   s: GameState,
   content: ContentDb,
@@ -291,10 +299,7 @@ function killMonster(
   const def = content.monsters.get(m.monsterId)!;
   const hunt = huntOf(s, content)!;
   const rewardPct = m.elite ? ELITE_REWARD_PCT : 100;
-  const xp = Math.floor(
-    (((def.xp * xpGapPct(s.hero.level, def.level)) / 100) * rewardPct * (100 + stats.xpPct)) /
-      10_000,
-  );
+  const xp = killXp(def, m.elite, s.hero.level, stats.xpPct);
   const goldRoll = rngInt(s.rng, def.gold[0], def.gold[1]);
   const gold = Math.floor((goldRoll * rewardPct * (100 + stats.goldPct)) / 10_000);
 

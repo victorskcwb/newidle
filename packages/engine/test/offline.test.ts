@@ -17,12 +17,17 @@ import { HUNT, content, hunting, newGame } from './fixture.ts';
 
 const TWO_HOURS = 2 * TICKS_PER_HOUR;
 
-/** A level 5 hero with a few points spent: a typical early setup. */
+/**
+ * A level 30 hero in the level 1–10 hunt: the XP penalty is already at its floor (10%), so
+ * the levels gained in 2 h do not change XP per kill and the frozen-level reference holds.
+ */
 function setup(): GameState {
   const s = hunting(100);
-  s.hero.level = 5;
+  s.hero.level = 30;
   s.hero.allocated = { strength: 8, dexterity: 4, vitality: 8, energy: 0 };
   s.gold = 500n;
+  // Drink on any damage, so potion use is large enough to compare.
+  s.settings.potionThresholdPct = 99;
   return s;
 }
 
@@ -33,7 +38,7 @@ describe('offline resolution vs tick simulation (section 9.3)', () => {
 
     // Reference: many independent 2 h tick simulations of the same setup (level frozen, as in
     // the rate sheet: offline applies the rates of the setup the hero left with).
-    const REF_RUNS = 30;
+    const REF_RUNS = 120;
     const ref = {
       kills: 0,
       xp: 0,
@@ -87,6 +92,12 @@ describe('offline resolution vs tick simulation (section 9.3)', () => {
       const o = mean(offTotal, RUNS);
       const t = mean(refTotal, REF_RUNS);
       const err = Math.abs(o - t) / t;
+      // OFFLINE_REPORT=1 pnpm test prints the margins (docs/plan-marco-1.md quotes them).
+      if (process.env.OFFLINE_REPORT) {
+        console.log(
+          `${label}: offline ${o.toFixed(1)} · tick ${t.toFixed(1)} · ${(err * 100).toFixed(1)}%`,
+        );
+      }
       expect(err, `${label}: offline ${o.toFixed(2)} vs tick ${t.toFixed(2)}`).toBeLessThanOrEqual(
         tolerance,
       );
@@ -107,6 +118,22 @@ describe('offline resolution vs tick simulation (section 9.3)', () => {
 });
 
 describe('resolveOffline', () => {
+  it('applies the level-gap XP penalty as the hero levels up while away', () => {
+    const s = setup();
+    s.hero.level = 2;
+    s.hero.xp = 0;
+    s.hero.allocated = { strength: 0, dexterity: 0, vitality: 0, energy: 0 };
+    s.settings.potionThresholdPct = 50;
+    s.consumables.potion_hp_small = 100_000;
+    const rates = computeRates(s, content, HUNT);
+    const r = resolveOffline(s, content, rates, 3 * TICKS_PER_HOUR);
+    expect(r.stoppedBy).toBeNull();
+    // At the departure rate (no penalty) 3 h would be worth far more XP than with it.
+    expect(r.xp).toBeLessThan(rates.xpPerHour * 3 * 0.6);
+    expect(r.levelAfter).toBeLessThanOrEqual(25);
+    expect(r.levelAfter).toBeGreaterThan(10);
+  });
+
   it('caps the time at 12 h', () => {
     const s = setup();
     const rates = computeRates(s, content, HUNT);

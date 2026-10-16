@@ -8,6 +8,7 @@ export * from './offline.ts';
 export * from './progression.ts';
 export * from './rates.ts';
 export * from './rng.ts';
+export * from './save.ts';
 export * from './state.ts';
 export * from './stats.ts';
 export * from './types.ts';

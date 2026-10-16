@@ -95,4 +95,4 @@ export const OFFLINE_CAP_TICKS = 12 * TICKS_PER_HOUR;
 /** Most items generated with affixes by one offline resolution; the rest are salvaged. */
 export const OFFLINE_ITEM_LIMIT = 200;
 /** Hunting time simulated to build a rate sheet. */
-export const RATE_SAMPLE_TICKS = 2 * TICKS_PER_HOUR;
+export const RATE_SAMPLE_TICKS = 4 * TICKS_PER_HOUR;
