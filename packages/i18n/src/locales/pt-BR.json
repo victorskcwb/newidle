@@ -1,23 +1,19 @@
 {
   "app.title": "Abismo Idle",
   "app.loading": "Carregando…",
-
   "region.cinzarra": "Cinzarra",
   "town.cinzarra": "Vila de Cinzarra",
   "hunt.forgotten_cemetery": "Cemitério Esquecido",
-
   "monster.bone_walker": "Andarilho de ossos",
   "monster.grave_rat": "Rato de cova",
   "monster.gravekeeper": "O Coveiro",
   "monster.elite": "{name} (elite)",
-
   "item.sword_rusty": "Espada enferrujada",
   "item.shield_plank": "Escudo de tábuas",
   "item.helm_leather": "Elmo de couro",
   "item.vest_leather": "Colete de couro",
   "item.boots_worn": "Botas gastas",
   "item.ring_copper": "Anel de cobre",
-
   "affix.inc_damage": "+{value}% de dano",
   "affix.flat_damage": "+{value} de dano",
   "affix.flat_life": "+{value} de vida",
@@ -26,7 +22,6 @@
   "affix.life_leech": "{value}% de roubo de vida",
   "affix.inc_xp": "+{value}% de XP",
   "affix.magic_find": "+{value}% de chance de item mágico",
-
   "stat.strength": "+{value} de força",
   "stat.dexterity": "+{value} de destreza",
   "stat.vitality": "+{value} de vitalidade",
@@ -48,27 +43,22 @@
   "stat.goldPct": "+{value}% de ouro",
   "stat.magicFindPct": "+{value}% de chance de item mágico",
   "stat.damageVsUndeadPct": "+{value}% de dano contra mortos-vivos",
-
   "consumable.potion_hp_small": "Poção de vida pequena",
   "consumable.potion_mana_small": "Poção de mana pequena",
-
   "material.fragment": "Fragmento",
   "material.essence": "Essência",
   "material.crystal": "Cristal",
   "material.core": "Núcleo",
   "material.soul": "Alma",
-
   "skill.heavy_strike": "Golpe pesado",
   "skill.heavy_strike.desc": "Um golpe lento e brutal contra um único inimigo.",
   "skill.whirlwind": "Golpe giratório",
   "skill.whirlwind.desc": "Gira a arma e atinge até 4 inimigos do grupo.",
-
   "rarity.common": "Comum",
   "rarity.magic": "Mágico",
   "rarity.rare": "Raro",
   "rarity.epic": "Épico",
   "rarity.legendary": "Lendário",
-
   "slot.weapon": "Arma",
   "slot.offhand": "Escudo",
   "slot.helm": "Elmo",
@@ -79,7 +69,6 @@
   "slot.belt": "Cinto",
   "slot.ring": "Anel",
   "slot.amulet": "Amuleto",
-
   "hud.level": "Nv. {level}",
   "hud.hp": "Vida",
   "hud.mana": "Mana",
@@ -88,7 +77,6 @@
   "hud.resets": "Resets: {n}",
   "hud.potions": "Poções: {n}",
   "hud.skillEmpty": "Espaço de habilidade vazio",
-
   "activity.idle_town": "Na vila",
   "activity.walking": "Procurando monstros",
   "activity.fighting": "Lutando",
@@ -96,7 +84,6 @@
   "activity.in_town": "Na vila",
   "activity.to_hunt": "A caminho da caça",
   "activity.dead": "Derrotado",
-
   "action.hunt": "Caçar",
   "action.returnTown": "Voltar à cidade",
   "action.backpack": "Mochila",
@@ -108,15 +95,12 @@
   "action.equip": "Equipar",
   "action.salvage": "Desmanchar",
   "action.soon": "Em breve",
-
   "rates.summary": "~{kills} abates/h · {xp} XP/h · {gold} ouro/h",
   "rates.potionsLast": "poções duram {time}",
   "rates.potionsSustained": "poções se pagam",
   "rates.calculating": "calculando taxas…",
-
   "time.hoursMinutes": "{h} h {m} min",
   "time.minutes": "{m} min",
-
   "log.killed": "{monster} derrotado! +{xp} XP, +{gold} ouro",
   "log.item": "{item} ({rarity})",
   "log.itemSalvaged": "{item} ({rarity}) desmanchado: +{qty} {material}",
@@ -139,7 +123,6 @@
   "log.elite": "Um grupo de elite apareceu!",
   "log.bossAppears": "{monster} apareceu!",
   "log.empty": "Nada aconteceu ainda.",
-
   "backpack.title": "Mochila",
   "backpack.stash": "Baú",
   "backpack.count": "{n}/{max}",
@@ -148,7 +131,6 @@
   "backpack.nothingEquipped": "Nada equipado neste espaço",
   "backpack.compare": "Comparado ao equipado",
   "backpack.materials": "Materiais",
-
   "item.ilvl": "Nível do item {ilvl}",
   "item.requires": "Requer nível {level}",
   "item.requiresAttribute": "Requer {value} de {attribute}",
@@ -157,12 +139,10 @@
   "item.aps": "{aps} ataques/s",
   "item.defense": "Defesa {value}",
   "item.refine": "+{n}",
-
   "attribute.strength": "Força",
   "attribute.dexterity": "Destreza",
   "attribute.vitality": "Vitalidade",
   "attribute.energy": "Energia",
-
   "compare.damage": "Dano médio",
   "compare.attackSpeed": "Ataques/s",
   "compare.defense": "Defesa",
@@ -170,10 +150,8 @@
   "compare.xpPct": "% de XP",
   "compare.magicFindPct": "% de item mágico",
   "compare.lifeLeechPct": "% de roubo de vida",
-
   "town.depositing": "Guardando itens e comprando poções…",
   "town.idle": "Descansando na vila. Toque em Caçar para voltar.",
-
   "offline.title": "Enquanto você estava fora",
   "offline.time": "{time} resolvidos",
   "offline.kills": "{n} abates",
@@ -183,5 +161,7 @@
   "offline.items": "Melhores itens",
   "offline.stopped.no_potions": "As poções acabaram e o herói voltou à vila.",
   "offline.stopped.too_many_deaths": "O herói foi derrotado vezes demais e voltou à vila.",
-  "offline.continue": "Continuar"
+  "offline.continue": "Continuar",
+  "hero.defaultName": "Aventureiro",
+  "fx.miss": "errou"
 }

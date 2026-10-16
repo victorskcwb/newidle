@@ -1,0 +1,508 @@
+@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&display=swap');
+
+:root {
+  --bg: #0e0d12;
+  --panel: rgba(20, 18, 26, 0.86);
+  --panel-solid: #16141c;
+  --edge: #3a3546;
+  --edge-light: #5b5470;
+  --text: #e6e3dc;
+  --muted: #a39fb0;
+  --accent: #d9a441;
+  --good: #6be06b;
+  --bad: #ff7a7a;
+  --info: #9fd3ff;
+  --hp: #c8423e;
+  --mana: #3e6ec8;
+  --xp: #d9a441;
+  --font-pixel: 'Pixelify Sans', ui-monospace, monospace;
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --gutter: max(8px, env(safe-area-inset-left));
+  --touch: 44px;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.35 var(--font-body);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.pixel {
+  font-family: var(--font-pixel);
+  letter-spacing: 0.02em;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.tone-good {
+  color: var(--good);
+}
+
+.tone-bad {
+  color: var(--bad);
+}
+
+.tone-info {
+  color: var(--info);
+}
+
+.scene {
+  position: fixed;
+  inset: 0;
+}
+
+.scene canvas {
+  image-rendering: pixelated;
+}
+
+/* Pixel frame: 2 px border with clipped corners. */
+.panel {
+  background: var(--panel);
+  border: 2px solid var(--edge);
+  clip-path: polygon(
+    4px 0,
+    calc(100% - 4px) 0,
+    100% 4px,
+    100% calc(100% - 4px),
+    calc(100% - 4px) 100%,
+    4px 100%,
+    0 calc(100% - 4px),
+    0 4px
+  );
+  padding: 8px;
+}
+
+.hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hud > *,
+.hud .panel,
+.hud button,
+.skill-bar,
+.corner {
+  pointer-events: auto;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+/* Buttons: at least 44 px tall for touch (section 2.8). */
+.btn {
+  min-height: var(--touch);
+  min-width: var(--touch);
+  padding: 0 12px;
+  background: #24202e;
+  color: var(--text);
+  border: 2px solid var(--edge-light);
+  font: 600 13px var(--font-pixel);
+  cursor: pointer;
+  clip-path: polygon(
+    3px 0,
+    calc(100% - 3px) 0,
+    100% 3px,
+    100% calc(100% - 3px),
+    calc(100% - 3px) 100%,
+    3px 100%,
+    0 calc(100% - 3px),
+    0 3px
+  );
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.btn-primary {
+  background: #3b2c12;
+  border-color: var(--accent);
+}
+
+.btn.icon {
+  padding: 0;
+  font-size: 18px;
+}
+
+/* --- Top left: hero ---------------------------------------------------------------------- */
+.hero-panel {
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top));
+  left: var(--gutter);
+  display: flex;
+  gap: 8px;
+  width: min(300px, calc(100vw - 2 * var(--gutter) - 168px));
+  min-width: 170px;
+}
+
+.portrait {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  background: #2a2434;
+  border: 2px solid var(--accent);
+  font: 600 16px var(--font-pixel);
+  color: var(--accent);
+}
+
+.hero-bars {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.hero-name {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.bar {
+  position: relative;
+  height: 12px;
+  background: #0a090d;
+  border: 1px solid #000;
+}
+
+.bar-xp {
+  height: 8px;
+}
+
+.bar-fill {
+  height: 100%;
+  transition: width 120ms linear;
+}
+
+.bar-hp .bar-fill {
+  background: var(--hp);
+}
+
+.bar-mana .bar-fill {
+  background: var(--mana);
+}
+
+.bar-xp .bar-fill {
+  background: var(--xp);
+}
+
+.bar-text {
+  position: absolute;
+  inset: 0;
+  font: 9px/12px var(--font-pixel);
+  text-align: center;
+  text-shadow: 0 1px 0 #000;
+}
+
+.bar-xp .bar-text {
+  line-height: 8px;
+  font-size: 7px;
+}
+
+/* --- Top right: gold, hunt, actions -------------------------------------------------------- */
+.hunt-panel {
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top));
+  right: var(--gutter);
+  width: 160px;
+  text-align: right;
+}
+
+.hunt-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.gold {
+  color: var(--accent);
+  font: 600 14px var(--font-pixel);
+}
+
+.hunt-name {
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.activity,
+.rates {
+  font-size: 11px;
+}
+
+.rates {
+  color: var(--info);
+  min-height: 1em;
+}
+
+.hunt-panel .row {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* --- Left: skills ---------------------------------------------------------------------------- */
+.skill-bar {
+  position: absolute;
+  left: var(--gutter);
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  gap: 6px;
+}
+
+.skill-slot {
+  width: var(--touch);
+  height: var(--touch);
+  background: rgba(20, 18, 26, 0.75);
+  border: 2px dashed var(--edge);
+  display: grid;
+  place-items: center;
+  font: 600 12px var(--font-pixel);
+}
+
+/* --- Bottom left: event log ---------------------------------------------------------------- */
+.event-log {
+  position: absolute;
+  left: var(--gutter);
+  bottom: max(8px, env(safe-area-inset-bottom));
+  width: min(420px, calc(100vw - 2 * var(--gutter) - 150px));
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.event-log.expanded {
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+.log-line {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-log.expanded .log-line {
+  white-space: normal;
+}
+
+/* --- Bottom right: shortcuts --------------------------------------------------------------- */
+.corner {
+  position: absolute;
+  right: var(--gutter);
+  bottom: max(8px, env(safe-area-inset-bottom));
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+}
+
+.zoom {
+  display: flex;
+  gap: 6px;
+}
+
+.backpack-btn .count {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* --- Town overlay ---------------------------------------------------------------------------- */
+.town-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: 8px;
+  background: radial-gradient(circle at 50% 45%, #2a2030 0%, #0e0d12 70%);
+}
+
+.town-name {
+  font-size: 24px;
+  color: var(--accent);
+}
+
+/* --- Backpack sheet -------------------------------------------------------------------------- */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: grid;
+  place-items: end center;
+  z-index: 10;
+}
+
+.sheet {
+  width: min(560px, 100vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--panel-solid);
+  padding: 10px var(--gutter) 16px;
+}
+
+.sheet-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.tab {
+  min-height: var(--touch);
+  padding: 0 10px;
+  background: transparent;
+  border: 2px solid transparent;
+  color: var(--muted);
+  font: 600 13px var(--font-pixel);
+  cursor: pointer;
+}
+
+.tab.active {
+  color: var(--text);
+  border-color: var(--edge-light);
+}
+
+.equipment,
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--touch), 1fr));
+  gap: 6px;
+}
+
+.equipment {
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 2px solid var(--edge);
+}
+
+.cell {
+  aspect-ratio: 1;
+  min-width: var(--touch);
+  min-height: var(--touch);
+  background: #1f1b28;
+  border: 2px solid var(--edge);
+  display: grid;
+  place-items: center;
+  align-content: center;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-pixel);
+}
+
+.cell.selected {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+
+.cell.empty {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.cell .glyph {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.cell .slot-abbr {
+  font-size: 9px;
+  color: var(--muted);
+}
+
+.item-card {
+  border: 2px solid var(--edge);
+  padding: 8px;
+  margin-bottom: 8px;
+  background: #1b1824;
+  font-size: 13px;
+}
+
+.item-title {
+  font-size: 15px;
+}
+
+.item-lines {
+  margin: 6px 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.item-lines .affix {
+  color: var(--info);
+}
+
+.compare {
+  font-size: 12px;
+}
+
+.materials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+/* --- Phones in portrait: skills move to the bottom, log shrinks ----------------------------- */
+@media (max-width: 600px) {
+  .hunt-panel {
+    width: 150px;
+  }
+
+  .skill-bar {
+    top: auto;
+    transform: none;
+    left: 50%;
+    bottom: calc(max(8px, env(safe-area-inset-bottom)) + 108px);
+    translate: -50% 0;
+    grid-auto-flow: column;
+  }
+
+  .event-log {
+    width: calc(100vw - 2 * var(--gutter) - 130px);
+    font-size: 11px;
+  }
+
+  .event-log:not(.expanded) .log-line:nth-last-child(n + 4) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar-fill {
+    transition: none;
+  }
+}
