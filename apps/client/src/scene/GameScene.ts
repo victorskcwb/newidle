@@ -17,6 +17,7 @@ export class GameScene extends Phaser.Scene {
   constructor(
     private sim: GameSim,
     private mapId: string,
+    private options: { noParticles: boolean },
   ) {
     super('hunt');
   }
@@ -45,7 +46,7 @@ export class GameScene extends Phaser.Scene {
     cam.setRoundPixels(true);
 
     const effects = new Effects(this);
-    effects.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    effects.reducedMotion = this.options.noParticles;
     // Loot flies to the backpack button, which sits in the bottom-right corner of the screen.
     const backpackTarget = () => {
       const view = cam.worldView;

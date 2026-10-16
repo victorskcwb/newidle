@@ -11,13 +11,17 @@ export interface LogLine {
 
 export type TownView = null | 'depositing' | 'idle';
 
+/** Full-panel screens reachable from the HUD (at most 2 taps away, section 11). */
+export type Screen =
+  'menu' | 'character' | 'skills' | 'hunts' | 'smith' | 'altar' | 'filter' | 'settings' | 'save';
+
 interface UiState {
   /** HUD values at the tick the scene is showing (not the engine's latest tick). */
   presented: Snapshot | null;
   log: LogLine[];
   logExpanded: boolean;
   backpackOpen: boolean;
-  menuOpen: boolean;
+  screen: Screen | null;
   tab: 'backpack' | 'stash';
   selectedUid: number | null;
   town: TownView;
@@ -28,7 +32,7 @@ interface UiState {
   pushLog: (line: Omit<LogLine, 'id'>) => void;
   toggleLog: () => void;
   openBackpack: (open: boolean) => void;
-  openMenu: (open: boolean) => void;
+  openScreen: (screen: Screen | null) => void;
   setTab: (tab: 'backpack' | 'stash') => void;
   select: (uid: number | null) => void;
   setTown: (town: TownView) => void;
@@ -44,7 +48,7 @@ export const useUi = create<UiState>((set) => ({
   log: [],
   logExpanded: false,
   backpackOpen: false,
-  menuOpen: false,
+  screen: null,
   tab: 'backpack',
   selectedUid: null,
   town: null,
@@ -55,7 +59,7 @@ export const useUi = create<UiState>((set) => ({
     set((s) => ({ log: [...s.log.slice(-(LOG_LIMIT - 1)), { ...line, id: ++logId }] })),
   toggleLog: () => set((s) => ({ logExpanded: !s.logExpanded })),
   openBackpack: (backpackOpen) => set({ backpackOpen, selectedUid: null }),
-  openMenu: (menuOpen) => set({ menuOpen }),
+  openScreen: (screen) => set({ screen, backpackOpen: false, selectedUid: null }),
   setTab: (tab) => set({ tab, selectedUid: null }),
   select: (selectedUid) => set({ selectedUid }),
   setTown: (town) => set({ town }),

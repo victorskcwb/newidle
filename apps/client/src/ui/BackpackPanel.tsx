@@ -1,12 +1,12 @@
 import { EQUIPMENT_SLOTS, RARITIES } from '@abismo/content';
-import { BACKPACK_SIZE, type ItemInstance } from '@abismo/engine';
+import { backpackSize, type ItemInstance } from '@abismo/engine';
 import { formatNumber, t } from '../i18n.ts';
 import { useUi } from '../state/store.ts';
 import { compareItem, itemLines, itemName, requirementText } from './items.ts';
 import { RARITY_COLOR, RARITY_GLYPH } from './rarity.ts';
 import { useSim } from './useSim.ts';
 
-function ItemCell({
+export function ItemCell({
   item,
   selected,
   onSelect,
@@ -35,7 +35,15 @@ function ItemCell({
   );
 }
 
-function ItemCard({ item, equipped }: { item: ItemInstance; equipped: boolean }) {
+export function ItemCard({
+  item,
+  equipped,
+  onUnequip,
+}: {
+  item: ItemInstance;
+  equipped: boolean;
+  onUnequip?: () => void;
+}) {
   const sim = useSim();
   const select = useUi((s) => s.select);
   const lines = itemLines(sim.content, item);
@@ -75,6 +83,13 @@ function ItemCard({ item, equipped }: { item: ItemInstance; equipped: boolean })
               </div>
             );
           })}
+        </div>
+      )}
+      {equipped && onUnequip && (
+        <div className="row">
+          <button type="button" className="btn" onClick={onUnequip}>
+            {t('action.unequip')}
+          </button>
         </div>
       )}
       {!equipped && (
@@ -130,7 +145,10 @@ export function BackpackPanel() {
               onClick={() => setTab('backpack')}
             >
               {t('backpack.title')}{' '}
-              {t('backpack.count', { n: s.backpack.length, max: BACKPACK_SIZE })}
+              {t('backpack.count', {
+                n: s.backpack.length,
+                max: backpackSize(s.hero, sim.content),
+              })}
             </button>
             <button
               type="button"

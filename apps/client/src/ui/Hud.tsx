@@ -1,4 +1,4 @@
-import { BACKPACK_SIZE, potionHoursLeft } from '@abismo/engine';
+import { backpackSize, potionHoursLeft } from '@abismo/engine';
 import { formatDuration, formatNumber, t } from '../i18n.ts';
 import { ZOOM_LEVELS } from '../scene/GameScene.ts';
 import { useUi } from '../state/store.ts';
@@ -51,7 +51,14 @@ function HeroPanel() {
         </div>
         <Bar value={p.hp} max={p.maxHp} kind="hp" label={t('hud.hp')} />
         <Bar value={p.mana} max={p.maxMana} kind="mana" label={t('hud.mana')} />
-        <Bar value={p.xp} max={p.xpToNext || 1} kind="xp" label={t('hud.xp')} />
+        {p.xpToNext > 0 ? (
+          <Bar value={p.xp} max={p.xpToNext} kind="xp" label={t('hud.xp')} />
+        ) : (
+          <div className="bar bar-xp" aria-label={t('hud.xp')}>
+            <div className="bar-fill" style={{ width: '100%' }} />
+            <span className="bar-text">{t('hud.maxLevel')}</span>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -63,6 +70,7 @@ function HuntPanel() {
   const s = sim.state;
   const hunt = s.hunt ? sim.content.hunts.get(s.hunt.huntId) : undefined;
   const hunting = s.activity.kind !== 'idle_town';
+  const openScreen = useUi((u) => u.openScreen);
   const rates = sim.rates;
   const potionId = s.settings.hpPotionId;
   const potionHours = rates
@@ -80,9 +88,18 @@ function HuntPanel() {
           <span aria-hidden>◉ </span>
           {formatNumber(p?.gold ?? s.gold)}
         </span>
-        <span className="muted">{t('hud.resets', { n: 0 })}</span>
+        <span className="muted">{t('hud.resets', { n: s.hero.resets.count })}</span>
       </div>
-      {hunt && <div className="pixel hunt-name">{t(hunt.nameKey)}</div>}
+      {hunt && (
+        <button
+          type="button"
+          className="link pixel hunt-name"
+          onClick={() => openScreen('hunts')}
+          data-testid="hunt-name"
+        >
+          {t(hunt.nameKey)} ▾
+        </button>
+      )}
       <div className="muted activity">{t(`activity.${p?.activity ?? s.activity.kind}`)}</div>
       <div className="rates" data-testid="rates">
         {hunt && rates
@@ -140,7 +157,8 @@ function Corner() {
   const zoom = useUi((s) => s.zoom);
   const setZoom = useUi((s) => s.setZoom);
   const openBackpack = useUi((s) => s.openBackpack);
-  const openMenu = useUi((s) => s.openMenu);
+  const openScreen = useUi((s) => s.openScreen);
+  const hero = sim.state.hero;
   const i = ZOOM_LEVELS.indexOf(zoom as (typeof ZOOM_LEVELS)[number]);
   return (
     <nav className="corner">
@@ -164,16 +182,25 @@ function Corner() {
           +
         </button>
       </div>
-      <button type="button" className="btn" disabled title={t('action.soon')}>
+      <button
+        type="button"
+        className="btn"
+        onClick={() => openScreen('character')}
+        data-testid="character-button"
+      >
         {t('action.character')}
+        {hero.unspentAttributePoints > 0 && (
+          <span className="badge">{hero.unspentAttributePoints}</span>
+        )}
       </button>
       <button
         type="button"
         className="btn"
-        onClick={() => openMenu(true)}
+        onClick={() => openScreen('menu')}
         data-testid="menu-button"
       >
         {t('action.menu')}
+        {hero.unspentSkillPoints > 0 && <span className="badge">{hero.unspentSkillPoints}</span>}
       </button>
       <button
         type="button"
@@ -183,7 +210,10 @@ function Corner() {
       >
         {t('action.backpack')}{' '}
         <span className="count">
-          {t('backpack.count', { n: sim.state.backpack.length, max: BACKPACK_SIZE })}
+          {t('backpack.count', {
+            n: sim.state.backpack.length,
+            max: backpackSize(hero, sim.content),
+          })}
         </span>
       </button>
     </nav>

@@ -4,7 +4,18 @@ import type { GameSim } from '../game/sim.ts';
 import { GameScene } from './GameScene.ts';
 
 /** Mounts the Phaser canvas full-screen behind the React HUD. */
-export function SceneView({ sim, mapId }: { sim: GameSim; mapId: string }) {
+export function SceneView({
+  sim,
+  mapId,
+  eco,
+  reducedMotion,
+}: {
+  sim: GameSim;
+  mapId: string;
+  /** Economy mode: 30 fps and no particles. */
+  eco: boolean;
+  reducedMotion: boolean;
+}) {
   const host = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -16,12 +27,12 @@ export function SceneView({ sim, mapId }: { sim: GameSim; mapId: string }) {
       pixelArt: true,
       roundPixels: true,
       scale: { mode: Phaser.Scale.RESIZE, width: '100%', height: '100%' },
-      fps: { target: 60 },
+      fps: { target: eco ? 30 : 60, limit: eco ? 30 : 0 },
       banner: false,
-      scene: new GameScene(sim, mapId),
+      scene: new GameScene(sim, mapId, { noParticles: eco || reducedMotion }),
     });
     return () => game.destroy(true);
-  }, [sim, mapId]);
+  }, [sim, mapId, eco, reducedMotion]);
 
   return <div ref={host} className="scene" data-testid="scene" />;
 }

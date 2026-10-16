@@ -6,6 +6,8 @@ export async function createHero(page: Page, name = 'Teste', speed = 6) {
   await page.getByTestId('hero-name').fill(name);
   await page.getByTestId('create-hero').click();
   await expect(page.locator('[data-testid="scene"] canvas')).toBeVisible();
+  // The elder's welcome (first ten minutes).
+  await page.getByTestId('tip-ok').click();
   await expect(page.getByTestId('event-log')).toContainText('Caçada: Cemitério Esquecido');
 }
 

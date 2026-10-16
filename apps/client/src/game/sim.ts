@@ -1,23 +1,43 @@
 import { loadContent, type ContentDb } from '@abismo/content';
+import type { EquipmentSlot, Rarity } from '@abismo/content';
 import {
   TICK_MS,
+  allocateAttribute,
+  buyUpgrade,
   computeRates,
   createGame,
+  debugSetLevel,
   equipItem,
   heroStats,
+  learnSkill,
+  performReset,
+  refineItem,
   resolveOffline,
+  respecSkills,
   returnToTown,
   salvageItem,
+  salvageUpTo,
+  setActiveSkill,
+  setAutoAllocate,
+  setLootFilter,
+  setPotionSettings,
   startHunt,
   step,
   stepQuiet,
+  unequipItem,
   xpToNext,
   type Activity,
+  type Attribute,
+  type AutoAllocateProfile,
   type GameEvent,
   type GameState,
+  type LootFilter,
   type OfflineReport,
+  type PotionSettings,
   type RateSheet,
+  type RefineResult,
 } from '@abismo/engine';
+import { RatesClient } from './ratesClient.ts';
 
 /** What the HUD shows at one tick. Kept per tick so the HUD can follow the scene's lag. */
 export interface Snapshot {
@@ -70,6 +90,8 @@ export class GameSim {
   private listeners = new Set<(s: SimSignal) => void>();
   private backlog: SimSignal[] = [];
   private changeListeners = new Set<() => void>();
+  private ratesClient: RatesClient | null = null;
+  private ratesRequest = 0;
 
   constructor(
     state: GameState,
@@ -139,7 +161,7 @@ export class GameSim {
 
   equip(uid: number) {
     equipItem(this.state, this.content, uid);
-    this.snapshot();
+    this.freshSnapshot();
     this.changed(true);
   }
 
@@ -151,6 +173,108 @@ export class GameSim {
   dismissOffline() {
     this.offlineReport = null;
     this.changed(false);
+  }
+
+  unequip(slot: EquipmentSlot) {
+    unequipItem(this.state, this.content, slot);
+    this.freshSnapshot();
+    this.changed(true);
+  }
+
+  allocate(attribute: Attribute, points: number) {
+    allocateAttribute(this.state, attribute, points);
+    this.freshSnapshot();
+    this.changed(true);
+  }
+
+  setAutoAllocate(profile: AutoAllocateProfile) {
+    setAutoAllocate(this.state, profile);
+    this.freshSnapshot();
+    this.changed(true);
+  }
+
+  learnSkill(skillId: string) {
+    learnSkill(this.state, this.content, skillId);
+    this.freshSnapshot();
+    this.changed(true);
+  }
+
+  setActiveSkill(slot: number, skillId: string | null) {
+    setActiveSkill(this.state, this.content, slot, skillId);
+    this.changed(true);
+  }
+
+  respecSkills() {
+    respecSkills(this.state);
+    this.freshSnapshot();
+    this.changed(true);
+  }
+
+  refine(uid: number, useProtection: boolean): RefineResult {
+    const result = refineItem(this.state, this.content, uid, useProtection);
+    this.freshSnapshot();
+    this.changed(true);
+    return result;
+  }
+
+  salvageUpTo(rarity: Rarity) {
+    const result = salvageUpTo(this.state, this.content, rarity);
+    this.changed(false);
+    return result;
+  }
+
+  setLootFilter(filter: LootFilter) {
+    setLootFilter(this.state, this.content, filter);
+    this.changed(true);
+  }
+
+  setPotionSettings(settings: PotionSettings) {
+    setPotionSettings(this.state, settings);
+    this.changed(true);
+  }
+
+  reset() {
+    const result = performReset(this.state, this.content);
+    this.freshSnapshot();
+    this.emit({ kind: 'resync' });
+    this.changed(true);
+    return result;
+  }
+
+  buyUpgrade(upgradeId: string) {
+    buyUpgrade(this.state, this.content, upgradeId);
+    this.freshSnapshot();
+    this.changed(true);
+  }
+
+  /** Marks a one-time tip as seen. */
+  setFlag(flag: string) {
+    if (this.state.flags.includes(flag)) return;
+    this.state.flags.push(flag);
+    this.changed(false);
+  }
+
+  /** Debug only (dev builds). */
+  debugLevel(level: number) {
+    debugSetLevel(this.state, this.content, level);
+    this.freshSnapshot();
+    this.changed(true);
+  }
+
+  /** Debug only (dev builds): gold and refine materials for testing. */
+  debugResources() {
+    this.state.gold += 1_000_000n;
+    for (const id of ['fragment', 'essence', 'crystal']) {
+      this.state.materials[id] = (this.state.materials[id] ?? 0n) + 1_000n;
+    }
+    this.freshSnapshot();
+    this.changed(false);
+  }
+
+  /** Rate sheet of the current setup in any hunt (computed off the main thread). */
+  ratesFor(huntId: string): Promise<RateSheet> {
+    this.ratesClient ??= new RatesClient();
+    return this.ratesClient.compute(this.state, huntId);
   }
 
   // --- Internals ----------------------------------------------------------------------------
@@ -229,6 +353,15 @@ export class GameSim {
     this.changed(true);
   }
 
+  /**
+   * After a player intent the HUD must show the new values at once, not the older snapshot
+   * of the tick the scene is presenting: drop the history so lookups fall back to now.
+   */
+  private freshSnapshot() {
+    this.snapshots.clear();
+    this.snapshot();
+  }
+
   private snapshot() {
     const s = this.state;
     const stats = heroStats(s.hero, this.content);
@@ -267,9 +400,18 @@ export class GameSim {
     if (this.ratesTimer) clearTimeout(this.ratesTimer);
     this.ratesTimer = setTimeout(() => {
       const huntId = this.state.hunt?.huntId;
-      this.rates = huntId ? computeRates(this.state, this.content, huntId) : null;
-      this.version++;
-      for (const l of this.changeListeners) l();
+      const request = ++this.ratesRequest;
+      if (!huntId) {
+        this.rates = null;
+        return;
+      }
+      void this.ratesFor(huntId).then((rates) => {
+        // A newer request supersedes this one.
+        if (request !== this.ratesRequest) return;
+        this.rates = rates;
+        this.version++;
+        for (const l of this.changeListeners) l();
+      });
     }, RATES_DEBOUNCE_MS);
   }
 }

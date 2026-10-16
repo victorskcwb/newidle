@@ -103,12 +103,8 @@ function Root() {
           }}
         />
       );
-    case 'game': {
-      const hunt = phase.sim.state.hunt
-        ? content.hunts.get(phase.sim.state.hunt.huntId)
-        : undefined;
-      return <App sim={phase.sim} mapId={(hunt ?? firstHunt).mapId} />;
-    }
+    case 'game':
+      return <App sim={phase.sim} />;
   }
 }
 
