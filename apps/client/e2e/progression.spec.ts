@@ -38,7 +38,7 @@ test('skills, hunt map, reset and reset shop', async ({ page }) => {
   await expect(page.getByText('Renascido! +10 pontos de reset.')).toBeVisible();
   await expect(page.getByTestId('hero-level')).toHaveText('Nv. 1');
   await page.getByTestId('upgrade-wisdom').getByRole('button').click();
-  await expect(page.getByTestId('upgrade-wisdom')).toContainText('1/20');
+  await expect(page.getByTestId('upgrade-wisdom')).toContainText('1/40');
 
   expect(errors).toEqual([]);
 });
