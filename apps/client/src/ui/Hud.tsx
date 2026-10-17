@@ -10,6 +10,7 @@ import { formatDuration, formatNumber, t } from '../i18n.ts';
 import { ZOOM_LEVELS } from '../scene/GameScene.ts';
 import { useUi, type Screen } from '../state/store.ts';
 import { Icon } from './Icon.tsx';
+import { PixelIcon } from './PixelIcon.tsx';
 import { HeroSprite } from './SheetSprite.tsx';
 import { useSim } from './useSim.ts';
 
@@ -114,12 +115,12 @@ function HuntPanel() {
     <section className="hunt-panel">
       <div className="res-chips">
         <span className="res-chip res-gold" data-testid="gold" title={t('hud.gold')}>
-          <Icon name="gold" size={16} />
+          <PixelIcon name="gold" size={16} />
           {formatNumber(p?.gold ?? s.gold)}
         </span>
         <span className="res-chip" title={t('hud.potions', { n: p?.potions ?? 0 })}>
-          <Icon name="potion" size={16} className="tone-hp" />
-          {p?.potions ?? 0}
+          <PixelIcon name="consumable.potion_hp_small" size={16} />
+          <span data-testid="hud-potions">{p?.potions ?? 0}</span>
         </span>
         <span className="res-chip" title={t('hud.resets', { n: s.hero.resets.count })}>
           <Icon name="resets" size={16} className="tone-info" />

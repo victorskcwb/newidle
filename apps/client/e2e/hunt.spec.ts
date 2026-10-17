@@ -51,3 +51,31 @@ test('going back to town shows the village and the hunt resumes after', async ({
   await expect(page.getByTestId('town-overlay')).toBeHidden({ timeout: 30_000 });
   expect(errors).toEqual([]);
 });
+
+test('in town the merchant sells potions and the smith forges an item', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await createHero(page, 'Comprador', 2);
+  await page.evaluate(() =>
+    (window as unknown as { abismo: { debugResources(): void } }).abismo.debugResources(),
+  );
+  await page.getByRole('button', { name: 'Voltar à cidade' }).click();
+  await expect(page.getByTestId('town-overlay')).toBeVisible({ timeout: 30_000 });
+  const ui = (id: string) =>
+    page.evaluate(
+      (npc) =>
+        (window as unknown as { abismoUi: { getState(): { openNpc(n: string): void } } }).abismoUi
+          .getState()
+          .openNpc(npc),
+      id,
+    );
+  await ui('merchant');
+  const potions = page.getByTestId('hud-potions');
+  const before = Number(await potions.textContent());
+  await page.getByTestId('buy-potion_hp_small-10').click();
+  await expect(potions).toHaveText(String(before + 10));
+  await ui('smith');
+  await page.getByTestId('forge-button').click();
+  await expect(page.getByTestId('forge')).toContainText('Forjado!');
+  expect(errors).toEqual([]);
+});

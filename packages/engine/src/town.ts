@@ -11,8 +11,13 @@ import { backpackSize } from './upgrades.ts';
  * draws from the game's RNG like a drop does).
  */
 
+/**
+ * In town, or on the way there: the scene shows the town as soon as the hero reaches the
+ * map's exit, a moment before the engine marks the arrival.
+ */
 export function inTown(s: GameState): boolean {
-  return s.activity.kind === 'idle_town' || s.activity.kind === 'in_town';
+  const k = s.activity.kind;
+  return k === 'idle_town' || k === 'in_town' || k === 'to_town';
 }
 
 function requireTown(s: GameState) {
@@ -108,4 +113,13 @@ export function forgeItem(
   if (s.backpack.length < backpackSize(s.hero, content)) s.backpack.push(item);
   else s.stash.push(item);
   return item;
+}
+
+/** The storehouse keeper takes everything in the backpack into the stash. */
+export function depositAll(s: GameState): number {
+  requireTown(s);
+  const n = s.backpack.length;
+  s.stash.push(...s.backpack);
+  s.backpack = [];
+  return n;
 }

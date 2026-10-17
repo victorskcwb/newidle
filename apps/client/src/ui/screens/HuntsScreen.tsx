@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { formatNumber, t } from '../../i18n.ts';
 import { useUi } from '../../state/store.ts';
 import { Sheet } from '../Sheet.tsx';
+import { WorldMap } from '../WorldMap.tsx';
 import { useSim } from '../useSim.ts';
 
 /**
@@ -43,14 +44,16 @@ export function HuntsScreen() {
 
   return (
     <Sheet title={t('screen.hunts')} testId="hunts">
+      <WorldMap rates={rates} />
+      <h3 className="pixel">{t('map.allHunts')}</h3>
       {regions.map((region) => (
         <section key={region.id}>
-          <h3 className="pixel">
+          <h4 className="pixel">
             {t(region.nameKey)}{' '}
             <span className="muted small">
               {t('hunts.levels', { from: region.levelRange[0], to: region.levelRange[1] })}
             </span>
-          </h3>
+          </h4>
           {hunts
             .filter((h) => h.regionId === region.id)
             .map((h) => {

@@ -177,6 +177,7 @@ export function SettingsScreen() {
           </a>
         </p>
         <p>{t('settings.creditsKenney')}</p>
+        <p>{t('settings.creditsKyrise')}</p>
         <p>
           {t('settings.creditsIcons')}{' '}
           <a href="vendor/game-icons/ICONS.md" target="_blank" rel="noreferrer">

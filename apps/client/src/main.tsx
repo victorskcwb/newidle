@@ -39,7 +39,10 @@ function run(sim: GameSim): GameSim {
     (cb) => sim.onChange(cb),
     () => sim.saveEnabled,
   );
-  if (import.meta.env.DEV) (window as unknown as { abismo: GameSim }).abismo = sim;
+  if (import.meta.env.DEV) {
+    (window as unknown as { abismo: GameSim; abismoUi: typeof useUi }).abismo = sim;
+    (window as unknown as { abismoUi: typeof useUi }).abismoUi = useUi;
+  }
   return sim;
 }
 

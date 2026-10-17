@@ -7,6 +7,7 @@ import {
   buyConsumable,
   buyUpgrade,
   claimQuest,
+  depositAll,
   computeRates,
   createGame,
   debugSetLevel,
@@ -194,6 +195,13 @@ export class GameSim {
     this.freshSnapshot();
     this.changed(false);
     return r;
+  }
+
+  /** Town: everything in the backpack goes to the stash. */
+  depositAll() {
+    const n = depositAll(this.state);
+    this.changed(false);
+    return n;
   }
 
   /** Town: buys consumables from the merchant. */

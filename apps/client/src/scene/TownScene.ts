@@ -15,6 +15,18 @@ import { Effects } from './effects.ts';
 import { REGION_TINT, addAtmosphere, renderMap } from './mapRender.ts';
 import { Pathfinder } from './pathfinder.ts';
 import { heroLook, npcLook } from './textures.ts';
+import { ITEM_ICON_FRAMES } from '../ui/itemIcons.generated.ts';
+import { claimableQuests } from '@abismo/engine';
+
+/** The service each keeper offers, as the icon in its speech bubble. */
+export const NPC_SERVICE_ICON: Record<string, string> = {
+  elder: 'quest',
+  smith: 'item.iron_blade',
+  merchant: 'gold',
+  banker: 'chest',
+  priestess: 'book',
+  guard: 'key',
+};
 
 /** NPC that greets the hero at each stop of a town visit. */
 const STOP_NPC: Record<string, string> = {
@@ -30,13 +42,16 @@ interface Npc {
   home: TilePoint;
   wanders: boolean;
   nextMoveMs: number;
+  bubble?: Phaser.GameObjects.Container;
+  alert?: Phaser.GameObjects.Text;
 }
 
 /**
  * The region's town, drawn over the hunt while the hero is there (the hunt keeps running
- * underneath so the director goes on staging the engine's events). Purely visual: on a
- * supply trip the hero walks from the gate to the storehouse, the shop and the smithy,
- * each keeper greets it, and then it rests by the well; townsfolk stroll the plaza.
+ * underneath so the director goes on staging the engine's events). On a supply trip the
+ * hero walks from the gate to the storehouse, the shop and the smithy on its own, each
+ * keeper greeting it. Tapping the ground takes over: the hero walks there and stays in
+ * town; tapping a keeper (with its service bubble) walks up and opens its dialog.
  */
 export class TownScene extends Phaser.Scene {
   private hero!: Actor;
@@ -48,6 +63,9 @@ export class TownScene extends Phaser.Scene {
   private waitMs = 0;
   private fx!: Effects;
   private shown = false;
+  /** Keeper whose dialog opens when the hero arrives next to it. */
+  private talkTo: Npc | null = null;
+  private alertTimer = 0;
   private unsubscribe: (() => void) | null = null;
 
   constructor(
@@ -98,13 +116,16 @@ export class TownScene extends Phaser.Scene {
       actor.speed = 1.6;
       const home = toTile(mapData, o.x, o.y);
       actor.place(home);
-      this.npcs.push({
+      const npc: Npc = {
         id: o.name,
         actor,
         home,
         wanders: o.name.startsWith('villager'),
         nextMoveMs: 1500 + Math.random() * 3000,
-      });
+      };
+      const icon = NPC_SERVICE_ICON[o.name];
+      if (icon) this.addBubble(npc, icon);
+      this.npcs.push(npc);
     }
     this.hero = new Actor(
       this,
@@ -120,6 +141,11 @@ export class TownScene extends Phaser.Scene {
     cam.setRoundPixels(true);
     cam.startFollow(this.hero.container, true, 0.1, 0.1);
     cam.setZoom(useUi.getState().zoom);
+
+    this.input.on('pointerup', (p: Phaser.Input.Pointer, over: unknown[]) => {
+      if (!this.shown || p.getDistance() > 12 || over.length > 0) return;
+      this.onTap(p.worldX, p.worldY);
+    });
 
     // Asleep (no update, no drawing) until the hero comes to town.
     this.sys.setVisible(false);
@@ -158,9 +184,83 @@ export class TownScene extends Phaser.Scene {
     this.hero.reset(false);
   }
 
+  /** A white bubble with the keeper's service icon, bobbing over its head. */
+  private addBubble(npc: Npc, icon: string) {
+    const frame = ITEM_ICON_FRAMES[icon] ?? 0;
+    const g = this.add.graphics();
+    g.fillStyle(0x000000, 0.35).fillRoundedRect(-11, -9, 22, 20, 7);
+    g.fillStyle(0xfdf3dc, 1).fillRoundedRect(-12, -11, 24, 20, 7);
+    g.fillTriangle(-4, 8, 4, 8, 0, 13);
+    const img = this.add.image(0, -1, 'items', frame).setScale(1);
+    const alert = this.add
+      .text(10, -14, '!', {
+        fontFamily: '"Pixelify Sans", monospace',
+        fontSize: '11px',
+        color: '#ffffff',
+        backgroundColor: '#e0453a',
+        padding: { x: 3, y: 0 },
+        resolution: 2,
+      })
+      .setOrigin(0.5)
+      .setVisible(false);
+    const bubble = this.add
+      .container(npc.actor.x, npc.actor.y - 62, [g, img, alert])
+      .setDepth(100_005)
+      .setSize(26, 24)
+      .setInteractive({ useHandCursor: true });
+    bubble.on('pointerup', () => this.goTalk(npc));
+    this.tweens.add({
+      targets: bubble,
+      y: bubble.y - 4,
+      duration: 900,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+    npc.bubble = bubble;
+    npc.alert = alert;
+  }
+
+  /** The player takes over: the automatic visit stops and the hero stays in town. */
+  private takeControl() {
+    this.plan = [];
+    this.waitMs = 0;
+    const a = this.sim.state.activity;
+    if (a.kind === 'in_town' && a.then === 'hunt') this.sim.returnToTown();
+  }
+
+  private onTap(x: number, y: number) {
+    const npc = this.npcs.find(
+      (n) => !n.wanders && Math.hypot(n.actor.x - x, n.actor.y - 8 - y) < 26,
+    );
+    if (npc) {
+      this.goTalk(npc);
+      return;
+    }
+    this.takeControl();
+    this.talkTo = null;
+    const spot = this.paths.nearestWalkable({ tx: Math.floor(x / 32), ty: Math.floor(y / 32) }, 2);
+    if (spot) this.hero.path = this.paths.find(this.hero.tile, spot) ?? [];
+  }
+
+  /** Walk up to a keeper; its dialog opens on arrival. */
+  private goTalk(npc: Npc) {
+    if (!this.shown) return;
+    this.takeControl();
+    this.talkTo = npc;
+    const occupied = new Set(this.npcs.map((n) => `${n.actor.tile.tx},${n.actor.tile.ty}`));
+    const spot = this.paths.nearestWalkable(
+      { tx: npc.actor.tile.tx, ty: npc.actor.tile.ty + 1 },
+      2,
+      occupied,
+    );
+    this.hero.path = spot ? (this.paths.find(this.hero.tile, spot) ?? []) : [];
+  }
+
   private hide() {
     if (!this.shown) return;
     this.shown = false;
+    this.talkTo = null;
     this.plan = [];
     this.hero.path = [];
     this.sys.setVisible(false);
@@ -195,6 +295,21 @@ export class TownScene extends Phaser.Scene {
     if (!this.shown) return;
     const dt = Math.min(delta, 250);
     const moving = this.hero.update(dt, 1);
+    // Keepers' bubbles follow them; the elder's shows "!" when goals wait to be claimed.
+    this.alertTimer -= dt;
+    if (this.alertTimer <= 0) {
+      this.alertTimer = 500;
+      const quests = claimableQuests(this.sim.state) > 0;
+      for (const n of this.npcs) n.alert?.setVisible(n.id === 'elder' && quests);
+    }
+    if (!moving && this.talkTo) {
+      const npc = this.talkTo;
+      this.talkTo = null;
+      this.hero.face(npc.actor.x, npc.actor.y);
+      npc.actor.face(this.hero.x, this.hero.y);
+      this.say(npc, t(`npc.say.${npc.id}`));
+      useUi.getState().openNpc(npc.id);
+    }
     if (!moving) {
       if (this.waitMs > 0) {
         this.waitMs -= dt;

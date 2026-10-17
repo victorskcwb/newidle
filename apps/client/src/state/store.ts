@@ -39,6 +39,8 @@ interface UiState {
   zoom: number;
   /** The last level reached, for the level-up banner (id changes on every level up). */
   levelUp: { level: number; id: number } | null;
+  /** Town keeper whose dialog is open. */
+  npc: string | null;
   /** Bumped by the sim when inventory, equipment or rates change. */
   simVersion: number;
   setPresented: (s: Snapshot) => void;
@@ -52,6 +54,7 @@ interface UiState {
   setBoss: (boss: { name: string; hp: number; maxHp: number } | null) => void;
   setZoom: (zoom: number) => void;
   showLevelUp: (level: number) => void;
+  openNpc: (npc: string | null) => void;
   hideLevelUp: () => void;
   bump: () => void;
 }
@@ -71,6 +74,7 @@ export const useUi = create<UiState>((set) => ({
   boss: null,
   zoom: 2,
   levelUp: null,
+  npc: null,
   simVersion: 0,
   setPresented: (presented) => set({ presented }),
   pushLog: (line) =>
@@ -80,10 +84,11 @@ export const useUi = create<UiState>((set) => ({
   openScreen: (screen) => set({ screen, backpackOpen: false, selectedUid: null }),
   setTab: (tab) => set({ tab, selectedUid: null }),
   select: (selectedUid) => set({ selectedUid }),
-  setTown: (town) => set({ town }),
+  setTown: (town) => set(town ? { town } : { town, npc: null }),
   setBoss: (boss) => set({ boss }),
   setZoom: (zoom) => set({ zoom }),
   showLevelUp: (level) => set((s) => ({ levelUp: { level, id: (s.levelUp?.id ?? 0) + 1 } })),
   hideLevelUp: () => set({ levelUp: null }),
+  openNpc: (npc) => set({ npc, screen: null, backpackOpen: false }),
   bump: () => set((s) => ({ simVersion: s.simVersion + 1 })),
 }));

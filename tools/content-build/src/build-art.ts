@@ -10,6 +10,8 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
 import { buildActors, buildFx } from './actors.ts';
+import { buildItemIcons } from './item-icons.ts';
+import { buildWorldMap } from './gen-worldmap.ts';
 import { buildUiIcons } from './ui-icons.ts';
 import {
   LAVA_FRAMES,
@@ -290,8 +292,20 @@ const iconCount = buildUiIcons(
   new URL('../../../apps/client/src/ui/icons.generated.ts', import.meta.url),
 );
 console.log(`wrote ${iconCount} interface icons`);
+const itemIconCount = buildItemIcons(
+  assets,
+  new URL('../../../apps/client/src/ui/itemIcons.generated.ts', import.meta.url),
+);
+console.log(`wrote assets/sprites/items.png (${itemIconCount} pixel icons)`);
 console.log(`wrote assets/sprites/actors.png (${actorFrames} frames) and fx.png (${fxCount})`);
 writeFileSync(new URL('sprites/props.png', assets), PNG.sync.write(props));
+const worldNodes = buildWorldMap(
+  assets,
+  new URL('../../../packages/content/data/world.json', import.meta.url),
+  tiles,
+  props,
+);
+console.log(`wrote assets/sprites/worldmap.png (${worldNodes} places)`);
 console.log(
   `wrote assets/sprites/tiles.png (${slots.length} tiles) and props.png (${propSlots.length} props)`,
 );

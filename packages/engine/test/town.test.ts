@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   IntentError,
   buyConsumable,
+  depositAll,
   forgeCost,
   forgeIlvl,
   forgeItem,
@@ -91,5 +92,14 @@ describe('town services', () => {
       forgeItem(x, content, 'ring', 'magic');
     }
     expect(hashState(a)).toBe(hashState(b));
+  });
+
+  it('deposits the whole backpack into the stash', () => {
+    const s = inTown();
+    s.backpack.push(sword(903, 'common'), sword(904, 'magic'));
+    const before = s.stash.length;
+    expect(depositAll(s)).toBe(2);
+    expect(s.backpack).toEqual([]);
+    expect(s.stash.length).toBe(before + 2);
   });
 });

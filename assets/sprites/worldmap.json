@@ -1,0 +1,90 @@
+{
+  "width": 960,
+  "height": 576,
+  "nodes": [
+    {
+      "kind": "town",
+      "id": "cinzarra",
+      "regionId": "cinzarra",
+      "x": 72,
+      "y": 456
+    },
+    {
+      "kind": "hunt",
+      "id": "forgotten_cemetery",
+      "regionId": "cinzarra",
+      "x": 152,
+      "y": 376
+    },
+    {
+      "kind": "hunt",
+      "id": "pale_woods",
+      "regionId": "cinzarra",
+      "x": 200,
+      "y": 232
+    },
+    {
+      "kind": "hunt",
+      "id": "cracked_crypt",
+      "regionId": "cinzarra",
+      "x": 280,
+      "y": 120
+    },
+    {
+      "kind": "town",
+      "id": "morvel_swamp",
+      "regionId": "morvel_swamp",
+      "x": 392,
+      "y": 152
+    },
+    {
+      "kind": "hunt",
+      "id": "murky_bog",
+      "regionId": "morvel_swamp",
+      "x": 456,
+      "y": 296
+    },
+    {
+      "kind": "hunt",
+      "id": "drowned_village",
+      "regionId": "morvel_swamp",
+      "x": 520,
+      "y": 440
+    },
+    {
+      "kind": "hunt",
+      "id": "rotting_heart",
+      "regionId": "morvel_swamp",
+      "x": 600,
+      "y": 264
+    },
+    {
+      "kind": "town",
+      "id": "burned_citadel",
+      "regionId": "burned_citadel",
+      "x": 712,
+      "y": 152
+    },
+    {
+      "kind": "hunt",
+      "id": "ash_gates",
+      "regionId": "burned_citadel",
+      "x": 776,
+      "y": 312
+    },
+    {
+      "kind": "hunt",
+      "id": "molten_halls",
+      "regionId": "burned_citadel",
+      "x": 840,
+      "y": 456
+    },
+    {
+      "kind": "hunt",
+      "id": "burning_throne",
+      "regionId": "burned_citadel",
+      "x": 904,
+      "y": 248
+    }
+  ]
+}
