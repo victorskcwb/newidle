@@ -570,5 +570,21 @@
   "settings.creditsFont": "Fonte Pixelify Sans, de Stefie Justprince (SIL OFL 1.1).",
   "settings.creditsIcons": "Ícones da interface: game-icons.net, de Lorc, Delapouite, Skoll, Faithtoken, Caro Asercion, Sbed, Irongamer, Lucas e Zeromancer, sob a licença CC BY 3.0.",
   "settings.creditsIconList": "Lista de ícones",
-  "settings.creditsIconLicense": "Licença CC BY 3.0"
+  "settings.creditsIconLicense": "Licença CC BY 3.0",
+  "npc.smith": "Ferreira Brunhild",
+  "npc.merchant": "Mercadora Lisandra",
+  "npc.banker": "Guarda-baú Tobias",
+  "npc.priestess": "Irmã Velânia",
+  "npc.elder": "Ancião Odrin",
+  "npc.guard": "Sentinela Cael",
+  "npc.villager_a": "Curandeiro Ambrósio",
+  "npc.villager_b": "Aldeão Bóris",
+  "town.arrive": "Chegando à vila…",
+  "town.leave": "Voltando para a caçada…",
+  "npc.say.banker": "Seus itens estão seguros comigo.",
+  "npc.say.merchant": "Poções fresquinhas!",
+  "npc.say.smith": "Precisa afiar essa lâmina?",
+  "npc.say.priestess": "Que a luz guie seus passos.",
+  "npc.say.elder": "Volte inteiro, herói.",
+  "npc.say.guard": "Cuidado lá fora."
 }

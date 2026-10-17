@@ -24,6 +24,8 @@ export interface Look {
   /** Base scale (sheets of 16 px characters are drawn at 2× on the 32 px map). */
   scale: number;
   tint?: number;
+  /** Height of the drawing in map pixels (sheet cells have room above it). */
+  height?: number;
   /** Frame animations of the sheet (Phaser animation keys), looping while idle or running. */
   loops?: { idle: string; run: string; hit?: string };
   /** A weapon held in front of the body, swung on attacks. */
@@ -99,7 +101,7 @@ export class Actor {
 
   /** Top of the drawn sprite, relative to the actor's position. */
   private get top() {
-    return FEET - this.sprite.displayHeight;
+    return FEET - (this.look?.height ?? this.sprite.displayHeight) * this.body.scaleY;
   }
 
   private applyLook() {
@@ -118,7 +120,7 @@ export class Actor {
     this.weapon.setVisible(look.weapon !== undefined);
     this.playLoop(this.moving ? 'run' : 'idle', true);
     this.setFacing(this.facingLeft);
-    this.label.setY(this.top - 12);
+    this.label.setY(this.top - 7);
     this.drawBar();
   }
 
@@ -175,7 +177,7 @@ export class Actor {
 
   private drawBar() {
     const w = this.barWidth;
-    const y = this.top - 8;
+    const y = this.top - 5;
     this.bar.clear();
     this.bar.fillStyle(0x000000, 0.8);
     this.bar.fillRect(-w / 2 - 1, y - 1, w + 2, 5);

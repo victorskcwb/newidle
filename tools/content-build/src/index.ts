@@ -14,6 +14,8 @@ import {
   tiledMapSchema,
   translationKeys,
   validateHuntMap,
+  validateTownMap,
+  objectsOf,
   type ContentDb,
 } from '@abismo/content';
 import { hasKey } from '@abismo/i18n';
@@ -59,6 +61,22 @@ if (content) {
       if (ts.image && !existsSync(new URL(ts.image, new URL(`${hunt.mapId}.tmj`, assets)))) {
         problems.push(`map ${hunt.mapId}: tileset image ${ts.image} not found`);
       }
+    }
+  }
+
+  // One town per region, with the NPCs of the manifest.
+  const regions = new Set([...content.hunts.values()].map((h) => h.regionId));
+  for (const region of regions) {
+    const raw = readJson(`maps/town_${region}.tmj`);
+    if (raw === null) continue;
+    const parsed = tiledMapSchema.safeParse(raw);
+    if (!parsed.success) {
+      problems.push(`town ${region}: ${parsed.error.issues.map((i) => i.message).join('; ')}`);
+      continue;
+    }
+    for (const p of validateTownMap(parsed.data)) problems.push(`town ${region}: ${p}`);
+    for (const n of objectsOf(parsed.data, 'npcs')) {
+      if (!hasKey(`npc.${n.name}`)) problems.push(`i18n: missing pt-BR text for "npc.${n.name}"`);
     }
   }
 

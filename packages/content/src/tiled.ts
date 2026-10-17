@@ -186,3 +186,34 @@ export function validateHuntMap(map: TiledMap, routeLayer: string): string[] {
   }
   return problems;
 }
+
+/** Spots of a town map the hero walks between (object layer "stations"). */
+export const TOWN_STATIONS = ['gate', 'stash', 'shop', 'smith', 'shrine', 'rest'] as const;
+export type TownStation = (typeof TOWN_STATIONS)[number];
+
+/**
+ * Structural checks of a town map: every station and NPC post stands on a walkable tile
+ * reachable from the gate.
+ */
+export function validateTownMap(map: TiledMap): string[] {
+  const problems: string[] = [];
+  const grid = walkableGrid(map);
+  const stations = objectsOf(map, 'stations');
+  const gate = stations.find((o) => o.name === 'gate');
+  if (!gate) return ['missing station "gate"'];
+  const reach = reachableFrom(grid, toTile(map, gate.x, gate.y));
+  const check = (o: TiledObject, what: string) => {
+    const t = toTile(map, o.x, o.y);
+    if (!reach.has(`${t.tx},${t.ty}`))
+      problems.push(`${what} "${o.name}" is not reachable from the gate`);
+  };
+  for (const name of TOWN_STATIONS) {
+    const s = stations.find((o) => o.name === name);
+    if (!s) problems.push(`missing station "${name}"`);
+    else check(s, 'station');
+  }
+  const npcs = objectsOf(map, 'npcs');
+  if (npcs.length === 0) problems.push('no NPCs');
+  for (const n of npcs) check(n, 'NPC');
+  return problems;
+}

@@ -1,0 +1,249 @@
+import {
+  objectsOf,
+  spriteManifestSchema,
+  tiledMapSchema,
+  toTile,
+  type TiledMap,
+  type TilePoint,
+} from '@abismo/content';
+import Phaser from 'phaser';
+import type { GameSim } from '../game/sim.ts';
+import { t } from '../i18n.ts';
+import { useUi, type TownView } from '../state/store.ts';
+import { Actor } from './actor.ts';
+import { Effects } from './effects.ts';
+import { REGION_TINT, addAtmosphere, renderMap } from './mapRender.ts';
+import { Pathfinder } from './pathfinder.ts';
+import { heroLook, npcLook } from './textures.ts';
+
+/** NPC that greets the hero at each stop of a town visit. */
+const STOP_NPC: Record<string, string> = {
+  stash: 'banker',
+  shop: 'merchant',
+  smith: 'smith',
+  shrine: 'priestess',
+};
+
+interface Npc {
+  id: string;
+  actor: Actor;
+  home: TilePoint;
+  wanders: boolean;
+  nextMoveMs: number;
+}
+
+/**
+ * The region's town, drawn over the hunt while the hero is there (the hunt keeps running
+ * underneath so the director goes on staging the engine's events). Purely visual: on a
+ * supply trip the hero walks from the gate to the storehouse, the shop and the smithy,
+ * each keeper greets it, and then it rests by the well; townsfolk stroll the plaza.
+ */
+export class TownScene extends Phaser.Scene {
+  private hero!: Actor;
+  private npcs: Npc[] = [];
+  private paths!: Pathfinder;
+  private stations = new Map<string, TilePoint>();
+  private stroll: Phaser.Geom.Rectangle | null = null;
+  private plan: string[] = [];
+  private waitMs = 0;
+  private fx!: Effects;
+  private shown = false;
+  private unsubscribe: (() => void) | null = null;
+
+  constructor(
+    private sim: GameSim,
+    private regionId: string,
+    private options: { noParticles: boolean },
+  ) {
+    super('town');
+  }
+
+  preload() {
+    this.load.tilemapTiledJSON('townmap', `maps/town_${this.regionId}.tmj`);
+  }
+
+  create() {
+    const mapData: TiledMap = tiledMapSchema.parse(
+      this.cache.tilemap.get('townmap').data as unknown,
+    );
+    const manifest = spriteManifestSchema.parse(this.cache.json.get('manifest'));
+    const tint = REGION_TINT[this.regionId] ?? 0xffffff;
+    const map = renderMap(this, 'townmap', mapData, tint, null);
+    if (!this.options.noParticles) {
+      addAtmosphere(this, this.regionId, map.widthInPixels, map.heightInPixels);
+    }
+    this.paths = new Pathfinder(mapData);
+    for (const s of objectsOf(mapData, 'stations')) {
+      this.stations.set(s.name, toTile(mapData, s.x, s.y));
+    }
+    const area = objectsOf(mapData, 'stroll')[0];
+    if (area) this.stroll = new Phaser.Geom.Rectangle(area.x, area.y, area.width, area.height);
+    this.fx = new Effects(this);
+    this.fx.reducedMotion = this.options.noParticles;
+
+    for (const o of objectsOf(mapData, 'npcs')) {
+      const look = npcLook(this, manifest, o.name);
+      if (!look) continue;
+      const actor = new Actor(
+        this,
+        look,
+        {},
+        {
+          // Keepers have names over their heads; strolling villagers do not.
+          name: o.name.startsWith('villager') ? '' : t(`npc.${o.name}`),
+          color: '#ffe9a8',
+          bar: false,
+        },
+      );
+      actor.speed = 1.6;
+      const home = toTile(mapData, o.x, o.y);
+      actor.place(home);
+      this.npcs.push({
+        id: o.name,
+        actor,
+        home,
+        wanders: o.name.startsWith('villager'),
+        nextMoveMs: 1500 + Math.random() * 3000,
+      });
+    }
+    this.hero = new Actor(
+      this,
+      heroLook(this, manifest, this.sim.state.hero.appearance.outfit),
+      manifest.atlases.hero?.sprites.warrior?.animations ?? {},
+      { name: this.sim.state.hero.name, color: '#9fd3ff', bar: false },
+    );
+    this.hero.speed = 3;
+
+    const cam = this.cameras.main;
+    cam.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+    cam.setBackgroundColor('#0e0d12');
+    cam.setRoundPixels(true);
+    cam.startFollow(this.hero.container, true, 0.1, 0.1);
+    cam.setZoom(useUi.getState().zoom);
+
+    // Asleep (no update, no drawing) until the hero comes to town.
+    this.sys.setVisible(false);
+    this.scene.sleep();
+    const apply = (view: TownView) => (view ? this.show(view) : this.hide());
+    apply(useUi.getState().town);
+    this.unsubscribe = useUi.subscribe((s, prev) => {
+      if (s.town !== prev.town) apply(s.town);
+      if (s.zoom !== prev.zoom) cam.setZoom(s.zoom);
+    });
+    const cleanup = () => {
+      this.unsubscribe?.();
+      this.unsubscribe = null;
+    };
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanup);
+    this.events.once(Phaser.Scenes.Events.DESTROY, cleanup);
+  }
+
+  private show(view: 'depositing' | 'idle') {
+    const arriving = !this.shown;
+    this.shown = true;
+    if (this.scene.isSleeping()) this.scene.wake();
+    this.sys.setVisible(true);
+    this.scene.setVisible(false, 'hunt');
+    if (arriving) {
+      this.cameras.main.fadeIn(300);
+      if (view === 'depositing') {
+        this.hero.place(this.stations.get('gate')!);
+        this.plan = ['stash', 'shop', 'smith', 'rest'];
+      } else {
+        this.hero.place(this.stations.get('rest')!);
+        this.plan = [];
+      }
+      this.cameras.main.centerOn(this.hero.x, this.hero.y);
+    }
+    this.hero.reset(false);
+  }
+
+  private hide() {
+    if (!this.shown) return;
+    this.shown = false;
+    this.plan = [];
+    this.hero.path = [];
+    this.sys.setVisible(false);
+    this.scene.sleep();
+    this.scene.setVisible(true, 'hunt');
+  }
+
+  /** A speech bubble over an NPC for a moment. */
+  private say(npc: Npc, text: string) {
+    const bubble = this.add
+      .text(npc.actor.x, npc.actor.y - 46, text, {
+        fontFamily: '"Pixelify Sans", monospace',
+        fontSize: '8px',
+        color: '#1a1408',
+        backgroundColor: '#f3e6c4',
+        padding: { x: 4, y: 2 },
+        resolution: 2,
+      })
+      .setOrigin(0.5, 1)
+      .setDepth(100_010);
+    this.tweens.add({
+      targets: bubble,
+      y: bubble.y - 6,
+      alpha: { from: 1, to: 0 },
+      delay: 1400,
+      duration: 400,
+      onComplete: () => bubble.destroy(),
+    });
+  }
+
+  override update(_time: number, delta: number) {
+    if (!this.shown) return;
+    const dt = Math.min(delta, 250);
+    const moving = this.hero.update(dt, 1);
+    if (!moving) {
+      if (this.waitMs > 0) {
+        this.waitMs -= dt;
+      } else if (this.plan.length > 0) {
+        const stop = this.plan[0]!;
+        const to = this.stations.get(stop);
+        const here = this.hero.tile;
+        if (!to || (here.tx === to.tx && here.ty === to.ty)) {
+          this.plan.shift();
+          this.arrive(stop);
+        } else {
+          this.hero.path = this.paths.find(here, to) ?? [];
+          if (this.hero.path.length === 0) this.hero.place(to);
+        }
+      }
+    }
+    for (const n of this.npcs) {
+      const walking = n.actor.update(dt, 1);
+      if (walking) continue;
+      if (n.wanders && this.stroll) {
+        n.nextMoveMs -= dt;
+        if (n.nextMoveMs <= 0) {
+          n.nextMoveMs = 2500 + Math.random() * 4000;
+          const p = {
+            tx: Math.floor((this.stroll.x + Math.random() * this.stroll.width) / 32),
+            ty: Math.floor((this.stroll.y + Math.random() * this.stroll.height) / 32),
+          };
+          const spot = this.paths.nearestWalkable(p, 2);
+          if (spot) n.actor.path = this.paths.find(n.actor.tile, spot) ?? [];
+        }
+      } else {
+        // Keepers turn to the hero when it comes close.
+        const d = Math.hypot(this.hero.x - n.actor.x, this.hero.y - n.actor.y);
+        if (d < 96) n.actor.face(this.hero.x, n.actor.y);
+      }
+    }
+  }
+
+  private arrive(stop: string) {
+    const npc = this.npcs.find((n) => n.id === STOP_NPC[stop]);
+    if (npc) {
+      this.hero.face(npc.actor.x, npc.actor.y);
+      npc.actor.face(this.hero.x, this.hero.y);
+      this.say(npc, t(`npc.say.${npc.id}`));
+      this.fx.spell(stop === 'shop' ? 'potion' : 'crit', this.hero.x, this.hero.y);
+      this.waitMs = 1100;
+    } else if (stop === 'rest') {
+      const elder = this.npcs.find((n) => n.id === 'elder');
+      if (elder) this.say(elder, t('npc.say.elder'));
+    }
+  }
+}

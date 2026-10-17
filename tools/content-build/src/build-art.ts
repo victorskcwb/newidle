@@ -30,6 +30,8 @@ const T = 32;
 const sheets: Record<Exclude<Sheet, 'drawn'>, PNG> = {
   otsp_tiles: read('vendor/opentibia-sprite-pack/otsp_tiles_01.png'),
   otsp_nature: read('vendor/opentibia-sprite-pack/otsp_nature_01.png'),
+  otsp_town: read('vendor/opentibia-sprite-pack/otsp_town_01.png'),
+  otsp_walls: read('vendor/opentibia-sprite-pack/otsp_walls_01.png'),
   placeholder: read('sprites/placeholder_tiles.png'),
 };
 const PLACEHOLDER_COLS = 8;
@@ -265,11 +267,11 @@ slots.forEach((slot, id) => {
 
 const P = 2 * T;
 const props = new PNG({ width: PROPS_COLS * P, height: PROPS_ROWS * P });
-propSlots.forEach((index, id) => {
+propSlots.forEach(({ sheet, index }, id) => {
   const sx = (index % 16) * T;
   const sy = Math.floor(index / 16) * T;
   blit(
-    sheets.otsp_nature,
+    sheets[sheet as Exclude<Sheet, 'drawn'>],
     sx,
     sy,
     props,

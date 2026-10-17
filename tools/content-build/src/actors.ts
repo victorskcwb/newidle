@@ -40,6 +40,13 @@ const CHARACTERS = [
   'orc_warrior',
   'angel',
   'big_demon',
+  'wizzard_m',
+  'wizzard_f',
+  'dwarf_f',
+  'elf_f',
+  'elf_m',
+  'lizard_f',
+  'doc',
 ] as const;
 type Character = (typeof CHARACTERS)[number];
 
@@ -82,6 +89,17 @@ const MONSTER_LOOK: Record<string, { char: Character; scale?: number }> = {
   inferno_wraith: { char: 'chort' },
   charred_king: { char: 'big_demon', scale: 0.6 },
 };
+/** Town folk (atlas "npcs"), by the NPC ids of the town maps. */
+const NPC_LOOK: Record<string, Character> = {
+  smith: 'dwarf_f',
+  merchant: 'elf_f',
+  banker: 'elf_m',
+  priestess: 'wizzard_f',
+  elder: 'wizzard_m',
+  guard: 'lizard_f',
+  villager_a: 'doc',
+  villager_b: 'dwarf_m',
+};
 /** The hero's 4 looks, chosen at creation. */
 const HERO_LOOKS: Character[] = ['knight_m', 'knight_f', 'dwarf_m', 'lizard_m'];
 
@@ -89,6 +107,7 @@ interface FrameSet {
   idle: number[];
   run: number[];
   hit?: number[];
+  height?: number;
 }
 
 export function buildActors(assets: URL) {
@@ -104,6 +123,16 @@ export function buildActors(assets: URL) {
     if (name && h) list.set(name, { x: +x!, y: +y!, w: +w!, h: +h! });
   }
 
+  /** Height of the opaque part of a frame (frames have empty rows above the head). */
+  const drawnHeight = (name: string) => {
+    const f = list.get(name)!;
+    for (let y = 0; y < f.h; y++) {
+      for (let x = 0; x < f.w; x++) {
+        if (sheet.data[((f.y + y) * sheet.width + f.x + x) * 4 + 3]! > 0) return f.h - y;
+      }
+    }
+    return f.h;
+  };
   const names: string[] = [];
   const frames = new Map<Character, FrameSet>();
   // The pack's frame list names one frame "zombie_anim_f10" (for f0).
@@ -122,6 +151,7 @@ export function buildActors(assets: URL) {
   for (const char of CHARACTERS) {
     const set: FrameSet = { idle: anim(char, 'idle'), run: anim(char, 'run') };
     if (list.has(`${char}_hit_anim_f0`)) set.hit = [add(`${char}_hit_anim_f0`)];
+    set.height = Math.max(...[...set.idle, ...set.run].map((i) => drawnHeight(names[i]!)));
     frames.set(char, set);
   }
   const weapons = Object.fromEntries(WEAPONS.map((w) => [w, add(w)]));
@@ -152,7 +182,16 @@ export function buildActors(assets: URL) {
       Record<string, unknown> & { sprites: Record<string, Record<string, unknown>> }
     >;
   };
-  for (const atlas of Object.values(manifest.atlases)) {
+  manifest.atlases.npcs = {
+    placeholder: false,
+    sprites: Object.fromEntries(
+      Object.entries(NPC_LOOK).map(([id, char]) => [
+        id,
+        { animations: {}, frames: frames.get(char)! },
+      ]),
+    ),
+  };
+  for (const [name, atlas] of Object.entries(manifest.atlases)) {
     atlas.image = 'sprites/actors.png';
     delete atlas.frameSize;
     atlas.frameWidth = CELL_W;
@@ -169,6 +208,7 @@ export function buildActors(assets: URL) {
         sprite.weapon = weapons.weapon_knight_sword;
         continue;
       }
+      if (name === 'npcs') continue;
       const look = MONSTER_LOOK[key];
       if (!look) throw new Error(`no character for sprite ${key}`);
       sprite.frames = frames.get(look.char)!;

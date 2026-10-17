@@ -25,7 +25,13 @@ export type SpriteAnimation = z.infer<typeof animation>;
 
 const frameList = z.array(z.number().int().min(0)).min(1);
 /** Frames of the looping animations drawn by the sheet (the others are tweens). */
-const frameSet = z.strictObject({ idle: frameList, run: frameList, hit: frameList.optional() });
+const frameSet = z.strictObject({
+  idle: frameList,
+  run: frameList,
+  hit: frameList.optional(),
+  /** Height of the drawing inside the cell, in sheet pixels (labels sit above it). */
+  height: z.number().int().min(1).optional(),
+});
 export type FrameSet = z.infer<typeof frameSet>;
 
 export const spriteManifestSchema = z.strictObject({

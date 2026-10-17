@@ -3,18 +3,13 @@ import Phaser from 'phaser';
 import type { GameSim } from '../game/sim.ts';
 import { useUi } from '../state/store.ts';
 import { Director } from './director.ts';
+import { REGION_TINT, addAtmosphere, renderMap } from './mapRender.ts';
+import { TownScene } from './TownScene.ts';
 import { Effects } from './effects.ts';
 import { Pathfinder } from './pathfinder.ts';
 import { makeTextures, manifestSheets } from './textures.ts';
 
 export const ZOOM_LEVELS = [1, 2, 3] as const;
-
-/** Map colour per region: dusk in Cinzarra, murky green in Morvel, embers in the Citadel. */
-const REGION_TINT: Record<string, number> = {
-  cinzarra: 0x9c98b4,
-  morvel_swamp: 0x8fa088,
-  burned_citadel: 0xc89484,
-};
 
 /**
  * Where actors can be: the spawn areas, the route between waypoints and the way out to
@@ -83,44 +78,12 @@ export class GameScene extends Phaser.Scene {
     const manifest = spriteManifestSchema.parse(this.cache.json.get('manifest'));
     makeTextures(this, this.sim.content, this.sim.state.hero.appearance);
 
-    const map = this.make.tilemap({ key: 'map' });
-    const tiles = map.addTilesetImage('tiles', 'tiles')!;
-    const ground = map.createLayer('ground', tiles)!;
     // Dark-fantasy mood per region over the bright tiles.
     const tint = REGION_TINT[this.regionId] ?? 0xffffff;
-    ground.setTint(tint);
-    // Grass edges laid by the map generator and small objects never change: they are drawn
-    // once into one texture instead of being redrawn as up to five tile layers every frame.
-    const statics = [
-      ...mapData.layers
-        .filter((l) => l.type === 'tilelayer' && l.name.startsWith('border'))
-        .map((l) => l.name),
-      'decor',
-    ].map((name) => map.createLayer(name, tiles)!);
-    const baked = this.add
-      .renderTexture(0, 0, map.widthInPixels, map.heightInPixels)
-      .setOrigin(0, 0)
-      .draw(statics)
-      .setTint(tint);
-    for (const layer of statics) layer.destroy();
-    // Trees and rocks stand above the actors, sorted by their base like the actors' feet.
-    // Those far from where anyone walks go into the same texture (one less full-map draw).
-    const propsSet = mapData.tilesets.find((t) => t.name === 'props');
-    if (propsSet) {
-      const active = activeAreas(mapData);
-      const props = objectsOf(mapData, 'props').toSorted((a, b) => a.y - b.y);
-      for (const o of props) {
-        if (o.gid === undefined) continue;
-        const frame = o.gid - propsSet.firstgid;
-        const box = new Phaser.Geom.Rectangle(o.x, o.y - 64, 64, 64);
-        if (active.some((r) => Phaser.Geom.Intersects.RectangleToRectangle(r, box))) {
-          this.add.image(o.x, o.y, 'props', frame).setOrigin(0, 1).setDepth(o.y).setTint(tint);
-        } else {
-          baked.drawFrame('props', frame, o.x, o.y - 64);
-        }
-      }
+    const map = renderMap(this, 'map', mapData, tint, activeAreas(mapData));
+    if (!this.options.noParticles) {
+      addAtmosphere(this, this.regionId, map.widthInPixels, map.heightInPixels);
     }
-    Director.animateTiles(this, ground, mapData);
 
     const cam = this.cameras.main;
     cam.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
@@ -154,6 +117,8 @@ export class GameScene extends Phaser.Scene {
         if (s.zoom !== prev.zoom) applyZoom(s.zoom);
       }),
     );
+    // The region's town, shown over the hunt while the hero is there.
+    this.scene.add('town', new TownScene(this.sim, this.regionId, this.options), true);
     const cleanup = () => {
       this.unsubscribe.forEach((u) => u());
       this.unsubscribe = [];

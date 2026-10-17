@@ -5,12 +5,13 @@
  * no image is read here.
  *
  * Sources: the OpenTibia Sprite Pack (CC BY 4.0, assets/vendor/opentibia-sprite-pack) by
- * sheet index, the placeholder collision marker, and a few tiles drawn by build-art
+ * sheet index (tiles, nature, town and walls sheets), the placeholder collision marker, and a few tiles drawn by build-art
  * (gravestones, bones, lava).
  */
 import { TILE } from './gen-maps-tiles.ts';
 
-export type Sheet = 'otsp_tiles' | 'otsp_nature' | 'placeholder' | 'drawn';
+export type Sheet =
+  'otsp_tiles' | 'otsp_nature' | 'otsp_town' | 'otsp_walls' | 'placeholder' | 'drawn';
 export type Drawn = 'grave' | 'grave_cross' | 'bones' | 'skull' | 'lava';
 export interface Slot {
   sheet: Sheet;
@@ -23,8 +24,8 @@ export const TILESET_COLS = 16;
 export const PROPS_COLS = 8;
 /** Tiles of the 32 px tileset, in order (id = position). */
 export const slots: Slot[] = [];
-/** Props of the 64 px sheet: the top-left cell of a 2×2 block of otsp_nature. */
-export const propSlots: number[] = [];
+/** Props of the 64 px sheet: the top-left cell of a 2×2 block of a pack sheet. */
+export const propSlots: { sheet: Sheet; index: number }[] = [];
 
 const add = (sheet: Sheet, index: number, drawn?: Drawn) => {
   const found = slots.findIndex((s) => s.sheet === sheet && s.index === index && s.drawn === drawn);
@@ -35,10 +36,10 @@ const add = (sheet: Sheet, index: number, drawn?: Drawn) => {
 const many = (sheet: Sheet, indices: number[]) => indices.map((i) => add(sheet, i));
 const span = (from: number, to: number) =>
   Array.from({ length: to - from + 1 }, (_, k) => from + k);
-const prop = (index: number) => {
-  const found = propSlots.indexOf(index);
+const prop = (index: number, sheet: Sheet = 'otsp_nature') => {
+  const found = propSlots.findIndex((p) => p.sheet === sheet && p.index === index);
   if (found >= 0) return found;
-  propSlots.push(index);
+  propSlots.push({ sheet, index });
   return propSlots.length - 1;
 };
 
@@ -61,6 +62,10 @@ export const GROUND = {
   darkRock: many('otsp_tiles', span(164, 171)),
   hexStone: many('otsp_tiles', span(232, 241)),
   darkEarth: many('otsp_tiles', span(172, 179)),
+  cobble: many('otsp_tiles', span(211, 219)),
+  plaza: many('otsp_tiles', span(221, 224)),
+  woodFloor: many('otsp_tiles', [281]),
+  darkWoodFloor: many('otsp_tiles', [282]),
 };
 
 /**
@@ -115,6 +120,23 @@ export const DECOR = {
   deadBushes: many('otsp_nature', [173]),
   boulders: many('otsp_nature', [688, 690, 691, 692, 693, 696, 697, 698, 700, 701, 706]),
   graves: [add('drawn', 0, 'grave'), add('drawn', 1, 'grave_cross')],
+  /** Ground detail: small tufts, flowers, leaves and stones drawn over the ground. */
+  tuftsGreen: many('otsp_nature', span(112, 119)),
+  tuftsDry: many('otsp_nature', span(120, 124)),
+  moss: many('otsp_nature', [125, 126]),
+  berries: many('otsp_nature', [16, 17, 18, 19, 20, 41, 42]),
+  violets: many('otsp_nature', [43, 44, 45, 46, 24]),
+  leaves: many('otsp_nature', [21, 22, 23, 40, 82, 83, 85]),
+  twigs: many('otsp_nature', [127, 128, 129]),
+  gravel: many('otsp_nature', [625, 626, 627, 628, 629, 632, 633]),
+  /** Town furniture (32 px). */
+  crates: many('otsp_town', [22]),
+  barrels: many('otsp_town', [23]),
+  well: many('otsp_town', [129]),
+  sign: many('otsp_town', [130]),
+  benches: many('otsp_town', [11, 12, 13, 14]),
+  chairs: many('otsp_town', [7, 8, 9, 10]),
+  pots: many('otsp_town', [1, 2, 99]),
   bones: [add('drawn', 2, 'bones'), add('drawn', 3, 'skull')],
 };
 
@@ -129,11 +151,31 @@ export const COLLISION = add('placeholder', TILE.collision);
 
 /** 64 px props by kind (indices into the props sheet). */
 export const PROPS = {
-  deadTrees: [220, 222, 274, 276, 368, 478, 530].map(prop),
-  greenTrees: [242, 244, 248, 250, 252, 340, 344, 350, 372, 470, 474, 476, 540, 542].map(prop),
-  swampTrees: [274, 276, 282, 348, 370, 478, 536, 538, 560, 562].map(prop),
-  giantMushrooms: [592].map(prop),
-  rocks: [724, 726, 732].map(prop),
+  deadTrees: [220, 222, 274, 276, 368, 478, 530].map((i) => prop(i)),
+  greenTrees: [242, 244, 248, 250, 252, 340, 344, 350, 372, 470, 474, 476, 540, 542].map((i) =>
+    prop(i),
+  ),
+  swampTrees: [274, 276, 282, 348, 370, 478, 536, 538, 560, 562].map((i) => prop(i)),
+  giantMushrooms: [592].map((i) => prop(i)),
+  rocks: [724, 726, 732].map((i) => prop(i)),
+  /** Stone walls: placed on a tile, drawn up and to the left of it (as in the pack). */
+  wallVertical: prop(0, 'otsp_walls'),
+  wallHorizontal: prop(2, 'otsp_walls'),
+  wallPole: prop(4, 'otsp_walls'),
+  wallCorner: prop(6, 'otsp_walls'),
+  chestGold: prop(48, 'otsp_town'),
+  chestIron: prop(52, 'otsp_town'),
+  crate: prop(56, 'otsp_town'),
+  darkCrate: prop(58, 'otsp_town'),
+  bigCrate: prop(60, 'otsp_town'),
+  barrels: prop(392, 'otsp_town'),
+  bigTable: prop(394, 'otsp_town'),
+  table: prop(396, 'otsp_town'),
+  bed: prop(420, 'otsp_town'),
+  stove: prop(426, 'otsp_town'),
+  bookshelf: prop(430, 'otsp_town'),
+  displayCase: prop(450, 'otsp_town'),
+  cabinet: prop(452, 'otsp_town'),
 };
 
 export const TILESET_ROWS = Math.ceil(slots.length / TILESET_COLS);

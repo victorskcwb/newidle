@@ -38,3 +38,16 @@ test('hero creation validates the name and only offers the Guerreiro', async ({ 
   await expect(start).toBeEnabled();
   await expect(page.getByText('Libera no reset 5')).toBeVisible();
 });
+
+test('going back to town shows the village and the hunt resumes after', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await createHero(page, 'Viajante', 2);
+  await page.getByRole('button', { name: 'Voltar à cidade' }).click();
+  await expect(page.getByTestId('town-overlay')).toContainText('Vila de Cinzarra', {
+    timeout: 30_000,
+  });
+  await page.getByRole('button', { name: 'Caçar' }).click();
+  await expect(page.getByTestId('town-overlay')).toBeHidden({ timeout: 30_000 });
+  expect(errors).toEqual([]);
+});

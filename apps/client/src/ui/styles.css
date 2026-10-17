@@ -628,16 +628,23 @@ body,
 /* --- Town overlay ---------------------------------------------------------------------------- */
 .town-overlay {
   position: fixed;
-  inset: 0;
+  left: 50%;
+  top: calc(max(8px, env(safe-area-inset-top)) + 84px);
+  translate: -50% 0;
   display: grid;
-  place-content: center;
+  justify-items: center;
+  gap: 2px;
+  padding: 6px 16px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(34, 29, 44, 0.85), rgba(16, 14, 22, 0.85));
+  border: 1px solid rgba(217, 164, 65, 0.4);
   text-align: center;
-  gap: 8px;
-  background: radial-gradient(circle at 50% 45%, #2a2030 0%, #0e0d12 70%);
+  font-size: 12px;
+  pointer-events: none;
 }
 
 .town-name {
-  font-size: 24px;
+  font-size: 16px;
   color: var(--accent);
 }
 

@@ -225,7 +225,16 @@ export function heroLook(scene: Phaser.Scene, manifest: SpriteManifest, outfit: 
     const loops = loopsFor(scene, key, `hero${outfit % sprite!.looks!.length}`, set);
     const weapon =
       sprite!.weapon !== undefined ? { texture: key, frame: sprite!.weapon } : undefined;
-    return () => ({ texture: key, frame: set.idle[0], flipX: false, scale: 2, loops, weapon });
+    const height = set.height ? set.height * 2 : undefined;
+    return () => ({
+      texture: key,
+      frame: set.idle[0],
+      flipX: false,
+      scale: 2,
+      loops,
+      weapon,
+      height,
+    });
   }
   return (dir) => ({ texture: heroTextureKey(dir), flipX: false, scale: 1 });
 }
@@ -240,7 +249,19 @@ export function monsterLook(scene: Phaser.Scene, manifest: SpriteManifest, def: 
     const loops = loopsFor(scene, key, `${def.sprite.atlas}/${def.sprite.key}`, set);
     const scale = 2 * (sprite!.scale ?? 1) * (def.sprite.scale ?? 1);
     const tint = softTint(def.sprite.tint);
-    return () => ({ texture: key, frame: set.idle[0], flipX: false, scale, tint, loops });
+    const height = set.height ? set.height * scale : undefined;
+    return () => ({ texture: key, frame: set.idle[0], flipX: false, scale, tint, loops, height });
   }
   return (dir) => ({ texture: monsterTextureKey(def.sprite.key, dir), flipX: false, scale: 1 });
+}
+
+/** A townsperson of the region's town (atlas "npcs" of the manifest), or null. */
+export function npcLook(scene: Phaser.Scene, manifest: SpriteManifest, id: string): LookFor | null {
+  const atlas = manifest.atlases.npcs;
+  const set = atlas?.sprites[id]?.frames;
+  if (!atlas?.image || !set) return null;
+  const key = sheetKey(atlas.image);
+  const loops = loopsFor(scene, key, `npc/${id}`, set);
+  const height = set.height ? set.height * 2 : undefined;
+  return () => ({ texture: key, frame: set.idle[0], flipX: false, scale: 2, loops, height });
 }
