@@ -1,14 +1,17 @@
 import { loadContent, type ContentDb } from '@abismo/content';
 import type { EquipmentSlot, Rarity } from '@abismo/content';
 import {
+  type CraftRarity,
   TICK_MS,
   allocateAttribute,
+  buyConsumable,
   buyUpgrade,
   claimQuest,
   computeRates,
   createGame,
   debugSetLevel,
   equipItem,
+  forgeItem,
   heroStats,
   learnSkill,
   performReset,
@@ -20,6 +23,7 @@ import {
   returnToTown,
   salvageItem,
   salvageUpTo,
+  sellItems,
   setActiveSkill,
   setAutoAllocate,
   setLootFilter,
@@ -182,6 +186,29 @@ export class GameSim {
   salvage(uid: number) {
     salvageItem(this.state, this.content, uid);
     this.changed(false);
+  }
+
+  /** Town: sells items to the merchant. */
+  sell(uids: number[]) {
+    const r = sellItems(this.state, uids);
+    this.freshSnapshot();
+    this.changed(false);
+    return r;
+  }
+
+  /** Town: buys consumables from the merchant. */
+  buy(consumableId: string, qty: number) {
+    buyConsumable(this.state, this.content, consumableId, qty);
+    this.freshSnapshot();
+    this.changed(false);
+  }
+
+  /** Town: the smith forges a new item. */
+  forge(slot: EquipmentSlot, rarity: CraftRarity) {
+    const item = forgeItem(this.state, this.content, slot, rarity);
+    this.freshSnapshot();
+    this.changed(false);
+    return item;
   }
 
   /** New daily/weekly goals when the local day changed (the engine has no clock). */

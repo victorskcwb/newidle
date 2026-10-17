@@ -1382,3 +1382,99 @@ input[type='range'] {
   bottom: -4px;
   translate: -50% 0;
 }
+
+/* --- Level up ------------------------------------------------------------------------------ */
+.levelup {
+  position: fixed;
+  left: 50%;
+  top: 36%;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 26px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(90, 64, 18, 0.92), rgba(40, 26, 6, 0.92));
+  border: 2px solid #f0c060;
+  box-shadow:
+    0 0 24px rgba(255, 200, 90, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  color: #fff3d6;
+  pointer-events: none;
+  z-index: 20;
+  animation: levelup-in 2.6s ease forwards;
+}
+
+.levelup-title {
+  font-size: 20px;
+  color: #ffe08a;
+  text-shadow: 0 2px 0 #3a2400;
+}
+
+.levelup-level {
+  font-size: 13px;
+  text-align: center;
+}
+
+.levelup-icon {
+  color: #ffd36a;
+  animation: levelup-spin 1.2s ease-out;
+}
+
+.levelup-rays {
+  position: absolute;
+  inset: -40px -60px;
+  z-index: -1;
+  background: radial-gradient(circle, rgba(255, 210, 110, 0.45), transparent 65%);
+  animation: levelup-glow 2.6s ease forwards;
+}
+
+@keyframes levelup-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  12% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+  20% {
+    transform: scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes levelup-spin {
+  from {
+    transform: rotate(-180deg) scale(0.4);
+  }
+  to {
+    transform: rotate(0) scale(1);
+  }
+}
+
+@keyframes levelup-glow {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .levelup,
+  .levelup-icon,
+  .levelup-rays {
+    animation-duration: 0.01s;
+  }
+}

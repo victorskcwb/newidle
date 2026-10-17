@@ -586,5 +586,12 @@
   "npc.say.smith": "Precisa afiar essa lâmina?",
   "npc.say.priestess": "Que a luz guie seus passos.",
   "npc.say.elder": "Volte inteiro, herói.",
-  "npc.say.guard": "Cuidado lá fora."
+  "npc.say.guard": "Cuidado lá fora.",
+  "error.not_in_town": "Só na vila.",
+  "error.not_for_sale": "Não está à venda.",
+  "error.invalid_quantity": "Quantidade inválida.",
+  "error.not_enough_materials": "Materiais insuficientes.",
+  "error.cannot_forge": "Não dá para forjar isso ainda.",
+  "error.item_not_found": "Item não encontrado.",
+  "levelup.title": "Subiu de nível!"
 }

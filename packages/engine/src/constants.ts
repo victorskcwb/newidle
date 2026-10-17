@@ -144,3 +144,24 @@ export const REFORGE_MATERIALS: Partial<Record<Rarity, Record<string, number>>> 
   epic: { crystal: 5, core: 2 },
   legendary: { core: 3, soul: 1 },
 };
+
+// --- Town services ----------------------------------------------------------------------------
+/** The merchant pays (5 + ilvl²/4 + 10 per refine) gold times this per rarity. */
+export const SELL_RARITY_MULT = {
+  common: 1,
+  magic: 2,
+  rare: 5,
+  epic: 12,
+  legendary: 30,
+} as const;
+/** Rarities the smith can forge (legendaries only drop). */
+export type CraftRarity = 'magic' | 'rare' | 'epic';
+/** Forge recipes: materials plus gold per item level of the forged item. */
+export const CRAFT_RECIPES: Record<
+  CraftRarity,
+  { materials: Record<string, number>; goldPerIlvl: number }
+> = {
+  magic: { materials: { fragment: 8 }, goldPerIlvl: 20 },
+  rare: { materials: { fragment: 10, essence: 6 }, goldPerIlvl: 60 },
+  epic: { materials: { essence: 6, crystal: 5 }, goldPerIlvl: 200 },
+};

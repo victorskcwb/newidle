@@ -20,3 +20,4 @@ export * from './stats.ts';
 export * from './types.ts';
 export * from './upgrades.ts';
 export * from './xp.ts';
+export * from './town.ts';

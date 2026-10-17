@@ -273,10 +273,52 @@ export class Effects {
           rise: 14,
         });
         break;
-      case 'levelup':
-        this.glow('light_03', x, y, { tint: 0xffd36a, from: 0.2, to: 1, ms: 900 });
-        this.glow('magic_02', x, y, { tint: 0xffe9a0, from: 0.3, to: 0.6, ms: 900, spin: 120 });
+      case 'levelup': {
+        // A column of golden light, a rune turning under the feet, rings and rising stars.
+        const pillar = this.takeGlow()
+          .setFrame(frameOf('trace_01'))
+          .setPosition(x, y - 30)
+          .setTint(0xffd36a)
+          .setScale(0.9, 0.2)
+          .setDepth(100_000);
+        this.scene.tweens.add({
+          targets: pillar,
+          scaleY: 1.4,
+          alpha: { from: 1, to: 0 },
+          duration: 1100,
+          ease: 'Cubic.easeOut',
+          onComplete: () => pillar.setActive(false).setVisible(false),
+        });
+        this.glow('magic_02', x, y + 10, {
+          tint: 0xffe9a0,
+          from: 0.35,
+          to: 0.55,
+          ms: 1400,
+          spin: 220,
+        });
+        this.glow('light_03', x, y - 8, { tint: 0xffd36a, from: 0.2, to: 1.1, ms: 1000 });
+        for (let k = 0; k < 3; k++) {
+          this.glow('circle_03', x, y + 4, {
+            tint: 0xffc04a,
+            from: 0.1,
+            to: 0.8,
+            ms: 700,
+            delay: k * 220,
+          });
+        }
+        for (let k = 0; k < 8; k++) {
+          this.glow('star_04', x + Phaser.Math.Between(-18, 18), y + Phaser.Math.Between(-6, 10), {
+            tint: 0xfff3b0,
+            from: 0.14,
+            to: 0.05,
+            ms: 1100,
+            rise: 40,
+            spin: 180,
+            delay: 150 + k * 90,
+          });
+        }
         break;
+      }
     }
   }
 

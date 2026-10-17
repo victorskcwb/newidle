@@ -285,6 +285,24 @@ export class Actor {
     });
   }
 
+  /** A happy jump with a golden flash (level up). */
+  celebrate() {
+    this.scene.tweens.add({
+      targets: this.body,
+      y: FEET - 14,
+      scale: 1.2,
+      duration: 220,
+      yoyo: true,
+      ease: 'Quad.easeOut',
+      onComplete: () => this.body.setPosition(this.body.x, FEET).setScale(1),
+    });
+    this.sprite.setTintFill(0xffe08a);
+    this.scene.time.delayedCall(160, () => {
+      if (this.tint !== undefined) this.sprite.setTint(this.tint);
+      else this.sprite.clearTint();
+    });
+  }
+
   spawn() {
     const anim = this.anims.spawn;
     const duration = anim ? anim.frames * anim.frameMs : 300;

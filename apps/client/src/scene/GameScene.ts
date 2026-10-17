@@ -1,4 +1,4 @@
-import { objectsOf, spriteManifestSchema, tiledMapSchema, type TiledMap } from '@abismo/content';
+import { spriteManifestSchema, tiledMapSchema, type TiledMap } from '@abismo/content';
 import Phaser from 'phaser';
 import type { GameSim } from '../game/sim.ts';
 import { useUi } from '../state/store.ts';
@@ -12,33 +12,12 @@ import { makeTextures, manifestSheets } from './textures.ts';
 export const ZOOM_LEVELS = [1, 2, 3] as const;
 
 /**
- * Where actors can be: the spawn areas, the route between waypoints and the way out to
- * town, with a margin of 2 tiles.
+ * Where actors can be: the hero roams the whole map except the 2-tile forest edge. Props
+ * there stay sorted with the actors; the edge's props are baked into the static texture.
  */
 function activeAreas(map: TiledMap): Phaser.Geom.Rectangle[] {
-  const pad = 64;
-  const span = (x0: number, y0: number, x1: number, y1: number) =>
-    new Phaser.Geom.Rectangle(
-      Math.min(x0, x1) - pad,
-      Math.min(y0, y1) - pad,
-      Math.abs(x1 - x0) + 2 * pad,
-      Math.abs(y1 - y0) + 2 * pad,
-    );
-  const route = objectsOf(map, 'route');
-  const areas = objectsOf(map, 'spawns').map((o) =>
-    span(o.x, o.y, o.x + (o.width ?? 0), o.y + (o.height ?? 0)),
-  );
-  route.forEach((p, i) => {
-    const q = route[(i + 1) % route.length]!;
-    areas.push(span(p.x, p.y, q.x, q.y));
-  });
-  for (const exit of objectsOf(map, 'town_exit')) {
-    const nearest = route.toSorted(
-      (a, b) => Math.hypot(a.x - exit.x, a.y - exit.y) - Math.hypot(b.x - exit.x, b.y - exit.y),
-    )[0];
-    if (nearest) areas.push(span(exit.x, exit.y, nearest.x, nearest.y));
-  }
-  return areas;
+  const t = map.tilewidth;
+  return [new Phaser.Geom.Rectangle(2 * t, t, (map.width - 4) * t, (map.height - 3) * t)];
 }
 
 /** The hunt map: Tiled layers, placeholder textures and the director that stages events. */

@@ -37,6 +37,8 @@ interface UiState {
   /** The boss being fought, for the big life bar at the top (section 4.3). */
   boss: { name: string; hp: number; maxHp: number } | null;
   zoom: number;
+  /** The last level reached, for the level-up banner (id changes on every level up). */
+  levelUp: { level: number; id: number } | null;
   /** Bumped by the sim when inventory, equipment or rates change. */
   simVersion: number;
   setPresented: (s: Snapshot) => void;
@@ -49,6 +51,8 @@ interface UiState {
   setTown: (town: TownView) => void;
   setBoss: (boss: { name: string; hp: number; maxHp: number } | null) => void;
   setZoom: (zoom: number) => void;
+  showLevelUp: (level: number) => void;
+  hideLevelUp: () => void;
   bump: () => void;
 }
 
@@ -66,6 +70,7 @@ export const useUi = create<UiState>((set) => ({
   town: null,
   boss: null,
   zoom: 2,
+  levelUp: null,
   simVersion: 0,
   setPresented: (presented) => set({ presented }),
   pushLog: (line) =>
@@ -78,5 +83,7 @@ export const useUi = create<UiState>((set) => ({
   setTown: (town) => set({ town }),
   setBoss: (boss) => set({ boss }),
   setZoom: (zoom) => set({ zoom }),
+  showLevelUp: (level) => set((s) => ({ levelUp: { level, id: (s.levelUp?.id ?? 0) + 1 } })),
+  hideLevelUp: () => set({ levelUp: null }),
   bump: () => set((s) => ({ simVersion: s.simVersion + 1 })),
 }));

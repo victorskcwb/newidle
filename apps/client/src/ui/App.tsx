@@ -8,6 +8,7 @@ import { useUi, type Screen } from '../state/store.ts';
 import { BackpackPanel } from './BackpackPanel.tsx';
 import { EventLog } from './EventLog.tsx';
 import { Hud } from './Hud.tsx';
+import { LevelUpBanner } from './LevelUpBanner.tsx';
 import { OfflineModal } from './OfflineModal.tsx';
 import { AltarScreen } from './screens/AltarScreen.tsx';
 import { CardsScreen } from './screens/CardsScreen.tsx';
@@ -71,6 +72,7 @@ function Game() {
         reducedMotion={reducedMotion}
       />
       <TownOverlay />
+      <LevelUpBanner />
       <div className="hud">
         <Hud />
         <EventLog />

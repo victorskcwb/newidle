@@ -1,4 +1,5 @@
 import {
+  reachableFrom,
   routeWaypoints,
   type ContentDb,
   type Monster,
@@ -18,8 +19,11 @@ import { SKILL_FX, type Effects } from './effects.ts';
 import type { Pathfinder } from './pathfinder.ts';
 import { heroLook, monsterLook } from './textures.ts';
 
-/** Hero states of the cavebot (section 4.2). */
-type Mode = 'walk_route' | 'engage' | 'fight' | 'loot' | 'return_town' | 'in_town' | 'dead';
+/**
+ * Hero states. `roam`: no route; the hero wanders the map towards random spots and heads
+ * straight for any monster group as soon as one appears, wherever it is.
+ */
+type Mode = 'roam' | 'engage' | 'fight' | 'loot' | 'return_town' | 'in_town' | 'dead';
 
 interface MonsterView {
   uid: number;
@@ -30,8 +34,9 @@ interface MonsterView {
   alive: boolean;
 }
 
-/** Sight range: a group closer than this pulls the hero off the route. */
-const VISION_TILES = 5;
+/** Roaming spots are this far from the hero, in tiles (manhattan). */
+const ROAM_MIN = 6;
+const ROAM_MAX = 16;
 /** More than this many ticks behind the engine (10 s): skip straight to the current state. */
 const SNAP_LAG_TICKS = 100;
 /** Lag tolerated before the scene speeds up to catch up. */
@@ -58,8 +63,8 @@ export class Director {
   private monsters = new Map<number, MonsterView>();
   private group: number[] = [];
   private pool: Actor[] = [];
-  private loop: TilePoint[] = [];
-  private loopIndex = 0;
+  /** Walkable tiles reachable from the town exit, away from the map edge. */
+  private open: TilePoint[] = [];
   private exit: TilePoint;
   private engageDest: TilePoint | null = null;
   private lootTimer = 0;
@@ -85,15 +90,15 @@ export class Director {
     this.content = sim.content;
     this.pTick = sim.state.tick;
     const wps = routeWaypoints(map, 'route');
-    this.loop = [wps[0]!];
-    for (let i = 0; i < wps.length; i++) {
-      const seg = paths.find(wps[i]!, wps[(i + 1) % wps.length]!) ?? [];
-      this.loop.push(...seg);
-    }
-    this.loop.pop(); // the last segment ends where the loop starts
     const exitObj = map.layers.find((l) => l.name === 'town_exit');
     const exit = exitObj?.type === 'objectgroup' ? exitObj.objects[0] : undefined;
     this.exit = exit ? { tx: Math.floor(exit.x / 32), ty: Math.floor(exit.y / 32) } : wps[0]!;
+    for (const k of reachableFrom(paths.walkable, this.exit)) {
+      const [tx, ty] = k.split(',').map(Number) as [number, number];
+      if (tx >= 2 && ty >= 2 && tx < map.width - 2 && ty < map.height - 2) {
+        this.open.push({ tx, ty });
+      }
+    }
 
     this.heroAnims = manifest.atlases.hero?.sprites.warrior?.animations ?? {};
     this.hero = new Actor(
@@ -383,6 +388,9 @@ export class Director {
         sfx.play('levelUp');
         this.fx.spell('levelup', this.hero.x, this.hero.y);
         this.fx.burst(this.hero.x, this.hero.y, 0xffd84a, 16);
+        this.hero.celebrate();
+        if (!this.calm) this.scene.cameras.main.flash(250, 255, 220, 140);
+        useUi.getState().showLevelUp(e.level);
         this.fx.number(this.hero.x, this.hero.y - 20, t('log.levelUp', { level: e.level }), 'crit');
         this.log(t('log.levelUp', { level: e.level }), { tone: 'good' });
         break;
@@ -437,17 +445,14 @@ export class Director {
 
   // --- Group placement ----------------------------------------------------------------------
 
-  private nearestLoopIndex(p: TilePoint): number {
-    let best = 0;
-    let bestD = Infinity;
-    this.loop.forEach((l, i) => {
-      const d = manhattan(l, p);
-      if (d < bestD) {
-        bestD = d;
-        best = i;
-      }
+  /** A random open tile at a manhattan distance in [min, max] from `from`. */
+  private openSpot(from: TilePoint, min: number, max: number): TilePoint {
+    const ring = this.open.filter((p) => {
+      const d = manhattan(p, from);
+      return d >= min && d <= max;
     });
-    return best;
+    const list = ring.length > 0 ? ring : this.open;
+    return list[Math.floor(Math.random() * list.length)] ?? from;
   }
 
   private spawnGroup(e: Extract<GameEvent, { type: 'GroupSpawned' }>) {
@@ -455,12 +460,15 @@ export class Director {
       const v = this.monsters.get(uid);
       if (v && v.alive) this.release(v);
     }
+    // The group shows up in any direction, about as far as the hero walks before the fight.
     const walkSeconds = (e.engageTick - e.tick) * (TICK_MS / 1000);
-    const ahead = Math.max(3, Math.round(this.hero.speed * walkSeconds) - 1);
-    const from =
-      this.mode === 'walk_route' ? this.loopIndex : this.nearestLoopIndex(this.hero.tile);
-    const center = this.loop[(from + ahead) % this.loop.length]!;
+    const ahead = Math.min(14, Math.max(3, Math.round(this.hero.speed * walkSeconds) - 1));
+    const center = this.openSpot(this.hero.tile, Math.max(2, ahead - 2), ahead + 2);
     this.placeGroup(e.monsters, center, true);
+    if (this.mode === 'roam') {
+      this.mode = 'engage';
+      this.engageDest = null;
+    }
     const bossView = this.group.map((uid) => this.monsters.get(uid)).find((v) => v?.def.boss);
     this.showBoss(bossView ?? null);
     const boss = e.monsters.find((m) => m.boss);
@@ -605,14 +613,15 @@ export class Director {
       this.hero.place(this.exit);
       this.scene.cameras.main.fadeIn(300);
     }
-    this.rejoinRoute();
+    this.roam();
   }
 
-  private rejoinRoute() {
-    this.mode = 'walk_route';
+  /** Off to a random spot of the map; any monster group pulls the hero away at once. */
+  private roam() {
+    this.mode = 'roam';
     this.engageDest = null;
-    this.loopIndex = (this.nearestLoopIndex(this.hero.tile) + 1) % this.loop.length;
-    this.hero.path = this.paths.find(this.hero.tile, this.loop[this.loopIndex]!) ?? [];
+    const spot = this.openSpot(this.hero.tile, ROAM_MIN, ROAM_MAX);
+    this.hero.path = this.paths.find(this.hero.tile, spot) ?? [];
   }
 
   // --- Cavebot ------------------------------------------------------------------------------
@@ -621,25 +630,19 @@ export class Director {
     const hero = this.hero;
     const moving = hero.update(dtMs, this.timeScale);
     switch (this.mode) {
-      case 'walk_route': {
-        const target = this.currentTarget();
-        if (target && manhattan(hero.tile, target.actor.tile) <= VISION_TILES) {
+      case 'roam': {
+        if (this.currentTarget()) {
           this.mode = 'engage';
           this.engageDest = null;
           break;
         }
-        if (!moving) {
-          if (key(hero.tile) === key(this.loop[this.loopIndex]!)) {
-            this.loopIndex = (this.loopIndex + 1) % this.loop.length;
-          }
-          hero.path = this.paths.find(hero.tile, this.loop[this.loopIndex]!) ?? [];
-        }
+        if (!moving) this.roam();
         break;
       }
       case 'engage': {
         const target = this.currentTarget();
         if (!target) {
-          if (!moving) this.rejoinRoute();
+          if (!moving) this.roam();
           break;
         }
         if (manhattan(hero.tile, target.actor.tile) <= 1 && !moving) {
@@ -674,7 +677,7 @@ export class Director {
         this.lootTimer -= dtMs * this.timeScale;
         if (this.lootTimer <= 0) {
           if (this.currentTarget()) this.mode = 'engage';
-          else this.rejoinRoute();
+          else this.roam();
         }
         break;
       case 'return_town':
@@ -741,18 +744,21 @@ export class Director {
         ui.setTown(null);
         if (!this.hero.container.visible) {
           this.hero.reset(true);
-          this.hero.place(this.loop[0]!);
+          this.hero.place(this.openSpot(this.exit, 4, 10));
         }
-        const near = this.nearestLoopIndex(this.hero.tile);
-        this.hero.place(this.loop[near]!);
+        if (!this.paths.isWalkable(this.hero.tile))
+          this.hero.place(this.openSpot(this.exit, 4, 10));
         const alive = a.group.filter((m) => m.hp > 0);
-        const center = this.loop[(near + (a.kind === 'fighting' ? 1 : 4)) % this.loop.length]!;
+        const center =
+          a.kind === 'fighting'
+            ? this.openSpot(this.hero.tile, 1, 2)
+            : this.openSpot(this.hero.tile, 4, 7);
         this.placeGroup(alive, center, false);
         if (a.kind === 'fighting') {
           this.mode = 'engage';
           this.engageDest = null;
         } else {
-          this.rejoinRoute();
+          this.roam();
         }
         break;
       }
@@ -760,7 +766,7 @@ export class Director {
         ui.setTown(null);
         this.hero.reset(true);
         this.hero.place(this.exit);
-        this.rejoinRoute();
+        this.roam();
         break;
       default:
         this.enterTown(a.kind === 'idle_town' ? 'idle' : 'depositing');
