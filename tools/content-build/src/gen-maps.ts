@@ -1,13 +1,30 @@
 /**
- * Generates the placeholder tileset and the test map of the Forgotten Cemetery as a regular
- * Tiled map (.tmj), so it can be opened and edited in Tiled afterwards. Deterministic:
- * running it again produces the same files.
+ * Generates the placeholder tiles (our lava and the collision marker, read by build-art) and
+ * every hunt map as a regular Tiled map (.tmj) with the tile ids of tileset.ts, so maps can
+ * be opened and edited in Tiled afterwards. Deterministic: running it again produces the
+ * same files.
  *
  *   pnpm maps:gen
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { TILE } from './gen-maps-tiles.ts';
 import { Image } from './png.ts';
+import {
+  BORDERS,
+  COLLISION,
+  DECOR,
+  GROUND,
+  LAVA,
+  LAVA_FRAME_MS,
+  PROPS,
+  PROPS_COLS,
+  PROPS_ROWS,
+  TILESET_COLS,
+  TILESET_ROWS,
+  WATER,
+  WATER_FRAME_MS,
+  type BorderSet,
+} from './tileset.ts';
 
 type Rgba = readonly [number, number, number, number];
 const T = 32;
@@ -168,91 +185,161 @@ interface MapObject {
   width: number;
   height: number;
   point?: boolean;
+  gid?: number;
   rotation: number;
   visible: boolean;
 }
 
 export type Theme = 'cemetery' | 'woods' | 'crypt' | 'swamp' | 'village' | 'ash' | 'molten';
 
-interface ThemeSpec {
-  ground: [number, number];
-  pond: number | null;
-  inner: 'graves' | 'trees' | 'walls' | 'water' | 'lava' | 'houses';
-  outerTrees: number;
-  outerWalls: number;
-  outerHazard: number;
-  hazard: number;
+interface Litter {
+  tiles: number[];
+  chance: number;
 }
+
+interface ThemeSpec {
+  /** Main ground, and the occasional other ground mixed into it. */
+  field: number[];
+  speck?: Litter;
+  /** Route ground; also the ground the field's borders lie on. */
+  path: number[];
+  /** Field edges drawn over the path and the hazards (none for paved maps). */
+  border: BorderSet | null;
+  hazard: 'water' | 'lava';
+  pond: boolean;
+  inner: 'graves' | 'trees' | 'rocks' | 'ruins' | 'hazard';
+  /** Props along the map edge and outside the route loop. */
+  edgeProps: number[];
+  outerProps: number[];
+  outerPropChance: number;
+  /** Blocking 32 px objects outside the loop. */
+  outerBlocks: number[];
+  outerBlockChance: number;
+  outerHazard: number;
+  /** Small objects anywhere off the path (no collision). */
+  litter: Litter[];
+}
+
+function pick<V>(list: readonly V[]): V {
+  return list[Math.floor(rand() * list.length)]!;
+}
+
+const swamp: ThemeSpec = {
+  field: GROUND.dryGrass,
+  path: GROUND.mud,
+  border: BORDERS.dry,
+  hazard: 'water',
+  pond: true,
+  inner: 'hazard',
+  edgeProps: PROPS.swampTrees,
+  outerProps: [...PROPS.swampTrees, ...PROPS.giantMushrooms],
+  outerPropChance: 0.12,
+  outerBlocks: DECOR.bushes,
+  outerBlockChance: 0.03,
+  outerHazard: 0.1,
+  litter: [
+    { tiles: DECOR.toadstools, chance: 0.02 },
+    { tiles: DECOR.mushrooms, chance: 0.02 },
+    { tiles: DECOR.plants, chance: 0.05 },
+    { tiles: DECOR.bones, chance: 0.01 },
+  ],
+};
+
+const ash: ThemeSpec = {
+  field: GROUND.darkEarth,
+  path: GROUND.darkRock,
+  border: null,
+  hazard: 'lava',
+  pond: true,
+  inner: 'rocks',
+  edgeProps: PROPS.rocks,
+  outerProps: PROPS.rocks,
+  outerPropChance: 0.06,
+  outerBlocks: DECOR.boulders,
+  outerBlockChance: 0.08,
+  outerHazard: 0.06,
+  litter: [
+    { tiles: DECOR.bones, chance: 0.03 },
+    { tiles: DECOR.pebbles, chance: 0.02 },
+  ],
+};
 
 const THEMES: Record<Theme, ThemeSpec> = {
   cemetery: {
-    ground: [TILE.grass, TILE.grass2],
-    pond: TILE.water1,
+    field: GROUND.dryGrass,
+    path: GROUND.dirt,
+    border: BORDERS.dry,
+    hazard: 'water',
+    pond: true,
     inner: 'graves',
-    outerTrees: 0.22,
-    outerWalls: 0,
+    edgeProps: PROPS.deadTrees,
+    outerProps: PROPS.deadTrees,
+    outerPropChance: 0.12,
+    outerBlocks: [...DECOR.deadBushes, ...DECOR.graves],
+    outerBlockChance: 0.06,
     outerHazard: 0,
-    hazard: TILE.water1,
+    litter: [
+      { tiles: DECOR.bones, chance: 0.03 },
+      { tiles: DECOR.mushrooms, chance: 0.015 },
+      { tiles: DECOR.plants, chance: 0.03 },
+      { tiles: DECOR.pebbles, chance: 0.01 },
+    ],
   },
   woods: {
-    ground: [TILE.grass, TILE.grass2],
-    pond: TILE.water1,
+    field: GROUND.greenGrass,
+    path: GROUND.dirt,
+    border: BORDERS.green,
+    hazard: 'water',
+    pond: true,
     inner: 'trees',
-    outerTrees: 0.42,
-    outerWalls: 0,
+    edgeProps: PROPS.greenTrees,
+    outerProps: PROPS.greenTrees,
+    outerPropChance: 0.3,
+    outerBlocks: DECOR.bushes,
+    outerBlockChance: 0.06,
     outerHazard: 0,
-    hazard: TILE.water1,
+    litter: [
+      { tiles: DECOR.flowers, chance: 0.03 },
+      { tiles: DECOR.plants, chance: 0.05 },
+      { tiles: DECOR.mushrooms, chance: 0.015 },
+      { tiles: DECOR.bones, chance: 0.01 },
+    ],
   },
   crypt: {
-    ground: [TILE.stone, TILE.stone],
-    pond: null,
-    inner: 'walls',
-    outerTrees: 0,
-    outerWalls: 0.18,
+    field: GROUND.darkRock,
+    path: GROUND.hexStone,
+    border: null,
+    hazard: 'water',
+    pond: false,
+    inner: 'ruins',
+    edgeProps: PROPS.rocks,
+    outerProps: PROPS.rocks,
+    outerPropChance: 0.08,
+    outerBlocks: [...DECOR.boulders, ...DECOR.graves],
+    outerBlockChance: 0.12,
     outerHazard: 0,
-    hazard: TILE.water1,
+    litter: [
+      { tiles: DECOR.bones, chance: 0.04 },
+      { tiles: DECOR.pebbles, chance: 0.03 },
+    ],
   },
-  swamp: {
-    ground: [TILE.mud, TILE.mud],
-    pond: TILE.water1,
-    inner: 'water',
-    outerTrees: 0.14,
-    outerWalls: 0,
-    outerHazard: 0.1,
-    hazard: TILE.water1,
-  },
+  swamp,
   village: {
-    ground: [TILE.mud, TILE.mud],
-    pond: TILE.water1,
-    inner: 'houses',
-    outerTrees: 0.08,
-    outerWalls: 0.05,
+    ...swamp,
+    inner: 'ruins',
+    outerPropChance: 0.06,
+    outerBlocks: [...DECOR.boulders, ...DECOR.bushes],
+    outerBlockChance: 0.05,
     outerHazard: 0.08,
-    hazard: TILE.water1,
   },
-  ash: {
-    ground: [TILE.ash, TILE.ash2],
-    pond: TILE.lava1,
-    inner: 'walls',
-    outerTrees: 0,
-    outerWalls: 0.1,
-    outerHazard: 0.06,
-    hazard: TILE.lava1,
-  },
-  molten: {
-    ground: [TILE.ash, TILE.ash2],
-    pond: TILE.lava1,
-    inner: 'lava',
-    outerTrees: 0,
-    outerWalls: 0.06,
-    outerHazard: 0.12,
-    hazard: TILE.lava1,
-  },
+  ash,
+  molten: { ...ash, inner: 'hazard', outerHazard: 0.12 },
 };
 
 /**
- * One hunt map: the same 2-tile route loop and town gate for every hunt (so routes and
- * spawns are known to work), with ground, obstacles and hazards from the theme.
+ * One hunt map: the same 2-tile route loop and town exit for every hunt (so routes and
+ * spawns are known to work), with ground, obstacles and hazards from the theme. Grass edges
+ * are laid automatically wherever the field meets the path or water.
  */
 function buildHuntMap(theme: Theme, mapSeed: number) {
   seed = mapSeed;
@@ -262,52 +349,78 @@ function buildHuntMap(theme: Theme, mapSeed: number) {
   const ground = new Array<number>(W * H).fill(0);
   const decor = new Array<number>(W * H).fill(0);
   const collision = new Array<number>(W * H).fill(0);
+  const props: { prop: number; tx: number; ty: number }[] = [];
   const gid = (id: number) => id + 1;
   const idx = (x: number, y: number) => y * W + x;
-  const block = (x: number, y: number) => (collision[idx(x, y)] = gid(TILE.collision));
+  const block = (x: number, y: number) => (collision[idx(x, y)] = gid(COLLISION));
   const isPath = new Set<number>();
+  const isField = new Set<number>();
 
   for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++)
-      ground[idx(x, y)] = gid(rand() < 0.25 ? spec.ground[1] : spec.ground[0]);
+    for (let x = 0; x < W; x++) {
+      const tiles = spec.speck && rand() < spec.speck.chance ? spec.speck.tiles : spec.field;
+      ground[idx(x, y)] = gid(pick(tiles));
+      isField.add(idx(x, y));
+    }
   }
   const path = (x0: number, y0: number, x1: number, y1: number) => {
     for (let y = y0; y <= y1; y++) {
       for (let x = x0; x <= x1; x++) {
-        ground[idx(x, y)] = gid(TILE.path);
+        ground[idx(x, y)] = gid(pick(spec.path));
         isPath.add(idx(x, y));
+        isField.delete(idx(x, y));
       }
     }
   };
-  // Route loop (2 tiles wide) and the path to the town gate.
+  // Route loop (2 tiles wide) and the path out to the town on the left edge.
   path(6, 6, 33, 7);
   path(6, 22, 33, 23);
   path(6, 6, 7, 23);
   path(32, 6, 33, 23);
-  path(1, 14, 7, 15);
+  path(0, 14, 7, 15);
 
-  // Border wall with the gate on the left.
-  for (let x = 0; x < W; x++) {
-    for (const y of [0, H - 1]) {
-      decor[idx(x, y)] = gid(TILE.wall);
-      block(x, y);
-    }
-  }
-  for (let y = 0; y < H; y++) {
-    for (const x of [0, W - 1]) {
-      decor[idx(x, y)] = gid(y === 14 || y === 15 ? (x === 0 ? TILE.gate : TILE.wall) : TILE.wall);
-      block(x, y);
-    }
-  }
   const free = (x: number, y: number) =>
     !isPath.has(idx(x, y)) && !decor[idx(x, y)] && !collision[idx(x, y)];
-  const hazardAt = (x: number, y: number, tile: number) => {
+  const hazardAt = (x: number, y: number) => {
     if (!free(x, y)) return;
-    ground[idx(x, y)] = gid(tile);
+    ground[idx(x, y)] =
+      spec.hazard === 'lava'
+        ? gid(LAVA[0]![(y % 2) * 2 + (x % 2)]!)
+        : gid(WATER[0]![(y % 4) * 4 + (x % 4)]!);
+    isField.delete(idx(x, y));
     block(x, y);
   };
-  if (spec.pond !== null) {
-    for (let y = 25; y <= 27; y++) for (let x = 34; x <= 37; x++) hazardAt(x, y, spec.pond);
+  /** Hazards come in 2×2 pools: grass edges would cover a lone tile almost entirely. */
+  const poolAt = (x: number, y: number) => {
+    if (x + 1 >= W - 1 || y + 1 >= H - 1) return;
+    if (!free(x, y) || !free(x + 1, y) || !free(x, y + 1) || !free(x + 1, y + 1)) return;
+    for (let j = 0; j < 2; j++) for (let i = 0; i < 2; i++) hazardAt(x + i, y + j);
+  };
+  const blockWith = (x: number, y: number, tiles: number[]) => {
+    if (!free(x, y)) return;
+    decor[idx(x, y)] = gid(pick(tiles));
+    block(x, y);
+  };
+  /** A 64 px prop standing on tile (x, y); its top-left part hangs over the tiles behind. */
+  const propAt = (x: number, y: number, list: number[]) => {
+    if (!free(x, y)) return;
+    props.push({ prop: pick(list), tx: x, ty: y });
+    block(x, y);
+  };
+
+  // The map edge: dense trees or rocks, open only where the path leaves for town.
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      if (x !== 0 && y !== 0 && x !== W - 1 && y !== H - 1) continue;
+      if (!isPath.has(idx(x, y))) {
+        if (rand() < 0.7) propAt(x, y, spec.edgeProps);
+        else blockWith(x, y, spec.outerBlocks);
+      }
+      block(x, y);
+    }
+  }
+  if (spec.pond) {
+    for (let y = 25; y <= 27; y++) for (let x = 34; x <= 37; x++) hazardAt(x, y);
   }
   // Obstacles in the middle of the loop (the spawn strips next to the path stay clear).
   for (let y = 12; y <= 18; y += 3) {
@@ -315,63 +428,90 @@ function buildHuntMap(theme: Theme, mapSeed: number) {
       if (rand() >= 0.85) continue;
       switch (spec.inner) {
         case 'graves':
-          decor[idx(x, y)] = gid(TILE.grave);
-          block(x, y);
+          blockWith(x, y, DECOR.graves);
+          if (rand() < 0.5) blockWith(x + 1, y, DECOR.graves);
           break;
         case 'trees':
-          decor[idx(x, y)] = gid(TILE.tree);
-          block(x, y);
-          if (rand() < 0.5) {
-            decor[idx(x + 1, y)] = gid(TILE.tree);
-            block(x + 1, y);
-          }
+          propAt(x, y, PROPS.greenTrees);
+          if (rand() < 0.5) propAt(x + 1, y, PROPS.greenTrees);
           break;
-        case 'walls':
+        case 'rocks':
+          propAt(x, y, PROPS.rocks);
+          if (rand() < 0.5) blockWith(x + 1, y, DECOR.boulders);
+          break;
+        case 'ruins':
           for (let k = 0; k < 2; k++) {
-            decor[idx(x + k, y)] = gid(rand() < 0.3 ? TILE.grave : TILE.wall);
-            block(x + k, y);
+            blockWith(x + k, y, rand() < 0.3 ? DECOR.graves : DECOR.boulders);
           }
+          if (spec.pond && rand() < 0.5) poolAt(x, y + 1);
           break;
-        case 'houses':
-          for (let k = 0; k < 2; k++) {
-            decor[idx(x + k, y)] = gid(TILE.wall);
-            block(x + k, y);
-          }
-          if (rand() < 0.5) hazardAt(x, y + 1, TILE.water1);
-          break;
-        case 'water':
-        case 'lava':
-          for (let k = 0; k < 2; k++)
-            hazardAt(x + k, y, spec.inner === 'lava' ? TILE.lava1 : TILE.water1);
+        case 'hazard':
+          poolAt(x, y);
           break;
       }
     }
   }
-  // Outside the loop: trees, walls and hazards by theme; bones and mushrooms anywhere free.
+  // Outside the loop: props, blocking objects and hazards by theme; litter anywhere free.
   for (let y = 1; y < H - 1; y++) {
     for (let x = 1; x < W - 1; x++) {
-      const i = idx(x, y);
       if (!free(x, y)) continue;
       const outsideLoop = x < 5 || x > 34 || y < 5 || y > 24;
       const nearExit = y >= 12 && y <= 17 && x <= 5;
       const r = rand();
-      if (outsideLoop && !nearExit && r < spec.outerTrees) {
-        decor[i] = gid(TILE.tree);
-        block(x, y);
-      } else if (outsideLoop && !nearExit && r < spec.outerTrees + spec.outerWalls) {
-        decor[i] = gid(TILE.wall);
-        block(x, y);
+      if (outsideLoop && !nearExit && r < spec.outerPropChance) {
+        propAt(x, y, spec.outerProps);
+      } else if (outsideLoop && !nearExit && r < spec.outerPropChance + spec.outerBlockChance) {
+        blockWith(x, y, spec.outerBlocks);
       } else if (
         outsideLoop &&
         !nearExit &&
-        r < spec.outerTrees + spec.outerWalls + spec.outerHazard
+        r < spec.outerPropChance + spec.outerBlockChance + spec.outerHazard
       ) {
-        hazardAt(x, y, spec.hazard);
-      } else if (rand() < 0.03) {
-        decor[i] = gid(TILE.bones);
-      } else if (rand() < 0.02 && theme !== 'ash' && theme !== 'molten') {
-        // No mushrooms among the citadel's embers.
-        decor[i] = gid(TILE.mushrooms);
+        poolAt(x, y);
+      } else {
+        for (const l of spec.litter) {
+          if (rand() < l.chance) {
+            decor[idx(x, y)] = gid(pick(l.tiles));
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // Grass edges: on every tile outside the field, the pieces for its field neighbours. Two
+  // sides that meet take one large inner corner; a lone diagonal neighbour, a small corner.
+  const borderLayers: number[][] = [];
+  if (spec.border) {
+    const b = spec.border;
+    const field = (x: number, y: number) =>
+      x >= 0 && y >= 0 && x < W && y < H && isField.has(idx(x, y));
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        if (field(x, y)) continue;
+        const n = field(x, y - 1);
+        const e = field(x + 1, y);
+        const s = field(x, y + 1);
+        const w = field(x - 1, y);
+        const pieces: number[] = [];
+        // On water the large inner corners would cover a small pool: straight edges only.
+        const diag = !collision[idx(x, y)];
+        if (diag && n && w) pieces.push(b.diagNW);
+        if (diag && n && e) pieces.push(b.diagNE);
+        if (diag && s && w) pieces.push(b.diagSW);
+        if (diag && s && e) pieces.push(b.diagSE);
+        if (n && (!diag || (!w && !e))) pieces.push(b.n);
+        if (s && (!diag || (!w && !e))) pieces.push(b.s);
+        if (w && (!diag || (!n && !s))) pieces.push(b.w);
+        if (e && (!diag || (!n && !s))) pieces.push(b.e);
+        if (!n && !w && field(x - 1, y - 1)) pieces.push(b.cornerNW);
+        if (!n && !e && field(x + 1, y - 1)) pieces.push(b.cornerNE);
+        if (!s && !w && field(x - 1, y + 1)) pieces.push(b.cornerSW);
+        if (!s && !e && field(x + 1, y + 1)) pieces.push(b.cornerSE);
+        pieces.forEach((piece, k) => {
+          borderLayers[k] ??= new Array<number>(W * H).fill(0);
+          borderLayers[k]![idx(x, y)] = gid(piece);
+        });
       }
     }
   }
@@ -417,9 +557,24 @@ function buildHuntMap(theme: Theme, mapSeed: number) {
     area('west', 9, 10, 2, 11),
   ];
   const exit = point('town_exit', 'town_exit', 1, 14);
+  const propsFirstGid = 1 + TILESET_COLS * TILESET_ROWS;
+  // Tile objects are anchored at their bottom-left corner (Tiled's convention).
+  const propObjects = props.map((p): MapObject => ({
+    id: nextId++,
+    name: '',
+    type: 'prop',
+    gid: propsFirstGid + p.prop,
+    x: (p.tx - 1) * T,
+    y: (p.ty + 1) * T,
+    width: 2 * T,
+    height: 2 * T,
+    rotation: 0,
+    visible: true,
+  }));
 
-  const tileLayer = (id: number, name: string, data: number[], visible = true) => ({
-    id,
+  let layerId = 1;
+  const tileLayer = (name: string, data: number[], visible = true) => ({
+    id: layerId++,
     name,
     type: 'tilelayer',
     width: W,
@@ -430,8 +585,8 @@ function buildHuntMap(theme: Theme, mapSeed: number) {
     visible,
     data,
   });
-  const objectLayer = (id: number, name: string, objects: MapObject[]) => ({
-    id,
+  const objectLayer = (name: string, objects: MapObject[]) => ({
+    id: layerId++,
     name,
     type: 'objectgroup',
     draworder: 'index',
@@ -441,6 +596,16 @@ function buildHuntMap(theme: Theme, mapSeed: number) {
     visible: true,
     objects,
   });
+  const layers = [
+    tileLayer('ground', ground),
+    ...borderLayers.map((data, k) => tileLayer(`border${k + 1}`, data)),
+    tileLayer('decor', decor),
+    tileLayer('collision', collision, false),
+    objectLayer('props', propObjects),
+    objectLayer('route', route),
+    objectLayer('spawns', spawns),
+    objectLayer('town_exit', [exit]),
+  ];
   return {
     compressionlevel: -1,
     width: W,
@@ -453,45 +618,45 @@ function buildHuntMap(theme: Theme, mapSeed: number) {
     type: 'map',
     tilewidth: T,
     tileheight: T,
-    nextlayerid: 7,
+    nextlayerid: layerId,
     nextobjectid: nextId,
-    layers: [
-      tileLayer(1, 'ground', ground),
-      tileLayer(2, 'decor', decor),
-      tileLayer(3, 'collision', collision, false),
-      objectLayer(4, 'route', route),
-      objectLayer(5, 'spawns', spawns),
-      objectLayer(6, 'town_exit', [exit]),
-    ],
+    layers,
     tilesets: [
       {
         firstgid: 1,
         name: 'tiles',
         image: '../sprites/tiles.png',
-        imagewidth: COLS * T,
-        imageheight: ROWS * T,
-        columns: COLS,
-        tilecount: COLS * ROWS,
+        imagewidth: TILESET_COLS * T,
+        imageheight: TILESET_ROWS * T,
+        columns: TILESET_COLS,
+        tilecount: TILESET_COLS * TILESET_ROWS,
         tilewidth: T,
         tileheight: T,
         margin: 0,
         spacing: 0,
         tiles: [
-          {
-            id: TILE.water1,
-            animation: [
-              { tileid: TILE.water1, duration: 600 },
-              { tileid: TILE.water2, duration: 600 },
-            ],
-          },
-          {
-            id: TILE.lava1,
-            animation: [
-              { tileid: TILE.lava1, duration: 450 },
-              { tileid: TILE.lava2, duration: 450 },
-            ],
-          },
+          ...WATER[0]!.map((id, c) => ({
+            id,
+            animation: WATER.map((frame) => ({ tileid: frame[c]!, duration: WATER_FRAME_MS })),
+          })),
+          ...LAVA[0]!.map((id, c) => ({
+            id,
+            animation: LAVA.map((frame) => ({ tileid: frame[c]!, duration: LAVA_FRAME_MS })),
+          })),
         ],
+      },
+      {
+        firstgid: propsFirstGid,
+        name: 'props',
+        image: '../sprites/props.png',
+        imagewidth: PROPS_COLS * 2 * T,
+        imageheight: PROPS_ROWS * 2 * T,
+        columns: PROPS_COLS,
+        tilecount: PROPS_COLS * PROPS_ROWS,
+        tilewidth: 2 * T,
+        tileheight: 2 * T,
+        margin: 0,
+        spacing: 0,
       },
     ],
   };

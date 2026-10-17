@@ -143,6 +143,31 @@ export function SettingsScreen() {
         />
       </label>
 
+      <h3 className="pixel">{t('settings.credits')}</h3>
+      <div className="credits small" data-testid="credits">
+        <p>
+          {t('settings.creditsOtsp')}{' '}
+          <a href="vendor/opentibia-sprite-pack/AUTHORS.md" target="_blank" rel="noreferrer">
+            {t('settings.creditsAuthors')}
+          </a>
+          {' · '}
+          <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">
+            {t('settings.creditsLicense')}
+          </a>
+          {' · '}
+          <a
+            href="https://github.com/peonso/opentibia_sprite_pack"
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t('settings.creditsSource')}
+          </a>
+        </p>
+        <p>{t('settings.creditsKenney')}</p>
+        <p>{t('settings.creditsOwn')}</p>
+        <p>{t('settings.creditsFont')}</p>
+      </div>
+
       {import.meta.env.DEV && (
         <>
           <h3 className="pixel">{t('settings.debug')}</h3>

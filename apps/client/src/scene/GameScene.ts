@@ -1,4 +1,4 @@
-import { spriteManifestSchema, tiledMapSchema, type TiledMap } from '@abismo/content';
+import { objectsOf, spriteManifestSchema, tiledMapSchema, type TiledMap } from '@abismo/content';
 import Phaser from 'phaser';
 import type { GameSim } from '../game/sim.ts';
 import { useUi } from '../state/store.ts';
@@ -15,6 +15,36 @@ const REGION_TINT: Record<string, number> = {
   morvel_swamp: 0x8fa088,
   burned_citadel: 0xc89484,
 };
+
+/**
+ * Where actors can be: the spawn areas, the route between waypoints and the way out to
+ * town, with a margin of 2 tiles.
+ */
+function activeAreas(map: TiledMap): Phaser.Geom.Rectangle[] {
+  const pad = 64;
+  const span = (x0: number, y0: number, x1: number, y1: number) =>
+    new Phaser.Geom.Rectangle(
+      Math.min(x0, x1) - pad,
+      Math.min(y0, y1) - pad,
+      Math.abs(x1 - x0) + 2 * pad,
+      Math.abs(y1 - y0) + 2 * pad,
+    );
+  const route = objectsOf(map, 'route');
+  const areas = objectsOf(map, 'spawns').map((o) =>
+    span(o.x, o.y, o.x + (o.width ?? 0), o.y + (o.height ?? 0)),
+  );
+  route.forEach((p, i) => {
+    const q = route[(i + 1) % route.length]!;
+    areas.push(span(p.x, p.y, q.x, q.y));
+  });
+  for (const exit of objectsOf(map, 'town_exit')) {
+    const nearest = route.toSorted(
+      (a, b) => Math.hypot(a.x - exit.x, a.y - exit.y) - Math.hypot(b.x - exit.x, b.y - exit.y),
+    )[0];
+    if (nearest) areas.push(span(exit.x, exit.y, nearest.x, nearest.y));
+  }
+  return areas;
+}
 
 /** The hunt map: Tiled layers, placeholder textures and the director that stages events. */
 export class GameScene extends Phaser.Scene {
@@ -33,6 +63,7 @@ export class GameScene extends Phaser.Scene {
   preload() {
     this.load.tilemapTiledJSON('map', `${this.mapId}.tmj`);
     this.load.image('tiles', 'sprites/tiles.png');
+    this.load.spritesheet('props', 'sprites/props.png', { frameWidth: 64, frameHeight: 64 });
     this.load.json('manifest', 'sprites/manifest.json');
     // Sprite sheets named by the manifest are queued as soon as the manifest arrives.
     this.load.once('filecomplete-json-manifest', (_key: string, _type: string, data: unknown) => {
@@ -54,11 +85,40 @@ export class GameScene extends Phaser.Scene {
     const map = this.make.tilemap({ key: 'map' });
     const tiles = map.addTilesetImage('tiles', 'tiles')!;
     const ground = map.createLayer('ground', tiles)!;
-    const decor = map.createLayer('decor', tiles)!;
-    // Dark-fantasy mood per region over the bright CC0 tiles.
+    // Dark-fantasy mood per region over the bright tiles.
     const tint = REGION_TINT[this.regionId] ?? 0xffffff;
     ground.setTint(tint);
-    decor.setTint(tint);
+    // Grass edges laid by the map generator and small objects never change: they are drawn
+    // once into one texture instead of being redrawn as up to five tile layers every frame.
+    const statics = [
+      ...mapData.layers
+        .filter((l) => l.type === 'tilelayer' && l.name.startsWith('border'))
+        .map((l) => l.name),
+      'decor',
+    ].map((name) => map.createLayer(name, tiles)!);
+    const baked = this.add
+      .renderTexture(0, 0, map.widthInPixels, map.heightInPixels)
+      .setOrigin(0, 0)
+      .draw(statics)
+      .setTint(tint);
+    for (const layer of statics) layer.destroy();
+    // Trees and rocks stand above the actors, sorted by their base like the actors' feet.
+    // Those far from where anyone walks go into the same texture (one less full-map draw).
+    const propsSet = mapData.tilesets.find((t) => t.name === 'props');
+    if (propsSet) {
+      const active = activeAreas(mapData);
+      const props = objectsOf(mapData, 'props').toSorted((a, b) => a.y - b.y);
+      for (const o of props) {
+        if (o.gid === undefined) continue;
+        const frame = o.gid - propsSet.firstgid;
+        const box = new Phaser.Geom.Rectangle(o.x, o.y - 64, 64, 64);
+        if (active.some((r) => Phaser.Geom.Intersects.RectangleToRectangle(r, box))) {
+          this.add.image(o.x, o.y, 'props', frame).setOrigin(0, 1).setDepth(o.y).setTint(tint);
+        } else {
+          baked.drawFrame('props', frame, o.x, o.y - 64);
+        }
+      }
+    }
     Director.animateTiles(this, ground, mapData);
 
     const cam = this.cameras.main;

@@ -22,6 +22,8 @@ const tiledObject = z.object({
   width: z.number().optional(),
   height: z.number().optional(),
   point: z.boolean().optional(),
+  /** Tile objects (props): the tile drawn, anchored at the object's bottom-left corner. */
+  gid: z.number().int().optional(),
 });
 export type TiledObject = z.infer<typeof tiledObject>;
 
@@ -54,6 +56,8 @@ export const tiledMapSchema = z.object({
         name: z.string(),
         image: z.string().optional(),
         columns: z.number().int().optional(),
+        tilewidth: z.number().int().optional(),
+        tileheight: z.number().int().optional(),
         tilecount: z.number().int().optional(),
         tiles: z
           .array(

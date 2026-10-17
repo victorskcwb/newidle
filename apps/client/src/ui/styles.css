@@ -1054,3 +1054,12 @@ input[type='range'] {
   background-repeat: no-repeat;
   image-rendering: pixelated;
 }
+
+.credits p {
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
+.credits a {
+  color: var(--accent);
+}

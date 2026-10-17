@@ -559,5 +559,13 @@
   "notify.offlineCap": "O herói chegou ao limite de tempo offline. Volte para continuar caçando.",
   "notify.noPotions": "As poções acabaram e o herói voltou à vila.",
   "notify.level100": "Nível 100! O altar de reset espera por você.",
-  "create.look": "Visual"
+  "create.look": "Visual",
+  "settings.credits": "Créditos",
+  "settings.creditsOtsp": "Terreno, árvores e rochas: OpenTibia Sprite Pack, de Peonso e mais de 50 artistas da comunidade, sob a licença CC BY 4.0. Os sprites foram recortados, recombinados e recoloridos para o jogo.",
+  "settings.creditsAuthors": "Autores",
+  "settings.creditsLicense": "Licença CC BY 4.0",
+  "settings.creditsSource": "Pack original",
+  "settings.creditsKenney": "Herói e monstros: Tiny Dungeon, de Kenney (CC0).",
+  "settings.creditsOwn": "Lápides, ossos, lava, ícones e sons: feitos para o Abismo Idle.",
+  "settings.creditsFont": "Fonte Pixelify Sans, de Stefie Justprince (SIL OFL 1.1)."
 }

@@ -6,3 +6,14 @@ coverage/
 playwright-report/
 test-results/
 tools/simulator/out/
+
+# Material de referência trazido para análise, fora do jogo (ver docs/decisions.md):
+# o fankit da CipSoft não pode ser redistribuído; os demais só entram em assets/vendor
+# depois de conferida a licença.
+/TibiaFankit/
+/canary-sprite-pack-main/
+/opentibia_sprite_pack-master/
+/sprites/
+/Sprites.zip
+/canary-sprite-pack-main.zip
+/opentibia_sprite_pack-master.zip
