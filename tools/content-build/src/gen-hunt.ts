@@ -1,112 +1,60 @@
 /**
- * Hunt maps: the same 2-tile route loop and town exit for every hunt (so routes and spawns
- * are known to work), dressed by theme. Vegetation comes in groves and meadows driven by
- * smooth noise, the map edge is a forest (or rock wall) a few tiles deep, the road frays at
- * its edges, clearings of bare ground open in the grass, and tufts, flowers and gravel cover
- * the ground so no tile looks bare.
+ * Hunt maps with a biome (grounds, edges, trees or rocks, hazards, ground detail) and a
+ * layout style, so no two hunts look alike:
+ *   meadow  open fields, groves and ponds, a winding road
+ *   forest  thick woods with clearings joined by trails
+ *   caves   rock caverns grown by cellular automata, a stone floor
+ *   marsh   islands of grass in water and mud, trails across
+ *   ruins   broken stone houses in the grass, canals
+ *   lava    rock fields cut by rivers of lava, fords between them
+ * Whatever the shape, every open tile is reachable from the town exit; the route waypoints
+ * (spread with farthest-point sampling) and the roads between them follow the terrain.
  */
 import { MapGrid, Noise, Rng, makeObjects } from './map-kit.ts';
 import { BORDERS, COLLISION, DECOR, GROUND, PROPS, type BorderSet } from './tileset.ts';
 
-export type Theme = 'cemetery' | 'woods' | 'crypt' | 'swamp' | 'village' | 'ash' | 'molten';
+export type Theme =
+  'cemetery' | 'woods' | 'crypt' | 'swamp' | 'village' | 'bog_heart' | 'ash' | 'molten' | 'throne';
+
+type Style = 'meadow' | 'forest' | 'caves' | 'marsh' | 'ruins' | 'lava';
 
 interface Litter {
   tiles: number[];
   chance: number;
 }
 
-interface ThemeSpec {
+interface Biome {
+  style: Style;
+  /** Upper ground (grass) and the lower one of roads and clearings. */
   field: number[];
-  /** Route ground; also the ground of clearings and the one grass edges lie on. */
-  path: number[];
+  floor: number[];
   border: BorderSet | null;
+  /** Ground under the solid mass (caves: the rock). */
+  solidGround?: number[];
   hazard: 'water' | 'lava';
-  pond: boolean;
-  inner: 'graves' | 'trees' | 'rocks' | 'ruins' | 'hazard';
-  edgeProps: number[];
-  /** Props of the groves outside the loop, and how dense the groves are. */
-  groveProps: number[];
-  grove: number;
-  /** Lone props anywhere outside the loop. */
-  scatter: number;
-  /** Blocking 32 px objects outside the loop. */
+  /** 64 px props of the solid mass, and blocking 32 px objects. */
+  props: number[];
   blocks: number[];
-  blockChance: number;
-  outerHazard: number;
-  /** Ground detail on the field, in meadows (flowers) and on the road. */
+  /** Blocking objects scattered in the open (graves, boulders). */
+  scatter: number[];
+  scatterChance: number;
   detail: Litter[];
   meadow: Litter[];
   roadDetail: Litter[];
-  /** Small objects off the road (decor layer, no collision). */
   litter: Litter[];
 }
 
-const swamp: ThemeSpec = {
-  field: GROUND.dryGrass,
-  path: GROUND.mud,
-  border: BORDERS.dry,
-  hazard: 'water',
-  pond: true,
-  inner: 'hazard',
-  edgeProps: PROPS.swampTrees,
-  groveProps: [...PROPS.swampTrees, ...PROPS.giantMushrooms],
-  grove: 0.45,
-  scatter: 0.03,
-  blocks: DECOR.bushes,
-  blockChance: 0.03,
-  outerHazard: 0.05,
-  detail: [
-    { tiles: DECOR.tuftsDry, chance: 0.3 },
-    { tiles: DECOR.moss, chance: 0.12 },
-  ],
-  meadow: [{ tiles: DECOR.violets, chance: 0.15 }],
-  roadDetail: [{ tiles: DECOR.moss, chance: 0.08 }],
-  litter: [
-    { tiles: DECOR.toadstools, chance: 0.02 },
-    { tiles: DECOR.mushrooms, chance: 0.02 },
-    { tiles: DECOR.plants, chance: 0.05 },
-    { tiles: DECOR.bones, chance: 0.01 },
-  ],
-};
-
-const ash: ThemeSpec = {
-  field: GROUND.darkEarth,
-  path: GROUND.darkRock,
-  border: null,
-  hazard: 'lava',
-  pond: true,
-  inner: 'rocks',
-  edgeProps: PROPS.rocks,
-  groveProps: PROPS.rocks,
-  grove: 0.35,
-  scatter: 0.03,
-  blocks: DECOR.boulders,
-  blockChance: 0.07,
-  outerHazard: 0.04,
-  detail: [{ tiles: DECOR.gravel, chance: 0.14 }],
-  meadow: [],
-  roadDetail: [{ tiles: DECOR.gravel, chance: 0.08 }],
-  litter: [
-    { tiles: DECOR.bones, chance: 0.03 },
-    { tiles: DECOR.pebbles, chance: 0.03 },
-  ],
-};
-
-const THEMES: Record<Theme, ThemeSpec> = {
+const BIOMES: Record<Theme, Biome> = {
   cemetery: {
+    style: 'meadow',
     field: GROUND.dryGrass,
-    path: GROUND.dirt,
+    floor: GROUND.dirt,
     border: BORDERS.dry,
     hazard: 'water',
-    pond: true,
-    inner: 'graves',
-    edgeProps: PROPS.deadTrees,
-    groveProps: PROPS.deadTrees,
-    grove: 0.4,
-    scatter: 0.03,
+    props: PROPS.deadTrees,
     blocks: [...DECOR.deadBushes, ...DECOR.graves],
-    blockChance: 0.06,
-    outerHazard: 0,
+    scatter: DECOR.graves,
+    scatterChance: 0.07,
     detail: [
       { tiles: DECOR.tuftsDry, chance: 0.32 },
       { tiles: DECOR.leaves, chance: 0.06 },
@@ -120,23 +68,18 @@ const THEMES: Record<Theme, ThemeSpec> = {
     litter: [
       { tiles: DECOR.bones, chance: 0.03 },
       { tiles: DECOR.mushrooms, chance: 0.015 },
-      { tiles: DECOR.plants, chance: 0.02 },
     ],
   },
   woods: {
+    style: 'forest',
     field: GROUND.greenGrass,
-    path: GROUND.dirt,
+    floor: GROUND.dirt,
     border: BORDERS.green,
     hazard: 'water',
-    pond: true,
-    inner: 'trees',
-    edgeProps: PROPS.greenTrees,
-    groveProps: PROPS.greenTrees,
-    grove: 0.6,
-    scatter: 0.05,
+    props: PROPS.greenTrees,
     blocks: DECOR.bushes,
-    blockChance: 0.05,
-    outerHazard: 0,
+    scatter: DECOR.bushes,
+    scatterChance: 0.03,
     detail: [{ tiles: DECOR.tuftsGreen, chance: 0.4 }],
     meadow: [
       { tiles: DECOR.violets, chance: 0.18 },
@@ -145,230 +88,561 @@ const THEMES: Record<Theme, ThemeSpec> = {
     ],
     roadDetail: [
       { tiles: DECOR.gravel, chance: 0.08 },
-      { tiles: DECOR.leaves, chance: 0.05 },
+      { tiles: DECOR.leaves, chance: 0.06 },
     ],
     litter: [
       { tiles: DECOR.plants, chance: 0.05 },
-      { tiles: DECOR.mushrooms, chance: 0.015 },
-      { tiles: DECOR.bones, chance: 0.008 },
+      { tiles: DECOR.mushrooms, chance: 0.02 },
     ],
   },
   crypt: {
-    field: GROUND.darkRock,
-    path: GROUND.hexStone,
+    style: 'caves',
+    field: GROUND.hexStone,
+    floor: GROUND.hexStone,
     border: null,
+    solidGround: GROUND.abyss,
     hazard: 'water',
-    pond: false,
-    inner: 'ruins',
-    edgeProps: PROPS.rocks,
-    groveProps: PROPS.rocks,
-    grove: 0.35,
-    scatter: 0.03,
-    blocks: [...DECOR.boulders, ...DECOR.graves],
-    blockChance: 0.1,
-    outerHazard: 0,
-    detail: [{ tiles: DECOR.gravel, chance: 0.16 }],
+    props: PROPS.rocks,
+    blocks: DECOR.boulders,
+    scatter: [...DECOR.graves, ...DECOR.boulders],
+    scatterChance: 0.05,
+    detail: [{ tiles: DECOR.gravel, chance: 0.18 }],
     meadow: [],
-    roadDetail: [{ tiles: DECOR.gravel, chance: 0.05 }],
+    roadDetail: [],
     litter: [
-      { tiles: DECOR.bones, chance: 0.05 },
+      { tiles: DECOR.bones, chance: 0.06 },
       { tiles: DECOR.pebbles, chance: 0.03 },
     ],
   },
-  swamp,
-  village: {
-    ...swamp,
-    inner: 'ruins',
-    grove: 0.35,
-    blocks: [...DECOR.boulders, ...DECOR.bushes],
-    blockChance: 0.05,
-    outerHazard: 0.04,
+  swamp: {
+    style: 'marsh',
+    field: GROUND.mossGrass,
+    floor: GROUND.mud,
+    border: BORDERS.moss,
+    hazard: 'water',
+    props: PROPS.swampTrees,
+    blocks: DECOR.bushes,
+    scatter: DECOR.bushes,
+    scatterChance: 0.02,
+    detail: [
+      { tiles: DECOR.tuftsDry, chance: 0.25 },
+      { tiles: DECOR.moss, chance: 0.12 },
+    ],
+    meadow: [{ tiles: DECOR.violets, chance: 0.15 }],
+    roadDetail: [{ tiles: DECOR.moss, chance: 0.08 }],
+    litter: [
+      { tiles: DECOR.toadstools, chance: 0.03 },
+      { tiles: DECOR.mushrooms, chance: 0.02 },
+      { tiles: DECOR.plants, chance: 0.05 },
+    ],
   },
-  ash,
-  molten: { ...ash, inner: 'hazard', outerHazard: 0.08 },
+  village: {
+    style: 'ruins',
+    field: GROUND.mossGrass,
+    floor: GROUND.cobble,
+    border: BORDERS.moss,
+    hazard: 'water',
+    props: PROPS.swampTrees,
+    blocks: [...DECOR.boulders, ...DECOR.bushes],
+    scatter: [...DECOR.crates, ...DECOR.barrels],
+    scatterChance: 0.04,
+    detail: [
+      { tiles: DECOR.tuftsDry, chance: 0.3 },
+      { tiles: DECOR.moss, chance: 0.1 },
+    ],
+    meadow: [{ tiles: DECOR.violets, chance: 0.1 }],
+    roadDetail: [{ tiles: DECOR.moss, chance: 0.12 }],
+    litter: [
+      { tiles: DECOR.bones, chance: 0.02 },
+      { tiles: DECOR.plants, chance: 0.04 },
+    ],
+  },
+  bog_heart: {
+    style: 'forest',
+    field: GROUND.mossGrass,
+    floor: GROUND.mud,
+    border: BORDERS.moss,
+    hazard: 'water',
+    props: [...PROPS.swampTrees, ...PROPS.giantMushrooms],
+    blocks: DECOR.bushes,
+    scatter: DECOR.toadstools,
+    scatterChance: 0,
+    detail: [
+      { tiles: DECOR.moss, chance: 0.2 },
+      { tiles: DECOR.tuftsDry, chance: 0.2 },
+    ],
+    meadow: [{ tiles: DECOR.violets, chance: 0.12 }],
+    roadDetail: [{ tiles: DECOR.moss, chance: 0.1 }],
+    litter: [
+      { tiles: DECOR.toadstools, chance: 0.05 },
+      { tiles: DECOR.bones, chance: 0.02 },
+    ],
+  },
+  ash: {
+    style: 'lava',
+    field: GROUND.darkEarth,
+    floor: GROUND.darkRock,
+    border: null,
+    hazard: 'lava',
+    props: PROPS.rocks,
+    blocks: DECOR.boulders,
+    scatter: DECOR.boulders,
+    scatterChance: 0.04,
+    detail: [{ tiles: DECOR.gravel, chance: 0.14 }],
+    meadow: [],
+    roadDetail: [{ tiles: DECOR.gravel, chance: 0.08 }],
+    litter: [
+      { tiles: DECOR.bones, chance: 0.03 },
+      { tiles: DECOR.pebbles, chance: 0.03 },
+    ],
+  },
+  molten: {
+    style: 'caves',
+    field: GROUND.darkRock,
+    floor: GROUND.darkRock,
+    border: null,
+    solidGround: GROUND.darkEarth,
+    hazard: 'lava',
+    props: PROPS.rocks,
+    blocks: DECOR.boulders,
+    scatter: DECOR.boulders,
+    scatterChance: 0.03,
+    detail: [{ tiles: DECOR.gravel, chance: 0.16 }],
+    meadow: [],
+    roadDetail: [],
+    litter: [{ tiles: DECOR.bones, chance: 0.04 }],
+  },
+  throne: {
+    style: 'ruins',
+    field: GROUND.darkEarth,
+    floor: GROUND.hexStone,
+    border: null,
+    hazard: 'lava',
+    props: PROPS.rocks,
+    blocks: DECOR.boulders,
+    scatter: [...DECOR.boulders, ...DECOR.graves],
+    scatterChance: 0.04,
+    detail: [{ tiles: DECOR.gravel, chance: 0.16 }],
+    meadow: [],
+    roadDetail: [{ tiles: DECOR.gravel, chance: 0.06 }],
+    litter: [{ tiles: DECOR.bones, chance: 0.04 }],
+  },
 };
 
 const W = 40;
 const H = 30;
+const N4 = [
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
+] as const;
+const idx = (x: number, y: number) => y * W + x;
+const inside = (x: number, y: number) => x >= 0 && y >= 0 && x < W && y < H;
+
+/** Solid mass and hazards by layout style (true = blocked). */
+function shapeTerrain(style: Style, rng: Rng) {
+  const solid = new Array<boolean>(W * H).fill(false);
+  const hazard = new Array<boolean>(W * H).fill(false);
+  const n1 = new Noise(rng, 6);
+  const n2 = new Noise(rng, 4);
+  const n3 = new Noise(rng, 9);
+  /** Cave-like blobs: random fill smoothed by the 5-of-9 rule. */
+  const automaton = (fill: number, steps: number) => {
+    let cells = solid.map(() => rng.chance(fill));
+    for (let k = 0; k < steps; k++) {
+      cells = cells.map((_, i) => {
+        const x = i % W;
+        const y = Math.floor(i / W);
+        let n = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (!inside(x + dx, y + dy) || cells[idx(x + dx, y + dy)]) n++;
+          }
+        }
+        return n >= 5;
+      });
+    }
+    return cells;
+  };
+  const each = (fn: (x: number, y: number, i: number) => void) => {
+    for (let i = 0; i < W * H; i++) fn(i % W, Math.floor(i / W), i);
+  };
+  switch (style) {
+    case 'meadow':
+      each((x, y, i) => {
+        solid[i] = n1.get(x, y) > 0.66;
+        hazard[i] = !solid[i] && n2.get(x + 50, y) > 0.8;
+      });
+      break;
+    case 'forest': {
+      const cells = automaton(0.5, 4);
+      each((x, y, i) => {
+        solid[i] = cells[i]!;
+        hazard[i] = !solid[i] && n2.get(x, y + 40) > 0.83;
+      });
+      break;
+    }
+    case 'caves': {
+      const cells = automaton(0.47, 5);
+      each((x, y, i) => {
+        solid[i] = cells[i]!;
+        hazard[i] = !solid[i] && n2.get(x, y) > 0.8;
+      });
+      break;
+    }
+    case 'marsh':
+      each((x, y, i) => {
+        hazard[i] = n1.get(x, y) < 0.42;
+        solid[i] = !hazard[i] && n2.get(x, y) > 0.74;
+      });
+      break;
+    case 'lava':
+      each((x, y, i) => {
+        // Ridged noise: thin winding rivers where the noise crosses the middle.
+        hazard[i] = Math.abs(n3.get(x, y) - 0.5) < 0.045 || n2.get(x, y) > 0.84;
+        solid[i] = !hazard[i] && n1.get(x + 30, y) > 0.7;
+      });
+      break;
+    case 'ruins':
+      each((x, y, i) => {
+        solid[i] = n1.get(x, y) > 0.74;
+        hazard[i] = !solid[i] && n2.get(x, y) > 0.82;
+      });
+      break;
+  }
+  return { solid, hazard };
+}
+
+/** Cheapest path (4 directions) from any `from` tile to any tile `goal` accepts. */
+function cheapest(
+  from: Iterable<number>,
+  goal: (i: number) => boolean,
+  cost: (i: number) => number | null,
+): number[] {
+  const dist = new Map<number, number>();
+  const prev = new Map<number, number>();
+  const frontier: [number, number][] = [];
+  for (const i of from) {
+    dist.set(i, 0);
+    frontier.push([0, i]);
+  }
+  while (frontier.length > 0) {
+    frontier.sort((a, b) => a[0] - b[0]);
+    const [d, i] = frontier.shift()!;
+    if (d > (dist.get(i) ?? Infinity)) continue;
+    if (goal(i)) {
+      const path = [i];
+      for (let k = i; prev.has(k); k = prev.get(k)!) path.push(prev.get(k)!);
+      return path;
+    }
+    const x = i % W;
+    const y = Math.floor(i / W);
+    for (const [dx, dy] of N4) {
+      if (!inside(x + dx, y + dy)) continue;
+      const j = idx(x + dx, y + dy);
+      const step = cost(j);
+      if (step === null) continue;
+      if (d + step < (dist.get(j) ?? Infinity)) {
+        dist.set(j, d + step);
+        prev.set(j, i);
+        frontier.push([d + step, j]);
+      }
+    }
+  }
+  return [];
+}
 
 export function buildHuntMap(theme: Theme, seed: number) {
   const rng = new Rng(seed);
-  const spec = THEMES[theme];
+  const biome = BIOMES[theme];
   const g = new MapGrid(W, H, COLLISION);
-  const groves = new Noise(rng, 6);
-  const meadows = new Noise(rng, 5);
-  const clearings = new Noise(rng, 4);
-  const edgeDepth = new Noise(rng, 5);
-  const isPath = new Set<number>();
+  const { solid, hazard } = shapeTerrain(biome.style, rng);
+  const walls: { x: number; y: number }[] = [];
 
-  for (let y = 0; y < H; y++)
-    for (let x = 0; x < W; x++) g.setGround(x, y, rng.pick(spec.field), true);
-  const road = (x0: number, y0: number, x1: number, y1: number) => {
-    for (let y = y0; y <= y1; y++) {
-      for (let x = x0; x <= x1; x++) {
-        g.setGround(x, y, rng.pick(spec.path), false);
-        isPath.add(g.idx(x, y));
-        g.reserved.add(g.idx(x, y));
-      }
-    }
-  };
-  // Route loop (2 tiles wide) and the road out to the town on the left edge.
-  road(6, 6, 33, 7);
-  road(6, 22, 33, 23);
-  road(6, 6, 7, 23);
-  road(32, 6, 33, 23);
-  road(0, 14, 7, 15);
-  const inLoopInside = (x: number, y: number) => x >= 8 && x <= 31 && y >= 8 && y <= 21;
-  const outsideLoop = (x: number, y: number) => x < 5 || x > 34 || y < 5 || y > 24;
-  const nearExit = (x: number, y: number) => y >= 12 && y <= 17 && x <= 8;
-
-  if (spec.border) {
-    // The road frays: some tiles next to it are bare ground too.
-    for (const i of [...isPath]) {
-      const x = i % W;
-      const y = Math.floor(i / W);
-      for (const [dx, dy] of [
-        [1, 0],
-        [-1, 0],
-        [0, 1],
-        [0, -1],
-      ] as const) {
-        const nx = x + dx;
-        const ny = y + dy;
-        if (nx < 1 || ny < 1 || nx >= W - 1 || ny >= H - 1 || isPath.has(g.idx(nx, ny))) continue;
-        if (rng.chance(0.14)) g.setGround(nx, ny, rng.pick(spec.path), false);
-      }
-    }
-    // Clearings of bare ground in the grass, away from the road.
-    for (let y = 2; y < H - 2; y++) {
-      for (let x = 2; x < W - 2; x++) {
-        if (isPath.has(g.idx(x, y)) || clearings.get(x, y) < 0.8) continue;
-        g.setGround(x, y, rng.pick(spec.path), false);
-      }
-    }
-  }
-
-  // The map edge: a forest (or rock wall) one to three tiles deep, open where the road leaves.
+  // The map edge is closed, a little deeper here and there.
+  const edge = new Noise(rng, 5);
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       const d = Math.min(x, y, W - 1 - x, H - 1 - y);
-      const depth = 1 + Math.floor(edgeDepth.get(x, y) * 3);
-      if (d >= depth || d > 2) continue;
-      if (isPath.has(g.idx(x, y))) {
-        if (d === 0) g.block(x, y);
+      if (d === 0 || (d === 1 && edge.get(x, y) > 0.5) || (d === 2 && edge.get(x, y) > 0.8)) {
+        solid[idx(x, y)] = true;
+        hazard[idx(x, y)] = false;
+      }
+    }
+  }
+  // Ruins: broken stone houses.
+  if (biome.style === 'ruins') {
+    const placed: [number, number, number, number][] = [];
+    for (let tries = 0; tries < 60 && placed.length < 6; tries++) {
+      const w = rng.int(4, 7);
+      const h = rng.int(4, 6);
+      const x0 = rng.int(5, W - w - 4);
+      const y0 = rng.int(3, H - h - 3);
+      // Houses keep two tiles apart, so walls never tangle.
+      if (
+        placed.some(
+          ([a, b, c, d]) => x0 <= c + 2 && x0 + w >= a - 2 && y0 <= d + 2 && y0 + h >= b - 2,
+        )
+      ) {
         continue;
       }
-      if (nearExit(x, y) && d > 0) continue;
-      if (d === 0) {
-        if (!(rng.chance(0.8) && g.propAt(x, y, rng.pick(spec.edgeProps)))) {
-          g.blockWith(x, y, rng.pick(spec.blocks));
-        }
-        g.block(x, y);
-      } else if (rng.chance(0.55)) {
-        g.propAt(x, y, rng.pick(spec.edgeProps));
-      } else if (rng.chance(0.2)) {
-        g.blockWith(x, y, rng.pick(spec.blocks));
-      }
-    }
-  }
-  if (spec.pond) g.poolAt(34, 25, spec.hazard, 4, 3);
-
-  // Obstacles in the middle of the loop (the spawn strips next to the road stay clear).
-  for (let y0 = 12; y0 <= 18; y0 += 3) {
-    for (let x0 = 12; x0 <= 27; x0 += 3) {
-      if (rng.chance(0.15)) continue;
-      // A little disorder, without reaching the spawn strips.
-      const x = x0 + rng.int(0, 1);
-      const y = y0 + rng.int(-1, 1);
-      switch (spec.inner) {
-        case 'graves':
-          g.blockWith(x, y, rng.pick(DECOR.graves));
-          if (rng.chance(0.5)) g.blockWith(x + 1, y, rng.pick(DECOR.graves));
-          break;
-        case 'trees':
-          g.propAt(x, y, rng.pick(PROPS.greenTrees));
-          if (rng.chance(0.5)) g.propAt(x + 1, y, rng.pick(PROPS.greenTrees));
-          if (rng.chance(0.4)) g.blockWith(x, y + 1, rng.pick(DECOR.bushes));
-          break;
-        case 'rocks':
-          g.propAt(x, y, rng.pick(PROPS.rocks));
-          if (rng.chance(0.5)) g.blockWith(x + 1, y, rng.pick(DECOR.boulders));
-          break;
-        case 'ruins':
-          for (let k = 0; k < 2; k++) {
-            g.blockWith(x + k, y, rng.pick(rng.chance(0.3) ? DECOR.graves : DECOR.boulders));
+      placed.push([x0, y0, x0 + w, y0 + h]);
+      const door = rng.int(x0 + 1, x0 + w - 1);
+      for (let y = y0; y <= y0 + h; y++) {
+        for (let x = x0; x <= x0 + w; x++) {
+          const onWall = x === x0 || x === x0 + w || y === y0 || y === y0 + h;
+          solid[idx(x, y)] = false;
+          hazard[idx(x, y)] = false;
+          if (onWall && !(y === y0 + h && x === door) && rng.chance(0.85)) {
+            solid[idx(x, y)] = true;
+            walls.push({ x, y });
           }
-          if (spec.pond && rng.chance(0.5)) g.poolAt(x, y + 1, spec.hazard);
-          break;
-        case 'hazard':
-          g.poolAt(x, y, spec.hazard);
-          break;
+        }
       }
     }
   }
 
-  // Outside the loop: groves where the noise is high, lone props and hazards elsewhere.
-  for (let y = 1; y < H - 1; y++) {
-    for (let x = 1; x < W - 1; x++) {
-      if (!g.free(x, y) || !outsideLoop(x, y) || nearExit(x, y)) continue;
-      const grove = groves.get(x, y) > 0.6;
-      if (grove && rng.chance(spec.grove)) g.propAt(x, y, rng.pick(spec.groveProps));
-      else if (grove && rng.chance(0.25)) g.blockWith(x, y, rng.pick(spec.blocks));
-      else if (rng.chance(spec.scatter)) g.propAt(x, y, rng.pick(spec.groveProps));
-      else if (rng.chance(spec.blockChance)) g.blockWith(x, y, rng.pick(spec.blocks));
-      else if (rng.chance(spec.outerHazard)) g.poolAt(x, y, spec.hazard);
+  // Town exit on the left edge, with an opening into the map.
+  const ey = rng.int(8, H - 9);
+  const exit = { x: 1, y: ey };
+  for (let y = ey - 1; y <= ey + 1; y++) {
+    for (let x = 0; x <= 4; x++) {
+      solid[idx(x, y)] = x === 0;
+      hazard[idx(x, y)] = false;
     }
   }
 
-  // Ground detail everywhere, flowers in meadows, small objects off the road.
+  // Every open pocket joins the main area: carve the cheapest way (rock costs more than
+  // water, which becomes a ford).
+  const open = (i: number) => !solid[i] && !hazard[i];
+  const flood = (start: number) => {
+    const seen = new Set<number>([start]);
+    const queue = [start];
+    while (queue.length > 0) {
+      const i = queue.pop()!;
+      const x = i % W;
+      const y = Math.floor(i / W);
+      for (const [dx, dy] of N4) {
+        if (!inside(x + dx, y + dy)) continue;
+        const j = idx(x + dx, y + dy);
+        if (!seen.has(j) && open(j)) {
+          seen.add(j);
+          queue.push(j);
+        }
+      }
+    }
+    return seen;
+  };
+  let main = flood(idx(exit.x, exit.y));
+  for (let guard = 0; guard < 60; guard++) {
+    let pocket = -1;
+    for (let i = 0; i < W * H && pocket < 0; i++) if (open(i) && !main.has(i)) pocket = i;
+    if (pocket < 0) break;
+    const comp = flood(pocket);
+    if (comp.size < 5) {
+      for (const i of comp) solid[i] = true;
+      continue;
+    }
+    const path = cheapest(
+      comp,
+      (i) => main.has(i),
+      (j) => {
+        const x = j % W;
+        const y = Math.floor(j / W);
+        if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1) return null;
+        return open(j) ? 1 : hazard[j] ? 3 : 4;
+      },
+    );
+    for (const i of path) {
+      solid[i] = false;
+      hazard[i] = false;
+    }
+    main = flood(idx(exit.x, exit.y));
+  }
+
+  // Waypoints: spread over the open area, then ordered around its centre into a loop.
+  const roomy = [...main].filter((i) => {
+    const x = i % W;
+    const y = Math.floor(i / W);
+    return (
+      x > 2 &&
+      y > 2 &&
+      x < W - 3 &&
+      y < H - 3 &&
+      N4.every(([dx, dy]) => main.has(idx(x + dx, y + dy)))
+    );
+  });
+  const dist = (a: number, b: number) =>
+    Math.abs((a % W) - (b % W)) + Math.abs(Math.floor(a / W) - Math.floor(b / W));
+  const middle = idx(W / 2, H / 2);
+  const pts = [roomy.reduce((a, b) => (dist(a, middle) <= dist(b, middle) ? a : b))];
+  while (pts.length < 7) {
+    let best = -1;
+    let bestD = -1;
+    for (const i of roomy) {
+      const d = Math.min(...pts.map((p) => dist(p, i)));
+      if (d > bestD) {
+        bestD = d;
+        best = i;
+      }
+    }
+    pts.push(best);
+  }
+  const cx = pts.reduce((n, p) => n + (p % W), 0) / pts.length;
+  const cy = pts.reduce((n, p) => n + Math.floor(p / W), 0) / pts.length;
+  const angle = (p: number) => Math.atan2(Math.floor(p / W) - cy, (p % W) - cx);
+  pts.sort((a, b) => angle(a) - angle(b));
+
+  // Roads between waypoints and from the exit: cheapest paths over the open area with a
+  // noisy cost so they wind, then frayed by a tile here and there.
+  const roads = new Set<number>();
+  if (biome.style !== 'caves') {
+    const wind = new Noise(rng, 3);
+    const road = (from: number, to: number) => {
+      const path = cheapest(
+        [from],
+        (i) => i === to,
+        (j) =>
+          main.has(j)
+            ? 1 + wind.get(j % W, Math.floor(j / W)) * 3 - (roads.has(j) ? 0.6 : 0)
+            : null,
+      );
+      for (const i of path) roads.add(i);
+    };
+    const start = idx(exit.x + 1, exit.y);
+    road(
+      start,
+      pts.reduce((a, b) => (dist(a, start) <= dist(b, start) ? a : b)),
+    );
+    pts.forEach((p, k) => road(p, pts[(k + 1) % pts.length]!));
+    for (const i of [...roads]) {
+      for (const [dx, dy] of N4) {
+        const j = i + dx + dy * W;
+        if (main.has(j) && rng.chance(0.3)) roads.add(j);
+      }
+    }
+  }
+
+  // Ground.
+  const clear = new Noise(rng, 4);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = idx(x, y);
+      if (biome.style === 'caves') {
+        g.setGround(
+          x,
+          y,
+          rng.pick(solid[i] ? (biome.solidGround ?? biome.field) : biome.floor),
+          false,
+        );
+      } else if (roads.has(i) || (main.has(i) && clear.get(x, y) > 0.82)) {
+        g.setGround(x, y, rng.pick(biome.floor), false);
+      } else {
+        g.setGround(x, y, rng.pick(biome.field), true);
+      }
+      if (roads.has(i)) g.reserved.add(i);
+    }
+  }
+  for (let i = 0; i < W * H; i++) {
+    if (hazard[i]) g.hazardAt(i % W, Math.floor(i / W), biome.hazard);
+  }
+
+  // Walls of the ruins, as in the town: corner, verticals, horizontals, poles.
+  const wallSet = new Set(walls.map((w) => idx(w.x, w.y)));
+  for (const w of walls) {
+    const across = wallSet.has(idx(w.x - 1, w.y)) || wallSet.has(idx(w.x + 1, w.y));
+    const down = wallSet.has(idx(w.x, w.y - 1)) || wallSet.has(idx(w.x, w.y + 1));
+    const piece =
+      across && down
+        ? PROPS.wallCorner
+        : across
+          ? PROPS.wallHorizontal
+          : down
+            ? PROPS.wallVertical
+            : PROPS.wallPole;
+    g.propAt(w.x, w.y, piece, true);
+  }
+
+  // The solid mass: 64 px props anchored so they cover it, 32 px blockers where no prop
+  // reaches, and collision everywhere.
+  const covered = new Set<number>(wallSet);
+  for (let y = 1; y < H; y++) {
+    for (let x = 1; x < W; x++) {
+      const i = idx(x, y);
+      if (!solid[i] || covered.has(i)) continue;
+      const block = [i, idx(x - 1, y), idx(x, y - 1), idx(x - 1, y - 1)];
+      if (block.filter((j) => solid[j]).length >= 3 && rng.chance(0.85)) {
+        g.propAt(x, y, rng.pick(biome.props), true);
+        for (const j of block) covered.add(j);
+      }
+    }
+  }
+  for (let i = 0; i < W * H; i++) {
+    if (!solid[i]) continue;
+    const x = i % W;
+    const y = Math.floor(i / W);
+    if (!covered.has(i) && (biome.style !== 'caves' || rng.chance(0.3))) {
+      g.blockWith(x, y, rng.pick(biome.blocks));
+    }
+    g.block(x, y);
+  }
+
+  // Lone blockers in the open (graves, crates): only where all 8 neighbours are open, so
+  // they never cut a passage.
+  const taken = new Set<number>();
+  for (let y = 2; y < H - 2; y++) {
+    for (let x = 2; x < W - 2; x++) {
+      const i = idx(x, y);
+      if (!main.has(i) || roads.has(i) || !rng.chance(biome.scatterChance)) continue;
+      let ok = true;
+      for (let dy = -1; dy <= 1 && ok; dy++) {
+        for (let dx = -1; dx <= 1 && ok; dx++) {
+          const j = idx(x + dx, y + dy);
+          ok = main.has(j) && !taken.has(j) && !roads.has(j) && !pts.includes(j);
+        }
+      }
+      if (ok && g.blockWith(x, y, rng.pick(biome.scatter))) {
+        taken.add(i);
+        main.delete(i);
+      }
+    }
+  }
+
+  // Ground detail, flowers in meadows, small objects off the roads.
+  const meadows = new Noise(rng, 5);
   const roll = (list: Litter[]) => {
     for (const l of list) if (l.tiles.length > 0 && rng.chance(l.chance)) return rng.pick(l.tiles);
     return null;
   };
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      const i = g.idx(x, y);
+      const i = idx(x, y);
       if (g.hazard.has(i)) continue;
-      const onField = g.field.has(i);
-      const meadow = onField && meadows.get(x, y) > 0.66 && !g.collision[i];
+      const onField = g.field.has(i) || (biome.style === 'caves' && !solid[i]);
       const d = onField
-        ? ((meadow ? roll(spec.meadow) : null) ?? roll(spec.detail))
-        : roll(spec.roadDetail);
+        ? ((meadows.get(x, y) > 0.66 ? roll(biome.meadow) : null) ?? roll(biome.detail))
+        : roll(biome.roadDetail);
       if (d !== null) g.detail[i] = d + 1;
-      if (onField && g.free(x, y) && !inLoopInside(x, y)) {
-        const l = roll(spec.litter);
-        if (l !== null) g.decor[i] = l + 1;
-      } else if (onField && g.free(x, y) && rng.chance(0.5)) {
-        const l = roll(spec.litter);
+      if (main.has(i) && !roads.has(i) && g.free(x, y)) {
+        const l = roll(biome.litter);
         if (l !== null) g.decor[i] = l + 1;
       }
     }
   }
 
   const o = makeObjects();
-  const route = [
-    [7, 7],
-    [20, 7],
-    [32, 7],
-    [32, 15],
-    [32, 22],
-    [20, 22],
-    [7, 22],
-    [7, 15],
-  ].map(([tx, ty], i) => o.point(`wp_${i + 1}`, 'waypoint', tx!, ty!));
-  const spawns = [
-    o.area('north', 'spawn', 9, 8, 22, 2),
-    o.area('east', 'spawn', 29, 10, 2, 11),
-    o.area('south', 'spawn', 9, 20, 22, 2),
-    o.area('west', 'spawn', 9, 10, 2, 11),
-  ];
-  const exit = o.point('town_exit', 'town_exit', 1, 14);
+  const route = pts.map((p, k) => o.point(`wp_${k + 1}`, 'waypoint', p % W, Math.floor(p / W)));
+  const spawns = pts.map((p, k) =>
+    o.area(`area_${k + 1}`, 'spawn', (p % W) - 2, Math.floor(p / W) - 2, 5, 5),
+  );
+  const exitObj = o.point('town_exit', 'town_exit', exit.x, exit.y);
   return g.toTmj(
-    spec.border,
+    biome.border,
     [
       ['route', route],
       ['spawns', spawns],
-      ['town_exit', [exit]],
+      ['town_exit', [exitObj]],
     ],
     o.next(),
   );

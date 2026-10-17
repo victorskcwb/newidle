@@ -10,6 +10,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
 import { buildActors, buildFx } from './actors.ts';
+import { buildHitFx } from './hit-fx.ts';
 import { buildItemIcons } from './item-icons.ts';
 import { buildWorldMap } from './gen-worldmap.ts';
 import { buildUiIcons } from './ui-icons.ts';
@@ -287,6 +288,7 @@ propSlots.forEach(({ sheet, index }, id) => {
 writeFileSync(new URL('sprites/tiles.png', assets), PNG.sync.write(tiles));
 const actorFrames = buildActors(assets);
 const fxCount = buildFx(assets);
+console.log(`wrote assets/sprites/hitfx.png (${buildHitFx(assets)} frames)`);
 const iconCount = buildUiIcons(
   assets,
   new URL('../../../apps/client/src/ui/icons.generated.ts', import.meta.url),

@@ -172,7 +172,7 @@ export class MapGrid {
         const s = f(x, y + 1);
         const w = f(x - 1, y);
         const diag = !this.hazard.has(this.idx(x, y));
-        const pieces: number[] = [];
+        const pieces: number[][] = [];
         if (diag && n && w) pieces.push(b.diagNW);
         if (diag && n && e) pieces.push(b.diagNE);
         if (diag && s && w) pieces.push(b.diagSW);
@@ -185,9 +185,11 @@ export class MapGrid {
         if (!n && !e && f(x + 1, y - 1)) pieces.push(b.cornerNE);
         if (!s && !w && f(x - 1, y + 1)) pieces.push(b.cornerSW);
         if (!s && !e && f(x + 1, y + 1)) pieces.push(b.cornerSE);
-        pieces.forEach((piece, k) => {
+        // Variants by position (stable between runs, different from tile to tile).
+        const v = (x * 7 + y * 13) >>> 0;
+        pieces.forEach((variants, k) => {
           layers[k] ??= new Array<number>(this.W * this.H).fill(0);
-          layers[k]![this.idx(x, y)] = piece + 1;
+          layers[k]![this.idx(x, y)] = variants[v % variants.length]! + 1;
         });
       }
     }

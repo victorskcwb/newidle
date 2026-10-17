@@ -56,6 +56,10 @@ export const WATER_FRAME_MS = 280;
 
 export const GROUND = {
   dryGrass: many('otsp_tiles', span(1, 12)),
+  mossGrass: many('otsp_tiles', span(61, 76)),
+  lushGrass: many('otsp_tiles', [99, 100]),
+  sand: many('otsp_tiles', span(111, 116)),
+  abyss: many('otsp_tiles', span(196, 203)),
   greenGrass: many('otsp_tiles', span(21, 36)),
   dirt: many('otsp_tiles', span(147, 150)),
   mud: many('otsp_tiles', span(160, 163)),
@@ -70,43 +74,73 @@ export const GROUND = {
 
 /**
  * Grass edges laid over a lower ground: edges (grass on one side), small outer corners
- * (grass only on a diagonal neighbour) and large inner corners (grass on two sides).
+ * (grass only on a diagonal neighbour) and large inner corners (grass on two sides). Each
+ * piece may have variants, picked by position.
  */
 export interface BorderSet {
-  n: number;
-  e: number;
-  s: number;
-  w: number;
-  cornerNW: number;
-  cornerNE: number;
-  cornerSW: number;
-  cornerSE: number;
-  diagNW: number;
-  diagNE: number;
-  diagSW: number;
-  diagSE: number;
+  n: number[];
+  e: number[];
+  s: number[];
+  w: number[];
+  cornerNW: number[];
+  cornerNE: number[];
+  cornerSW: number[];
+  cornerSE: number[];
+  diagNW: number[];
+  diagNE: number[];
+  diagSW: number[];
+  diagSE: number[];
 }
+const one = (i: number) => [add('otsp_tiles', i)];
+/** A set laid out as 12 consecutive cells: N E S W, small corners, large corners. */
 const borderSet = (first: number): BorderSet => {
-  const [n, e, s, w, cornerNW, cornerNE, cornerSW, cornerSE, diagNW, diagNE, diagSW, diagSE] = many(
-    'otsp_tiles',
-    span(first, first + 11),
-  ) as [
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-  ];
-  return { n, e, s, w, cornerNW, cornerNE, cornerSW, cornerSE, diagNW, diagNE, diagSW, diagSE };
+  const c = (k: number) => one(first + k);
+  return {
+    n: c(0),
+    e: c(1),
+    s: c(2),
+    w: c(3),
+    cornerNW: c(4),
+    cornerNE: c(5),
+    cornerSW: c(6),
+    cornerSE: c(7),
+    diagNW: c(8),
+    diagNE: c(9),
+    diagSW: c(10),
+    diagSE: c(11),
+  };
 };
-export const BORDERS = { dry: borderSet(336), green: borderSet(348) };
+/** A set with `variants` cells per edge (N, E, S, W), then corners and large corners. */
+const borderSetVariants = (first: number, variants: number, diagFirst?: number): BorderSet => {
+  const edge = (k: number) =>
+    many('otsp_tiles', span(first + k * variants, first + (k + 1) * variants - 1));
+  const c0 = first + 4 * variants;
+  const d0 = diagFirst ?? c0 + 4;
+  return {
+    n: edge(0),
+    e: edge(1),
+    s: edge(2),
+    w: edge(3),
+    cornerNW: one(c0),
+    cornerNE: one(c0 + 1),
+    cornerSW: one(c0 + 2),
+    cornerSE: one(c0 + 3),
+    diagNW: one(d0),
+    diagNE: one(d0 + 1),
+    diagSW: one(d0 + 2),
+    diagSE: one(d0 + 3),
+  };
+};
+export const BORDERS = {
+  dry: borderSet(336),
+  green: borderSet(348),
+  /** Dark mossy grass (swamps), over mud. */
+  moss: borderSetVariants(396, 3, 384),
+  /** Lush green grass (woods). */
+  lush: borderSetVariants(428, 2),
+  /** Sand (shores). */
+  sand: borderSetVariants(460, 2),
+};
 
 /** Objects on the decor layer (transparent background). */
 export const DECOR = {

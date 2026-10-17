@@ -1,23 +1,28 @@
-import { spriteManifestSchema, tiledMapSchema, type TiledMap } from '@abismo/content';
+import { spriteManifestSchema, tiledMapSchema, walkableGrid, type TiledMap } from '@abismo/content';
 import Phaser from 'phaser';
 import type { GameSim } from '../game/sim.ts';
 import { useUi } from '../state/store.ts';
 import { Director } from './director.ts';
 import { REGION_TINT, addAtmosphere, renderMap } from './mapRender.ts';
 import { TownScene } from './TownScene.ts';
-import { Effects } from './effects.ts';
+import { Effects, createHitFxAnimations } from './effects.ts';
 import { Pathfinder } from './pathfinder.ts';
 import { makeTextures, manifestSheets } from './textures.ts';
 
 export const ZOOM_LEVELS = [1, 2, 3] as const;
 
 /**
- * Where actors can be: the hero roams the whole map except the 2-tile forest edge. Props
- * there stay sorted with the actors; the edge's props are baked into the static texture.
+ * Props an actor can stand behind or next to: a walkable tile within a tile of the prop's
+ * 2×2 footprint (up to two rows above it). The others are drawn into the static texture.
  */
-function activeAreas(map: TiledMap): Phaser.Geom.Rectangle[] {
-  const t = map.tilewidth;
-  return [new Phaser.Geom.Rectangle(2 * t, t, (map.width - 4) * t, (map.height - 3) * t)];
+function activeProps(map: TiledMap): (tx: number, ty: number) => boolean {
+  const walk = walkableGrid(map);
+  return (tx, ty) => {
+    for (let y = ty - 2; y <= ty + 1; y++) {
+      for (let x = tx - 2; x <= tx + 1; x++) if (walk[y]?.[x]) return true;
+    }
+    return false;
+  };
 }
 
 /** The hunt map: Tiled layers, placeholder textures and the director that stages events. */
@@ -40,6 +45,7 @@ export class GameScene extends Phaser.Scene {
     this.load.spritesheet('props', 'sprites/props.png', { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet('fx', 'sprites/fx.png', { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet('items', 'sprites/items.png', { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('hitfx', 'sprites/hitfx.png', { frameWidth: 32, frameHeight: 32 });
     this.load.json('manifest', 'sprites/manifest.json');
     // Sprite sheets named by the manifest are queued as soon as the manifest arrives.
     this.load.once('filecomplete-json-manifest', (_key: string, _type: string, data: unknown) => {
@@ -56,11 +62,12 @@ export class GameScene extends Phaser.Scene {
     const raw = this.cache.tilemap.get('map').data as unknown;
     const mapData: TiledMap = tiledMapSchema.parse(raw);
     const manifest = spriteManifestSchema.parse(this.cache.json.get('manifest'));
+    createHitFxAnimations(this);
     makeTextures(this, this.sim.content, this.sim.state.hero.appearance);
 
     // Dark-fantasy mood per region over the bright tiles.
     const tint = REGION_TINT[this.regionId] ?? 0xffffff;
-    const map = renderMap(this, 'map', mapData, tint, activeAreas(mapData));
+    const map = renderMap(this, 'map', mapData, tint, activeProps(mapData));
     if (!this.options.noParticles) {
       addAtmosphere(this, this.regionId, map.widthInPixels, map.heightInPixels);
     }

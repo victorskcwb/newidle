@@ -169,10 +169,10 @@ const MAPS: [string, Theme, number][] = [
   ['cracked_crypt', 'crypt', 0x85ebca6b],
   ['murky_bog', 'swamp', 0xc2b2ae35],
   ['drowned_village', 'village', 0x27d4eb2f],
-  ['rotting_heart', 'swamp', 0x165667b1],
+  ['rotting_heart', 'bog_heart', 0x165667b1],
   ['ash_gates', 'ash', 0xd3a2646c],
   ['molten_halls', 'molten', 0xfd7046c5],
-  ['burning_throne', 'ash', 0xb55a4f09],
+  ['burning_throne', 'throne', 0xb55a4f09],
 ];
 
 const root = new URL('../../../assets/', import.meta.url);

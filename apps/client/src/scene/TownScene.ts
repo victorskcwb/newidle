@@ -165,11 +165,15 @@ export class TownScene extends Phaser.Scene {
       });
     }
 
-    // Asleep (no update, no drawing) until the hero comes to town.
-    this.sys.setVisible(false);
-    this.scene.sleep();
+    // Asleep (no update, no drawing) until the hero comes to town. Sleeping is queued by
+    // Phaser, so a scene that starts in town must not be put to sleep at all.
     const apply = (view: TownView) => (view ? this.show(view) : this.hide());
-    apply(useUi.getState().town);
+    const first = useUi.getState().town;
+    if (first) this.show(first);
+    else {
+      this.sys.setVisible(false);
+      this.scene.sleep();
+    }
     this.unsubscribe = useUi.subscribe((s, prev) => {
       if (s.town !== prev.town) apply(s.town);
       if (s.zoom !== prev.zoom) cam.setZoom(s.zoom);

@@ -75,7 +75,7 @@ export class Director {
   timeScale = 1;
   /** Brief freeze after heavy blows (hit-stop), in ms. */
   private hitStop = 0;
-  /** Camera shake, flashes and hit-stop are off with reduced motion. */
+  /** Flashes and hit-stop are off with reduced motion (the screen never shakes). */
   calm = false;
 
   constructor(
@@ -257,7 +257,6 @@ export class Director {
             }
             v.hp = Math.max(0, v.hp - hit.damage);
             sfx.play(hit.crit ? 'crit' : 'hit');
-            if (hit.crit) this.shake(70, 0.004);
             if (v.def.boss) this.showBoss(v);
             v.actor.setHp(v.hp / v.maxHp);
             v.actor.hurt();
@@ -557,10 +556,6 @@ export class Director {
       {},
       { name: '', color: NAME_COLOR.normal, bar: true },
     );
-  }
-
-  private shake(ms: number, intensity: number) {
-    if (!this.calm) this.scene.cameras.main.shake(ms, intensity);
   }
 
   private flash(r: number, g: number, b: number) {

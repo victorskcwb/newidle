@@ -105,6 +105,41 @@ export const FX_FRAMES = [
 ] as const;
 export type FxFrame = (typeof FX_FRAMES)[number];
 
+/**
+ * Animated effects of assets/sprites/hitfx.png (OpenTibia Sprite Pack misc sheet): source
+ * cells in play order. Frames are laid out in this order, so an animation's first frame is
+ * the sum of the cells of the ones before it.
+ */
+export const HIT_FX = {
+  /** Fiery blast: heavy strike, critical hits. */
+  blast: { cells: [406, 407, 408, 409, 410, 411, 412, 413], frameMs: 45 },
+  /** Claw marks: monster hits on the hero. */
+  claw: { cells: [208, 209, 210, 211, 212, 213, 214, 215], frameMs: 40 },
+  /** Blue energy burst: skills, level up. */
+  energy: { cells: [188, 189, 190, 191, 192, 193, 194, 195], frameMs: 45 },
+  /** Sweeping flame: whirlwind. */
+  sweep: { cells: [164, 165, 166, 167, 168, 169, 170, 171], frameMs: 45 },
+  /** Red ring: war cry. */
+  ring: { cells: [224, 225, 226, 227], frameMs: 70 },
+  /** Gold sparks: loot. */
+  sparks: { cells: [228, 229, 230], frameMs: 80 },
+  /** Ice shards: stun. */
+  shards: { cells: [400, 401, 402, 403], frameMs: 80 },
+  /** Blood splash: kills. */
+  splash: { cells: [217, 218, 219], frameMs: 70 },
+} as const;
+export type HitFxName = keyof typeof HIT_FX;
+
+/** First frame of each effect inside hitfx.png. */
+export function hitFxFirstFrame(name: HitFxName): number {
+  let n = 0;
+  for (const [k, a] of Object.entries(HIT_FX)) {
+    if (k === name) return n;
+    n += a.cells.length;
+  }
+  return n;
+}
+
 /** Milliseconds from the start of an animation to its impact frame (0 if it has none). */
 export function impactDelayMs(anim: SpriteAnimation): number {
   return (anim.impactFrame ?? 0) * anim.frameMs;

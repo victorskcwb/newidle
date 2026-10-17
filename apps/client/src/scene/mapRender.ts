@@ -20,7 +20,8 @@ export function renderMap(
   key: string,
   mapData: TiledMap,
   tint: number,
-  active: Phaser.Geom.Rectangle[] | null,
+  /** Props that actors can walk behind (sorted live); null keeps them all live. */
+  active: ((tx: number, ty: number) => boolean) | null,
 ) {
   const map = scene.make.tilemap({ key });
   const tiles = map.addTilesetImage('tiles', 'tiles')!;
@@ -45,8 +46,7 @@ export function renderMap(
     for (const o of props) {
       if (o.gid === undefined) continue;
       const frame = o.gid - propsSet.firstgid;
-      const box = new Phaser.Geom.Rectangle(o.x, o.y - 64, 64, 64);
-      if (!active || active.some((r) => Phaser.Geom.Intersects.RectangleToRectangle(r, box))) {
+      if (!active || active(Math.round(o.x / 32) + 1, Math.round(o.y / 32) - 1)) {
         scene.add.image(o.x, o.y, 'props', frame).setOrigin(0, 1).setDepth(o.y).setTint(tint);
       } else {
         baked.drawFrame('props', frame, o.x, o.y - 64);
