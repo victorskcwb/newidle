@@ -1,9 +1,9 @@
-import type { ContentDb, Monster, SpriteManifest } from '@abismo/content';
+import type { ContentDb, FrameSet, Monster, SpriteManifest } from '@abismo/content';
 import { DIRECTIONS } from '@abismo/content';
 import type Phaser from 'phaser';
 import { HAIR_COLORS, OUTFIT_COLORS } from '../ui/appearance.ts';
 import { RARITY_COLOR } from '../ui/rarity.ts';
-import type { LookFor } from './actor.ts';
+import type { Look, LookFor } from './actor.ts';
 
 /**
  * Placeholder art drawn by code: coloured shapes with an outline, one texture per facing.
@@ -172,14 +172,15 @@ export function sheetKey(image: string) {
 /** Every sprite sheet the manifest uses, to load in preload(). */
 export function manifestSheets(
   manifest: SpriteManifest,
-): { key: string; url: string; size: number }[] {
-  const seen = new Map<string, { key: string; url: string; size: number }>();
+): { key: string; url: string; width: number; height: number }[] {
+  const seen = new Map<string, { key: string; url: string; width: number; height: number }>();
   for (const atlas of Object.values(manifest.atlases)) {
-    if (atlas.image && atlas.frameSize) {
+    if (atlas.image && atlas.frameWidth) {
       seen.set(atlas.image, {
         key: sheetKey(atlas.image),
         url: atlas.image,
-        size: atlas.frameSize,
+        width: atlas.frameWidth,
+        height: atlas.frameHeight ?? atlas.frameWidth,
       });
     }
   }
@@ -189,32 +190,57 @@ export function manifestSheets(
 /** Lightens a tint towards white so shared sprites stay readable when recoloured. */
 function softTint(hex: string): number {
   const n = parseInt(hex.slice(1), 16);
-  const mix = (c: number) => Math.round(c + (255 - c) * 0.45);
+  const mix = (c: number) => Math.round(c + (255 - c) * 0.6);
   return (mix(n >> 16) << 16) | (mix((n >> 8) & 255) << 8) | mix(n & 255);
 }
 
-/** The hero's look: a sprite sheet frame chosen by outfit, or the code-drawn warrior. */
-export function heroLook(manifest: SpriteManifest, outfit: number): LookFor {
+/** Creates (once) the idle, run and hit animations of a frame set. */
+function loopsFor(scene: Phaser.Scene, sheet: string, name: string, set: FrameSet): Look['loops'] {
+  const make = (kind: string, frames: number[], ms: number, repeat: number) => {
+    const key = `${name}:${kind}`;
+    if (!scene.anims.exists(key)) {
+      scene.anims.create({
+        key,
+        frames: frames.map((frame) => ({ key: sheet, frame })),
+        frameRate: 1000 / ms,
+        repeat,
+      });
+    }
+    return key;
+  };
+  return {
+    idle: make('idle', set.idle, 160, -1),
+    run: make('run', set.run, 95, -1),
+    hit: set.hit ? make('hit', set.hit, 160, 0) : undefined,
+  };
+}
+
+/** The hero's look: one of the sheet's warriors (by outfit) holding a sword. */
+export function heroLook(scene: Phaser.Scene, manifest: SpriteManifest, outfit: number): LookFor {
   const atlas = manifest.atlases.hero;
   const sprite = atlas?.sprites.warrior;
-  const frame = sprite?.variants?.[outfit % sprite.variants.length] ?? sprite?.frame;
-  if (atlas?.image && atlas.frameSize && frame !== undefined) {
+  const set = sprite?.looks?.[outfit % sprite.looks.length];
+  if (atlas?.image && set) {
     const key = sheetKey(atlas.image);
-    const scale = 32 / atlas.frameSize;
-    return (dir) => ({ texture: key, frame, flipX: dir === 'left', scale });
+    const loops = loopsFor(scene, key, `hero${outfit % sprite!.looks!.length}`, set);
+    const weapon =
+      sprite!.weapon !== undefined ? { texture: key, frame: sprite!.weapon } : undefined;
+    return () => ({ texture: key, frame: set.idle[0], flipX: false, scale: 2, loops, weapon });
   }
   return (dir) => ({ texture: heroTextureKey(dir), flipX: false, scale: 1 });
 }
 
-/** A monster's look: its sprite sheet frame (tinted, scaled for bosses) or the drawn shape. */
-export function monsterLook(manifest: SpriteManifest, def: Monster): LookFor {
+/** A monster's look: its animated sheet character (tinted, scaled for bosses) or a shape. */
+export function monsterLook(scene: Phaser.Scene, manifest: SpriteManifest, def: Monster): LookFor {
   const atlas = manifest.atlases[def.sprite.atlas];
-  const frame = atlas?.sprites[def.sprite.key]?.frame;
-  if (atlas?.image && atlas.frameSize && frame !== undefined) {
+  const sprite = atlas?.sprites[def.sprite.key];
+  const set = sprite?.frames;
+  if (atlas?.image && set) {
     const key = sheetKey(atlas.image);
-    const scale = (32 / atlas.frameSize) * (def.sprite.scale ?? 1);
+    const loops = loopsFor(scene, key, `${def.sprite.atlas}/${def.sprite.key}`, set);
+    const scale = 2 * (sprite!.scale ?? 1) * (def.sprite.scale ?? 1);
     const tint = softTint(def.sprite.tint);
-    return (dir) => ({ texture: key, frame, flipX: dir === 'left', scale, tint });
+    return () => ({ texture: key, frame: set.idle[0], flipX: false, scale, tint, loops });
   }
   return (dir) => ({ texture: monsterTextureKey(def.sprite.key, dir), flipX: false, scale: 1 });
 }

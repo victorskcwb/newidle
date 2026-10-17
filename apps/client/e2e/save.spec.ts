@@ -21,11 +21,10 @@ test('the save survives closing the game and 2 hours away are resolved offline',
   await page.getByRole('button', { name: 'Fechar' }).click();
 
   // Refine the weapon at the blacksmith (+1 always succeeds). Debug resources pay for it.
-  await page.getByTestId('menu-button').click();
-  await page.getByTestId('menu-settings').click();
+  await page.getByTestId('nav-settings').click();
   await page.getByTestId('debug-resources').click();
-  await page.getByRole('button', { name: 'Voltar', exact: true }).click();
-  await page.getByTestId('menu-smith').click();
+  await page.getByRole('button', { name: 'Fechar' }).click();
+  await page.getByTestId('nav-smith').click();
   await expect(page.getByTestId('refine-chance')).toContainText('chance de 100%');
   await page.getByTestId('refine-button').click();
   await expect(page.getByTestId('refine-result')).toContainText('Sucesso! Agora +1.');
@@ -54,8 +53,8 @@ test('the save survives closing the game and 2 hours away are resolved offline',
 
 test('export and import the save as text', async ({ page }) => {
   await createHero(page, 'Exportado');
-  await page.getByTestId('menu-button').click();
-  await page.getByTestId('menu-save').click();
+  await page.getByTestId('nav-settings').click();
+  await page.getByTestId('open-save').click();
   const text = await page.getByTestId('export-text').inputValue();
   expect(JSON.parse(text)).toMatchObject({
     version: SAVE_VERSION,

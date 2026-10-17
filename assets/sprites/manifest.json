@@ -34,11 +34,35 @@
               "frameMs": 150
             }
           },
-          "variants": [97, 96, 98, 87]
+          "looks": [
+            {
+              "idle": [0, 1, 2, 3],
+              "run": [4, 5, 6, 7],
+              "hit": [8]
+            },
+            {
+              "idle": [9, 10, 11, 12],
+              "run": [13, 14, 15, 16],
+              "hit": [17]
+            },
+            {
+              "idle": [18, 19, 20, 21],
+              "run": [22, 23, 24, 25],
+              "hit": [26]
+            },
+            {
+              "idle": [27, 28, 29, 30],
+              "run": [31, 32, 33, 34],
+              "hit": [35]
+            }
+          ],
+          "weapon": 180
         }
       },
-      "image": "vendor/kenney-tiny-dungeon/tilemap_packed.png",
-      "frameSize": 16
+      "image": "sprites/actors.png",
+      "frameWidth": 32,
+      "frameHeight": 36,
+      "columns": 16
     },
     "region_cinzarra": {
       "placeholder": false,
@@ -73,7 +97,10 @@
               "frameMs": 120
             }
           },
-          "frame": 121
+          "frames": {
+            "idle": [36, 37, 38, 39],
+            "run": [40, 41, 42, 43]
+          }
         },
         "grave_rat": {
           "animations": {
@@ -105,7 +132,10 @@
               "frameMs": 100
             }
           },
-          "frame": 123
+          "frames": {
+            "idle": [52, 53, 54, 55],
+            "run": [56, 57, 58, 59]
+          }
         },
         "gravekeeper": {
           "animations": {
@@ -137,7 +167,11 @@
               "frameMs": 150
             }
           },
-          "frame": 111
+          "frames": {
+            "idle": [60, 61, 62, 63],
+            "run": [64, 65, 66, 67]
+          },
+          "scale": 0.6
         },
         "grey_wolf": {
           "animations": {
@@ -169,7 +203,10 @@
               "frameMs": 120
             }
           },
-          "frame": 124
+          "frames": {
+            "idle": [76, 77, 78, 79],
+            "run": [80, 81, 82, 83]
+          }
         },
         "pale_spider": {
           "animations": {
@@ -201,7 +238,10 @@
               "frameMs": 120
             }
           },
-          "frame": 122
+          "frames": {
+            "idle": [84, 85, 86, 87],
+            "run": [88, 89, 90, 91]
+          }
         },
         "spider_matriarch": {
           "animations": {
@@ -233,7 +273,10 @@
               "frameMs": 120
             }
           },
-          "frame": 122
+          "frames": {
+            "idle": [84, 85, 86, 87],
+            "run": [88, 89, 90, 91]
+          }
         },
         "skeleton_archer": {
           "animations": {
@@ -265,7 +308,10 @@
               "frameMs": 120
             }
           },
-          "frame": 121
+          "frames": {
+            "idle": [36, 37, 38, 39],
+            "run": [40, 41, 42, 43]
+          }
         },
         "ghoul": {
           "animations": {
@@ -297,7 +343,10 @@
               "frameMs": 120
             }
           },
-          "frame": 108
+          "frames": {
+            "idle": [44, 45, 46, 47],
+            "run": [48, 49, 50, 51]
+          }
         },
         "lord_vharok": {
           "animations": {
@@ -329,11 +378,16 @@
               "frameMs": 120
             }
           },
-          "frame": 110
+          "frames": {
+            "idle": [92, 93, 94, 95],
+            "run": [96, 97, 98, 99]
+          }
         }
       },
-      "image": "vendor/kenney-tiny-dungeon/tilemap_packed.png",
-      "frameSize": 16
+      "image": "sprites/actors.png",
+      "frameWidth": 32,
+      "frameHeight": 36,
+      "columns": 16
     },
     "region_morvel": {
       "placeholder": false,
@@ -368,7 +422,10 @@
               "frameMs": 120
             }
           },
-          "frame": 108
+          "frames": {
+            "idle": [100, 101, 102, 103],
+            "run": [104, 105, 106, 107]
+          }
         },
         "leech_swarm": {
           "animations": {
@@ -400,7 +457,10 @@
               "frameMs": 120
             }
           },
-          "frame": 120
+          "frames": {
+            "idle": [116, 117, 118, 119],
+            "run": [120, 121, 122, 123]
+          }
         },
         "mire_mother": {
           "animations": {
@@ -432,7 +492,10 @@
               "frameMs": 120
             }
           },
-          "frame": 109
+          "frames": {
+            "idle": [108, 109, 110, 111],
+            "run": [112, 113, 114, 115]
+          }
         },
         "drowned_villager": {
           "animations": {
@@ -464,7 +527,10 @@
               "frameMs": 120
             }
           },
-          "frame": 85
+          "frames": {
+            "idle": [68, 69, 70, 71],
+            "run": [72, 73, 74, 75]
+          }
         },
         "marsh_hag": {
           "animations": {
@@ -496,7 +562,10 @@
               "frameMs": 120
             }
           },
-          "frame": 84
+          "frames": {
+            "idle": [124, 125, 126, 127],
+            "run": [128, 129, 130, 131]
+          }
         },
         "old_drowned": {
           "animations": {
@@ -528,7 +597,11 @@
               "frameMs": 120
             }
           },
-          "frame": 111
+          "frames": {
+            "idle": [60, 61, 62, 63],
+            "run": [64, 65, 66, 67]
+          },
+          "scale": 0.6
         },
         "rot_walker": {
           "animations": {
@@ -560,7 +633,10 @@
               "frameMs": 120
             }
           },
-          "frame": 112
+          "frames": {
+            "idle": [44, 45, 46, 47],
+            "run": [48, 49, 50, 51]
+          }
         },
         "swamp_horror": {
           "animations": {
@@ -592,7 +668,11 @@
               "frameMs": 120
             }
           },
-          "frame": 109
+          "frames": {
+            "idle": [132, 133, 134, 135],
+            "run": [136, 137, 138, 139]
+          },
+          "scale": 0.6
         },
         "morvel_root": {
           "animations": {
@@ -624,11 +704,16 @@
               "frameMs": 120
             }
           },
-          "frame": 110
+          "frames": {
+            "idle": [100, 101, 102, 103],
+            "run": [104, 105, 106, 107]
+          }
         }
       },
-      "image": "vendor/kenney-tiny-dungeon/tilemap_packed.png",
-      "frameSize": 16
+      "image": "sprites/actors.png",
+      "frameWidth": 32,
+      "frameHeight": 36,
+      "columns": 16
     },
     "region_citadel": {
       "placeholder": false,
@@ -663,7 +748,10 @@
               "frameMs": 120
             }
           },
-          "frame": 124
+          "frames": {
+            "idle": [140, 141, 142, 143],
+            "run": [144, 145, 146, 147]
+          }
         },
         "ash_soldier": {
           "animations": {
@@ -695,7 +783,10 @@
               "frameMs": 120
             }
           },
-          "frame": 97
+          "frames": {
+            "idle": [148, 149, 150, 151],
+            "run": [152, 153, 154, 155]
+          }
         },
         "ashen_captain": {
           "animations": {
@@ -727,7 +818,10 @@
               "frameMs": 120
             }
           },
-          "frame": 96
+          "frames": {
+            "idle": [156, 157, 158, 159],
+            "run": [160, 161, 162, 163]
+          }
         },
         "magma_golem": {
           "animations": {
@@ -759,7 +853,11 @@
               "frameMs": 120
             }
           },
-          "frame": 109
+          "frames": {
+            "idle": [132, 133, 134, 135],
+            "run": [136, 137, 138, 139]
+          },
+          "scale": 0.6
         },
         "flame_cultist": {
           "animations": {
@@ -791,7 +889,10 @@
               "frameMs": 120
             }
           },
-          "frame": 84
+          "frames": {
+            "idle": [124, 125, 126, 127],
+            "run": [128, 129, 130, 131]
+          }
         },
         "ember_priestess": {
           "animations": {
@@ -823,7 +924,10 @@
               "frameMs": 120
             }
           },
-          "frame": 99
+          "frames": {
+            "idle": [164, 165, 166, 167],
+            "run": [168, 169, 170, 171]
+          }
         },
         "cinder_knight": {
           "animations": {
@@ -855,7 +959,10 @@
               "frameMs": 120
             }
           },
-          "frame": 98
+          "frames": {
+            "idle": [156, 157, 158, 159],
+            "run": [160, 161, 162, 163]
+          }
         },
         "inferno_wraith": {
           "animations": {
@@ -887,7 +994,10 @@
               "frameMs": 120
             }
           },
-          "frame": 121
+          "frames": {
+            "idle": [84, 85, 86, 87],
+            "run": [88, 89, 90, 91]
+          }
         },
         "charred_king": {
           "animations": {
@@ -919,11 +1029,17 @@
               "frameMs": 120
             }
           },
-          "frame": 110
+          "frames": {
+            "idle": [172, 173, 174, 175],
+            "run": [176, 177, 178, 179]
+          },
+          "scale": 0.6
         }
       },
-      "image": "vendor/kenney-tiny-dungeon/tilemap_packed.png",
-      "frameSize": 16
+      "image": "sprites/actors.png",
+      "frameWidth": 32,
+      "frameHeight": 36,
+      "columns": 16
     }
   }
 }

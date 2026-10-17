@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { t } from '../../i18n.ts';
 import { Reminders } from '../../game/notify.ts';
 import { usePrefs } from '../../state/prefs.ts';
+import { useUi } from '../../state/store.ts';
 import { Sheet, tryIntent } from '../Sheet.tsx';
 import { useSim } from '../useSim.ts';
+import { Icon } from '../Icon.tsx';
 
 /**
  * Settings: hunt automation (in the save: potion limits and returns) and device preferences
@@ -13,6 +15,7 @@ import { useSim } from '../useSim.ts';
 export function SettingsScreen() {
   const sim = useSim();
   const prefs = usePrefs();
+  const openScreen = useUi((s) => s.openScreen);
   const [error, setError] = useState<string | null>(null);
   const st = sim.state.settings;
   const current: PotionSettings = {
@@ -79,6 +82,16 @@ export function SettingsScreen() {
         {t('settings.autoReturn')}
       </label>
       {error && <p className="tone-bad">{error}</p>}
+
+      <button
+        type="button"
+        className="btn wide save-link"
+        onClick={() => openScreen('save')}
+        data-testid="open-save"
+      >
+        <Icon name="save" size={18} />
+        {t('screen.save')}
+      </button>
 
       <h3 className="pixel">{t('settings.device')}</h3>
       <label className="check">
@@ -164,6 +177,16 @@ export function SettingsScreen() {
           </a>
         </p>
         <p>{t('settings.creditsKenney')}</p>
+        <p>
+          {t('settings.creditsIcons')}{' '}
+          <a href="vendor/game-icons/ICONS.md" target="_blank" rel="noreferrer">
+            {t('settings.creditsIconList')}
+          </a>
+          {' · '}
+          <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">
+            {t('settings.creditsIconLicense')}
+          </a>
+        </p>
         <p>{t('settings.creditsOwn')}</p>
         <p>{t('settings.creditsFont')}</p>
       </div>

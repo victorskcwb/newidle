@@ -9,6 +9,8 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
+import { buildActors, buildFx } from './actors.ts';
+import { buildUiIcons } from './ui-icons.ts';
 import {
   LAVA_FRAMES,
   PROPS_COLS,
@@ -279,6 +281,14 @@ propSlots.forEach((index, id) => {
 });
 
 writeFileSync(new URL('sprites/tiles.png', assets), PNG.sync.write(tiles));
+const actorFrames = buildActors(assets);
+const fxCount = buildFx(assets);
+const iconCount = buildUiIcons(
+  assets,
+  new URL('../../../apps/client/src/ui/icons.generated.ts', import.meta.url),
+);
+console.log(`wrote ${iconCount} interface icons`);
+console.log(`wrote assets/sprites/actors.png (${actorFrames} frames) and fx.png (${fxCount})`);
 writeFileSync(new URL('sprites/props.png', assets), PNG.sync.write(props));
 console.log(
   `wrote assets/sprites/tiles.png (${slots.length} tiles) and props.png (${propSlots.length} props)`,

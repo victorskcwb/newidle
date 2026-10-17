@@ -5,6 +5,21 @@ import { useUi } from '../state/store.ts';
 import { compareItem, itemLines, itemName, requirementText } from './items.ts';
 import { RARITY_COLOR, RARITY_GLYPH } from './rarity.ts';
 import { useSim } from './useSim.ts';
+import { Icon } from './Icon.tsx';
+
+/** Icon of an empty equipment slot: the first item base of that slot. */
+const SLOT_ICON: Record<string, string> = {
+  weapon: 'item.sword_rusty',
+  offhand: 'item.shield_plank',
+  helm: 'item.helm_leather',
+  chest: 'item.vest_leather',
+  gloves: 'item.gloves_cloth',
+  pants: 'item.pants_leather',
+  boots: 'item.boots_worn',
+  belt: 'item.belt_rope',
+  ring: 'item.ring_copper',
+  amulet: 'item.amulet_bone',
+};
 
 export function ItemCell({
   item,
@@ -25,11 +40,9 @@ export function ItemCell({
       aria-label={`${itemName(sim.content, item)} (${t(`rarity.${item.rarity}`)})`}
       data-testid="item-cell"
     >
+      <Icon name={`item.${item.baseId}`} size={30} />
       <span className="glyph" aria-hidden>
         {RARITY_GLYPH[item.rarity]}
-      </span>
-      <span className="slot-abbr">
-        {t(`slot.${sim.content.itemBases.get(item.baseId)!.slot}`).slice(0, 3)}
       </span>
     </button>
   );
@@ -187,7 +200,7 @@ export function BackpackPanel() {
               />
             ) : (
               <div key={slot} className="cell empty" title={t('backpack.nothingEquipped')}>
-                <span className="slot-abbr">{t(`slot.${slot}`).slice(0, 3)}</span>
+                <Icon name={SLOT_ICON[slot] ?? ''} size={26} />
               </div>
             );
           })}

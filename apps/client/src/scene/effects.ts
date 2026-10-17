@@ -1,6 +1,29 @@
-import type { Rarity } from '@abismo/content';
+import { FX_FRAMES, type FxFrame, type Rarity } from '@abismo/content';
 import Phaser from 'phaser';
 import { rarityHex } from '../ui/rarity.ts';
+
+/** Spell and hit effects, drawn with the particle textures of sprites/fx.png. */
+export type SpellFx =
+  | 'slash'
+  | 'heavy'
+  | 'whirl'
+  | 'warcry'
+  | 'charge'
+  | 'crit'
+  | 'death'
+  | 'potion'
+  | 'levelup'
+  | 'hurt';
+
+/** Skill effect ids from content (skills.json `effect`) to the scene's effects. */
+export const SKILL_FX: Record<string, SpellFx> = {
+  'fx/heavy_strike': 'heavy',
+  'fx/war_cry': 'warcry',
+  'fx/whirlwind': 'whirl',
+  'fx/charge': 'charge',
+};
+
+const frameOf = (name: FxFrame) => FX_FRAMES.indexOf(name);
 
 export type NumberKind = 'damage' | 'crit' | 'heal' | 'miss' | 'taken';
 
@@ -24,6 +47,7 @@ export class Effects {
     beam: Phaser.GameObjects.Image;
   }[] = [];
   private sparks: Phaser.GameObjects.Particles.ParticleEmitter;
+  private glows: Phaser.GameObjects.Image[] = [];
   reducedMotion = false;
 
   constructor(private scene: Phaser.Scene) {
@@ -73,6 +97,187 @@ export class Effects {
       ease: 'Cubic.easeOut',
       onComplete: () => t.setActive(false).setVisible(false),
     });
+  }
+
+  private takeGlow(): Phaser.GameObjects.Image {
+    const free = this.glows.find((g) => !g.active);
+    const g = free ?? this.scene.add.image(0, 0, 'fx', 0);
+    if (!free) this.glows.push(g);
+    this.scene.tweens.killTweensOf(g);
+    return g
+      .setActive(true)
+      .setVisible(true)
+      .setAlpha(1)
+      .setAngle(0)
+      .setScale(1)
+      .setBlendMode(Phaser.BlendModes.ADD);
+  }
+
+  /** One textured flash: grows or shrinks, turns, fades, then returns to the pool. */
+  private glow(
+    name: FxFrame,
+    x: number,
+    y: number,
+    o: {
+      tint: number;
+      from: number;
+      to: number;
+      ms: number;
+      angle?: number;
+      spin?: number;
+      rise?: number;
+      alpha?: number;
+      delay?: number;
+      normal?: boolean;
+    },
+  ) {
+    const g = this.takeGlow()
+      .setFrame(frameOf(name))
+      .setPosition(x, y)
+      .setTint(o.tint)
+      .setScale(o.from)
+      .setAngle(o.angle ?? 0)
+      .setAlpha(o.alpha ?? 1)
+      .setDepth(100_000);
+    if (o.normal) g.setBlendMode(Phaser.BlendModes.NORMAL);
+    if (o.delay) g.setVisible(false);
+    this.scene.tweens.add({
+      targets: g,
+      scale: o.to,
+      alpha: 0,
+      angle: (o.angle ?? 0) + (this.reducedMotion ? 0 : (o.spin ?? 0)),
+      y: y - (o.rise ?? 0),
+      duration: o.ms,
+      delay: o.delay ?? 0,
+      ease: 'Cubic.easeOut',
+      onStart: () => g.setVisible(true),
+      onComplete: () => g.setActive(false).setVisible(false),
+    });
+  }
+
+  /**
+   * A spell or hit effect at (x, y); `to` is the target of effects that travel (charge).
+   * The textures are 128 px, so a scale of 0.25 covers one tile.
+   */
+  spell(kind: SpellFx, x: number, y: number, to?: { x: number; y: number }) {
+    const dir = to ? Phaser.Math.RadToDeg(Math.atan2(to.y - y, to.x - x)) : 0;
+    switch (kind) {
+      case 'slash':
+        this.glow('slash_03', x, y, {
+          tint: 0xffffff,
+          from: 0.22,
+          to: 0.32,
+          ms: 200,
+          angle: dir + Phaser.Math.Between(-25, 25),
+        });
+        break;
+      case 'hurt':
+        this.glow('slash_02', x, y, { tint: 0xff5a4a, from: 0.2, to: 0.28, ms: 220 });
+        break;
+      case 'crit':
+        this.glow('star_06', x, y - 6, { tint: 0xffd84a, from: 0.15, to: 0.45, ms: 280, spin: 45 });
+        break;
+      case 'heavy':
+        this.glow('slash_04', x, y, { tint: 0xffb050, from: 0.3, to: 0.55, ms: 300, angle: dir });
+        this.glow('star_06', x, y, { tint: 0xffe2a0, from: 0.2, to: 0.5, ms: 260, spin: 30 });
+        this.glow('scorch_01', x, y + 8, {
+          tint: 0xff7030,
+          from: 0.2,
+          to: 0.35,
+          ms: 500,
+          alpha: 0.7,
+        });
+        break;
+      case 'whirl':
+        this.glow('twirl_01', x, y, { tint: 0xbfe4ff, from: 0.45, to: 0.6, ms: 450, spin: 540 });
+        this.glow('twirl_02', x, y, {
+          tint: 0xbfe4ff,
+          from: 0.45,
+          to: 0.6,
+          ms: 450,
+          spin: 540,
+          delay: 120,
+        });
+        this.glow('circle_05', x, y, { tint: 0x7fb8ff, from: 0.3, to: 0.7, ms: 400, alpha: 0.6 });
+        break;
+      case 'warcry':
+        this.glow('circle_03', x, y, { tint: 0xff5a40, from: 0.1, to: 0.9, ms: 550 });
+        this.glow('magic_03', x, y - 18, {
+          tint: 0xffd060,
+          from: 0.2,
+          to: 0.35,
+          ms: 600,
+          spin: 90,
+        });
+        this.glow('flame_01', x, y - 8, {
+          tint: 0xff7a30,
+          from: 0.25,
+          to: 0.35,
+          ms: 500,
+          rise: 14,
+        });
+        break;
+      case 'charge': {
+        if (!to) break;
+        const len = Math.hypot(to.x - x, to.y - y);
+        const trail = this.takeGlow()
+          .setFrame(frameOf('trace_01'))
+          .setPosition((x + to.x) / 2, (y + to.y) / 2)
+          .setTint(0x9fe0ff)
+          .setAngle(dir + 90)
+          .setScale(0.35, Math.max(0.2, len / 128))
+          .setDepth(100_000);
+        this.scene.tweens.add({
+          targets: trail,
+          alpha: 0,
+          duration: 300,
+          onComplete: () => trail.setActive(false).setVisible(false),
+        });
+        this.glow('muzzle_02', to.x, to.y, {
+          tint: 0x9fe0ff,
+          from: 0.2,
+          to: 0.4,
+          ms: 260,
+          angle: dir + 90,
+        });
+        // Stunned: little stars over the target.
+        for (let k = 0; k < 3; k++) {
+          this.glow('star_04', to.x - 10 + k * 10, to.y - 26, {
+            tint: 0xfff07a,
+            from: 0.12,
+            to: 0.08,
+            ms: 1200,
+            spin: 180,
+            delay: 150 + k * 60,
+          });
+        }
+        break;
+      }
+      case 'death':
+        this.glow('smoke_04', x, y, {
+          tint: 0x8a8494,
+          from: 0.2,
+          to: 0.45,
+          ms: 650,
+          rise: 10,
+          alpha: 0.75,
+          normal: true,
+        });
+        break;
+      case 'potion':
+        this.glow('magic_05', x, y - 6, {
+          tint: 0x7aff8a,
+          from: 0.15,
+          to: 0.35,
+          ms: 500,
+          rise: 14,
+        });
+        break;
+      case 'levelup':
+        this.glow('light_03', x, y, { tint: 0xffd36a, from: 0.2, to: 1, ms: 900 });
+        this.glow('magic_02', x, y, { tint: 0xffe9a0, from: 0.3, to: 0.6, ms: 900, spin: 120 });
+        break;
+    }
   }
 
   burst(x: number, y: number, color: number, count = 10) {

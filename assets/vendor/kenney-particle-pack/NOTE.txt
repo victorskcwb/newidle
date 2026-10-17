@@ -1,0 +1,1 @@
+Copies of the PNG (Transparent) files used by the game, reduced from 512 to 128 px.

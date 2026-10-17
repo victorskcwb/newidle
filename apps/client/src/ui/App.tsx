@@ -14,7 +14,6 @@ import { CardsScreen } from './screens/CardsScreen.tsx';
 import { CharacterScreen } from './screens/CharacterScreen.tsx';
 import { FilterScreen } from './screens/FilterScreen.tsx';
 import { HuntsScreen } from './screens/HuntsScreen.tsx';
-import { MenuScreen } from './screens/MenuScreen.tsx';
 import { QuestsScreen } from './screens/QuestsScreen.tsx';
 import { SaveScreen } from './screens/SaveScreen.tsx';
 import { SettingsScreen } from './screens/SettingsScreen.tsx';
@@ -24,7 +23,6 @@ import { Tips } from './Tips.tsx';
 import { SimContext, useSim, useSimBridge } from './useSim.ts';
 
 const SCREENS: Record<Screen, () => React.JSX.Element> = {
-  menu: MenuScreen,
   character: CharacterScreen,
   skills: SkillsScreen,
   cards: CardsScreen,

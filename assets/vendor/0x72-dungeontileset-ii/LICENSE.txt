@@ -1,0 +1,7 @@
+16x16 DungeonTileset II, version 1.7, by 0x72 (Robert Norenberg)
+https://0x72.itch.io/dungeontileset-ii
+
+License: Creative Commons Zero (CC0 1.0 Universal), as listed on the itch.io page:
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Files here: the original sheet (sheet.png), its frame list (tile_list.txt) and README.

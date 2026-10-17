@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { formatNumber, t } from '../../i18n.ts';
 import { Sheet, tryIntent } from '../Sheet.tsx';
 import { useSim } from '../useSim.ts';
+import { Icon } from '../Icon.tsx';
 
 function blockText(
   block: LearnBlock,
@@ -141,6 +142,7 @@ export function SkillsScreen() {
               data-testid={`node-${skill.id}`}
             >
               <div className="node-head">
+                <Icon name={`skill.${skill.id}`} size={28} className="node-icon" />
                 <span className="pixel">{t(skill.nameKey)}</span>
                 <span className="muted small">
                   {level}/{skill.maxLevel}

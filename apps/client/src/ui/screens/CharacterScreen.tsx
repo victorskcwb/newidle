@@ -12,6 +12,7 @@ import { useUi } from '../../state/store.ts';
 import { ItemCard, ItemCell } from '../BackpackPanel.tsx';
 import { Sheet, tryIntent } from '../Sheet.tsx';
 import { useSim } from '../useSim.ts';
+import { Icon } from '../Icon.tsx';
 
 const PROFILES: AutoAllocateProfile[] = ['off', 'balanced', 'strength', 'vitality'];
 
@@ -92,7 +93,10 @@ export function CharacterScreen() {
       <div className="attr-list">
         {ATTRIBUTES.map((a) => (
           <div key={a} className="attr-row">
-            <span>{t(`attribute.${a}`)}</span>
+            <span className="attr-name">
+              <Icon name={a} size={18} className="tone-xp" />
+              {t(`attribute.${a}`)}
+            </span>
             <span className="pixel" title={t('character.base', { n: base[a] })}>
               {stats.attributes[a]}
             </span>

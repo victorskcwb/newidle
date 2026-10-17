@@ -1,7 +1,16 @@
-import { TICKS_PER_SECOND, backpackSize, claimableQuests, potionHoursLeft } from '@abismo/engine';
+import {
+  MAX_LEVEL,
+  TICKS_PER_SECOND,
+  backpackSize,
+  claimableQuests,
+  potionHoursLeft,
+  shopUnlocked,
+} from '@abismo/engine';
 import { formatDuration, formatNumber, t } from '../i18n.ts';
 import { ZOOM_LEVELS } from '../scene/GameScene.ts';
-import { useUi } from '../state/store.ts';
+import { useUi, type Screen } from '../state/store.ts';
+import { Icon } from './Icon.tsx';
+import { HeroSprite } from './SheetSprite.tsx';
 import { useSim } from './useSim.ts';
 
 function Bar({
@@ -9,54 +18,73 @@ function Bar({
   max,
   kind,
   label,
+  icon,
 }: {
   value: number;
   max: number;
   kind: 'hp' | 'mana' | 'xp';
   label: string;
+  icon: string;
 }) {
   const pct = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
   return (
-    <div
-      className={`bar bar-${kind}`}
-      role="meter"
-      aria-label={label}
-      aria-valuenow={value}
-      aria-valuemin={0}
-      aria-valuemax={max}
-    >
-      <div className="bar-fill" style={{ width: `${pct}%` }} />
-      <span className="bar-text">
-        {formatNumber(value)} / {formatNumber(max)}
-      </span>
+    <div className="bar-row">
+      <Icon name={icon} size={14} className={`tone-${kind}`} />
+      <div
+        className={`bar bar-${kind}`}
+        role="meter"
+        aria-label={label}
+        aria-valuenow={value}
+        aria-valuemin={0}
+        aria-valuemax={max}
+      >
+        <div className="bar-fill" style={{ width: `${pct}%` }} />
+        <span className="bar-text">
+          {formatNumber(value)} / {formatNumber(max)}
+        </span>
+      </div>
     </div>
   );
 }
 
+/** Top left: animated portrait with the level, name and the three bars. */
 function HeroPanel() {
   const sim = useSim();
   const p = useUi((s) => s.presented);
+  const openScreen = useUi((s) => s.openScreen);
   if (!p) return null;
+  const hero = sim.state.hero;
   return (
-    <section className="panel hero-panel" aria-label={sim.state.hero.name}>
-      <div className="portrait" aria-hidden>
-        <span>{p.level}</span>
-      </div>
+    <section className="glass hero-panel" aria-label={hero.name}>
+      <button
+        type="button"
+        className="portrait"
+        onClick={() => openScreen('character')}
+        aria-label={t('screen.character')}
+      >
+        <span className="portrait-art">
+          <HeroSprite outfit={hero.appearance.outfit} scale={1.8} />
+        </span>
+        <span className="portrait-level pixel">{p.level}</span>
+      </button>
       <div className="hero-bars">
         <div className="hero-name">
-          <span className="pixel">{sim.state.hero.name}</span>
-          <span className="muted" data-testid="hero-level">
+          <span className="pixel">{hero.name}</span>
+          <span className="muted small" data-testid="hero-level">
             {t('hud.level', { level: p.level })}
           </span>
         </div>
-        <Bar value={p.hp} max={p.maxHp} kind="hp" label={t('hud.hp')} />
-        <Bar value={p.mana} max={p.maxMana} kind="mana" label={t('hud.mana')} />
+        <Bar value={p.hp} max={p.maxHp} kind="hp" label={t('hud.hp')} icon="hp" />
+        <Bar value={p.mana} max={p.maxMana} kind="mana" label={t('hud.mana')} icon="mana" />
         {p.xpToNext > 0 ? (
-          <Bar value={p.xp} max={p.xpToNext} kind="xp" label={t('hud.xp')} />
+          <Bar value={p.xp} max={p.xpToNext} kind="xp" label={t('hud.xp')} icon="xp" />
         ) : (
-          <div className="bar bar-xp" aria-label={t('hud.xp')}>
-            <div className="bar-fill" style={{ width: '100%' }} />
-            <span className="bar-text">{t('hud.maxLevel')}</span>
+          <div className="bar-row">
+            <Icon name="xp" size={14} className="tone-xp" />
+            <div className="bar bar-xp" aria-label={t('hud.xp')}>
+              <div className="bar-fill" style={{ width: '100%' }} />
+              <span className="bar-text">{t('hud.maxLevel')}</span>
+            </div>
           </div>
         )}
       </div>
@@ -64,6 +92,7 @@ function HeroPanel() {
   );
 }
 
+/** Top right: resources as chips, the hunt with its rates and the town/hunt action. */
 function HuntPanel() {
   const sim = useSim();
   const p = useUi((s) => s.presented);
@@ -82,48 +111,58 @@ function HuntPanel() {
       })
     : null;
   return (
-    <section className="panel hunt-panel">
-      <div className="hunt-top">
-        <span className="gold" data-testid="gold">
-          <span aria-hidden>◉ </span>
+    <section className="hunt-panel">
+      <div className="res-chips">
+        <span className="res-chip res-gold" data-testid="gold" title={t('hud.gold')}>
+          <Icon name="gold" size={16} />
           {formatNumber(p?.gold ?? s.gold)}
         </span>
-        <span className="muted">{t('hud.resets', { n: s.hero.resets.count })}</span>
+        <span className="res-chip" title={t('hud.potions', { n: p?.potions ?? 0 })}>
+          <Icon name="potion" size={16} className="tone-hp" />
+          {p?.potions ?? 0}
+        </span>
+        <span className="res-chip" title={t('hud.resets', { n: s.hero.resets.count })}>
+          <Icon name="resets" size={16} className="tone-info" />
+          {s.hero.resets.count}
+        </span>
       </div>
-      {hunt && (
-        <button
-          type="button"
-          className="link pixel hunt-name"
-          onClick={() => openScreen('hunts')}
-          data-testid="hunt-name"
-        >
-          {t(hunt.nameKey)} ▾
-        </button>
-      )}
-      <div className="muted activity">{t(`activity.${p?.activity ?? s.activity.kind}`)}</div>
-      <div className="rates" data-testid="rates">
-        {hunt && rates
-          ? `${t('rates.summary', {
-              kills: formatNumber(rates.killsPerHour),
-              xp: formatNumber(rates.xpPerHour),
-              gold: formatNumber(rates.goldPerHour),
-            })} · ${potionHours === null ? t('rates.potionsSustained') : t('rates.potionsLast', { time: formatDuration(potionHours) })}`
-          : hunt
-            ? t('rates.calculating')
-            : null}
-      </div>
-      <div className="row">
-        <span className="muted">{t('hud.potions', { n: p?.potions ?? 0 })}</span>
+      <div className="glass hunt-card">
+        {hunt && (
+          <button
+            type="button"
+            className="link pixel hunt-name"
+            onClick={() => openScreen('hunts')}
+            data-testid="hunt-name"
+          >
+            <Icon name="hunts" size={16} />
+            <span>{t(hunt.nameKey)}</span>
+            <span aria-hidden>▾</span>
+          </button>
+        )}
+        <div className="muted activity">{t(`activity.${p?.activity ?? s.activity.kind}`)}</div>
+        <div className="rates" data-testid="rates">
+          {hunt && rates
+            ? `${t('rates.summary', {
+                kills: formatNumber(rates.killsPerHour),
+                xp: formatNumber(rates.xpPerHour),
+                gold: formatNumber(rates.goldPerHour),
+              })} · ${potionHours === null ? t('rates.potionsSustained') : t('rates.potionsLast', { time: formatDuration(potionHours) })}`
+            : hunt
+              ? t('rates.calculating')
+              : null}
+        </div>
         {hunting ? (
-          <button type="button" className="btn" onClick={() => sim.returnToTown()}>
+          <button type="button" className="btn btn-small" onClick={() => sim.returnToTown()}>
+            <Icon name="town" size={16} />
             {t('action.returnTown')}
           </button>
         ) : (
           <button
             type="button"
-            className="btn btn-primary"
+            className="btn btn-small btn-primary"
             onClick={() => hunt && sim.startHunt(hunt.id)}
           >
+            <Icon name="hunt" size={16} />
             {t('action.hunt')}
           </button>
         )}
@@ -132,9 +171,11 @@ function HuntPanel() {
   );
 }
 
+/** Bottom centre: the active skills with their icons and a cooldown sweep. */
 function SkillBar() {
   const sim = useSim();
   const tick = useUi((u) => u.presented?.tick ?? 0);
+  const openScreen = useUi((u) => u.openScreen);
   const c = sim.state.combat;
   return (
     <section className="skill-bar" aria-label={t('screen.skills')}>
@@ -147,15 +188,18 @@ function SkillBar() {
             : 1;
         const left = Math.max(0, Math.min(1, (ready - tick) / total));
         return (
-          <div
+          <button
+            type="button"
             key={i}
-            className="skill-slot"
+            className={`skill-slot${skill ? '' : ' empty'}`}
             title={skill ? t(skill.nameKey) : t('hud.skillEmpty')}
+            aria-label={skill ? t(skill.nameKey) : t('hud.skillEmpty')}
+            onClick={() => openScreen('skills')}
             style={left > 0 ? { ['--cd' as string]: `${Math.round(left * 360)}deg` } : undefined}
             data-cooldown={left > 0 ? 'on' : undefined}
           >
-            {skill ? t(skill.nameKey).slice(0, 2) : ''}
-          </div>
+            {skill && <Icon name={`skill.${skill.id}`} size={26} />}
+          </button>
         );
       })}
     </section>
@@ -168,7 +212,7 @@ function BossBar() {
   const pct = Math.max(0, (boss.hp / boss.maxHp) * 100);
   return (
     <section
-      className="panel boss-bar"
+      className="glass boss-bar"
       role="meter"
       aria-label={boss.name}
       aria-valuenow={boss.hp}
@@ -186,73 +230,116 @@ function BossBar() {
   );
 }
 
-function Corner() {
+interface NavEntry {
+  screen: Screen | 'backpack';
+  icon: string;
+  badge?: string | number;
+  /** Shown instead of the label (the backpack's fill). */
+  count?: string;
+}
+
+function NavButton({ entry, big = false }: { entry: NavEntry; big?: boolean }) {
+  const openScreen = useUi((s) => s.openScreen);
+  const openBackpack = useUi((s) => s.openBackpack);
+  const label = entry.screen === 'backpack' ? t('action.backpack') : t(`screen.${entry.screen}`);
+  return (
+    <button
+      type="button"
+      className={`nav-btn${big ? ' nav-big' : ''}`}
+      onClick={() => (entry.screen === 'backpack' ? openBackpack(true) : openScreen(entry.screen))}
+      aria-label={entry.count ? `${label} ${entry.count}` : label}
+      title={label}
+      data-testid={entry.screen === 'backpack' ? 'backpack-button' : `nav-${entry.screen}`}
+    >
+      <Icon name={entry.icon} size={big ? 30 : 24} />
+      {entry.count ? (
+        <span className="nav-label nav-count">
+          <span className="visually-hidden">{label} </span>
+          {entry.count}
+        </span>
+      ) : (
+        <span className="nav-label">{label}</span>
+      )}
+      {entry.badge !== undefined && <span className="badge">{entry.badge}</span>}
+    </button>
+  );
+}
+
+/**
+ * Every screen is one tap away: the main ones in the bottom bar (backpack in the middle),
+ * the others in a column on the left, each with a badge when something waits there.
+ */
+function Navigation() {
   const sim = useSim();
+  const hero = sim.state.hero;
+  const claimable = claimableQuests(sim.state);
+  const full = sim.state.backpack.length >= backpackSize(hero, sim.content);
+  const altarBadge =
+    hero.level >= MAX_LEVEL
+      ? '!'
+      : shopUnlocked(hero) && hero.resets.points > 0
+        ? hero.resets.points
+        : undefined;
+  const bottom: NavEntry[] = [
+    { screen: 'character', icon: 'character', badge: hero.unspentAttributePoints || undefined },
+    { screen: 'skills', icon: 'skills', badge: hero.unspentSkillPoints || undefined },
+    {
+      screen: 'backpack',
+      icon: 'backpack',
+      badge: full ? '!' : undefined,
+      count: `${sim.state.backpack.length}/${backpackSize(hero, sim.content)}`,
+    },
+    { screen: 'smith', icon: 'smith' },
+    { screen: 'settings', icon: 'settings' },
+  ];
+  const side: NavEntry[] = [
+    { screen: 'quests', icon: 'quests', badge: claimable || undefined },
+    { screen: 'hunts', icon: 'hunts' },
+    { screen: 'cards', icon: 'cards' },
+    { screen: 'altar', icon: 'altar', badge: altarBadge },
+    { screen: 'filter', icon: 'filter' },
+  ];
+  return (
+    <>
+      <nav className="side-dock" aria-label={t('menu.title')}>
+        {side.map((e) => (
+          <NavButton key={e.screen} entry={e} />
+        ))}
+      </nav>
+      <nav className="glass bottom-nav" aria-label={t('menu.title')}>
+        {bottom.map((e) => (
+          <NavButton key={e.screen} entry={e} big={e.screen === 'backpack'} />
+        ))}
+      </nav>
+    </>
+  );
+}
+
+function Zoom() {
   const zoom = useUi((s) => s.zoom);
   const setZoom = useUi((s) => s.setZoom);
-  const openBackpack = useUi((s) => s.openBackpack);
-  const openScreen = useUi((s) => s.openScreen);
-  const hero = sim.state.hero;
   const i = ZOOM_LEVELS.indexOf(zoom as (typeof ZOOM_LEVELS)[number]);
   return (
-    <nav className="corner">
-      <div className="zoom">
-        <button
-          type="button"
-          className="btn icon"
-          aria-label={t('action.zoomOut')}
-          disabled={i <= 0}
-          onClick={() => setZoom(ZOOM_LEVELS[i - 1]!)}
-        >
-          −
-        </button>
-        <button
-          type="button"
-          className="btn icon"
-          aria-label={t('action.zoomIn')}
-          disabled={i >= ZOOM_LEVELS.length - 1}
-          onClick={() => setZoom(ZOOM_LEVELS[i + 1]!)}
-        >
-          +
-        </button>
-      </div>
+    <div className="zoom">
       <button
         type="button"
-        className="btn"
-        onClick={() => openScreen('character')}
-        data-testid="character-button"
+        className="round-btn"
+        aria-label={t('action.zoomIn')}
+        disabled={i >= ZOOM_LEVELS.length - 1}
+        onClick={() => setZoom(ZOOM_LEVELS[i + 1]!)}
       >
-        {t('action.character')}
-        {hero.unspentAttributePoints > 0 && (
-          <span className="badge">{hero.unspentAttributePoints}</span>
-        )}
+        +
       </button>
       <button
         type="button"
-        className="btn"
-        onClick={() => openScreen('menu')}
-        data-testid="menu-button"
+        className="round-btn"
+        aria-label={t('action.zoomOut')}
+        disabled={i <= 0}
+        onClick={() => setZoom(ZOOM_LEVELS[i - 1]!)}
       >
-        {t('action.menu')}
-        {hero.unspentSkillPoints + claimableQuests(sim.state) > 0 && (
-          <span className="badge">{hero.unspentSkillPoints + claimableQuests(sim.state)}</span>
-        )}
+        −
       </button>
-      <button
-        type="button"
-        className="btn btn-primary backpack-btn"
-        data-testid="backpack-button"
-        onClick={() => openBackpack(true)}
-      >
-        {t('action.backpack')}{' '}
-        <span className="count">
-          {t('backpack.count', {
-            n: sim.state.backpack.length,
-            max: backpackSize(hero, sim.content),
-          })}
-        </span>
-      </button>
-    </nav>
+    </div>
   );
 }
 
@@ -261,9 +348,10 @@ export function Hud() {
     <>
       <HeroPanel />
       <HuntPanel />
-      <SkillBar />
       <BossBar />
-      <Corner />
+      <Zoom />
+      <SkillBar />
+      <Navigation />
     </>
   );
 }

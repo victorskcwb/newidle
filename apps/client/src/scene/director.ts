@@ -14,7 +14,7 @@ import { sfx } from '../audio/sfx.ts';
 import { useUi } from '../state/store.ts';
 import { itemName } from '../ui/items.ts';
 import { Actor, type Animations } from './actor.ts';
-import type { Effects } from './effects.ts';
+import { SKILL_FX, type Effects } from './effects.ts';
 import type { Pathfinder } from './pathfinder.ts';
 import { heroLook, monsterLook } from './textures.ts';
 
@@ -98,7 +98,7 @@ export class Director {
     this.heroAnims = manifest.atlases.hero?.sprites.warrior?.animations ?? {};
     this.hero = new Actor(
       scene,
-      heroLook(manifest, sim.state.hero.appearance.outfit),
+      heroLook(scene, manifest, sim.state.hero.appearance.outfit),
       this.heroAnims,
       {
         name: sim.state.hero.name,
@@ -227,9 +227,15 @@ export class Director {
         const first = this.monsters.get(e.hits[0]?.uid ?? -1);
         const anim = e.skillId ? 'cast' : 'attack';
         const at = first?.actor ?? this.hero;
+        const skill = e.skillId ? this.content.skills.get(e.skillId) : undefined;
+        const skillFx = e.skillId
+          ? ((skill?.kind === 'active' ? SKILL_FX[skill.effect] : undefined) ?? 'heavy')
+          : null;
         this.hero.attack(at.x, at.y, anim, () => {
-          if (e.skillId) {
-            this.fx.ring(this.hero.x, this.hero.y, 0x9fd3ff);
+          if (skillFx) {
+            const onHero = skillFx === 'whirl' || skillFx === 'warcry';
+            this.fx.spell(skillFx, onHero ? this.hero.x : at.x, onHero ? this.hero.y : at.y);
+            if (skillFx === 'charge') this.fx.spell('charge', this.hero.x, this.hero.y, at);
             if (e.hits.some((h) => !h.miss) && !this.calm) this.hitStop = 60;
           }
           for (const hit of e.hits) {
@@ -246,6 +252,8 @@ export class Director {
             if (v.def.boss) this.showBoss(v);
             v.actor.setHp(v.hp / v.maxHp);
             v.actor.hurt();
+            if (!skillFx) this.fx.spell('slash', v.actor.x, v.actor.y, this.hero);
+            if (hit.crit) this.fx.spell('crit', v.actor.x, v.actor.y);
             this.fx.number(
               v.actor.x,
               v.actor.y - 8,
@@ -265,6 +273,7 @@ export class Director {
             this.fx.number(this.hero.x, this.hero.y - 8, t('fx.miss'), 'miss');
           } else {
             this.hero.hurt();
+            this.fx.spell('hurt', this.hero.x, this.hero.y);
             sfx.play('hurt');
             this.fx.number(this.hero.x, this.hero.y - 8, `${e.damage}`, 'taken');
           }
@@ -273,6 +282,7 @@ export class Director {
       }
       case 'PotionUsed':
         sfx.play('potion');
+        this.fx.spell('potion', this.hero.x, this.hero.y);
         this.fx.number(this.hero.x, this.hero.y - 8, `+${e.amount}`, 'heal');
         break;
       case 'MonsterDied': {
@@ -281,7 +291,10 @@ export class Director {
         v.alive = false;
         sfx.play('kill');
         if (v.def.boss) this.showBoss(null);
-        this.scene.time.delayedCall(180, () => v.actor.die(() => this.release(v)));
+        this.scene.time.delayedCall(180, () => {
+          this.fx.spell('death', v.actor.x, v.actor.y);
+          v.actor.die(() => this.release(v));
+        });
         this.log(
           t('log.killed', { monster: this.monsterName(v.def, false), xp: e.xp, gold: e.gold }),
         );
@@ -368,7 +381,7 @@ export class Director {
       }
       case 'LevelUp':
         sfx.play('levelUp');
-        this.fx.ring(this.hero.x, this.hero.y, 0xffd84a);
+        this.fx.spell('levelup', this.hero.x, this.hero.y);
         this.fx.burst(this.hero.x, this.hero.y, 0xffd84a, 16);
         this.fx.number(this.hero.x, this.hero.y - 20, t('log.levelUp', { level: e.level }), 'crit');
         this.log(t('log.levelUp', { level: e.level }), { tone: 'good' });
@@ -495,7 +508,7 @@ export class Director {
       const anims =
         this.manifest.atlases[def.sprite.atlas]?.sprites[def.sprite.key]?.animations ?? {};
       const actor = this.takeActor();
-      actor.setLook(monsterLook(this.manifest, def), anims);
+      actor.setLook(monsterLook(this.scene, this.manifest, def), anims);
       actor.reset(true);
       const affixes = m.affixes
         .map((id) => this.content.monsterAffixes.get(id))

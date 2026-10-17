@@ -78,10 +78,13 @@ if (content) {
         continue;
       }
       const png = PNG.sync.read(readFileSync(url));
-      const size = atlas.frameSize ?? 16;
-      const frames = Math.floor(png.width / size) * Math.floor(png.height / size);
+      const w = atlas.frameWidth ?? 16;
+      const h = atlas.frameHeight ?? w;
+      const frames = Math.floor(png.width / w) * Math.floor(png.height / h);
       for (const [key, sprite] of Object.entries(atlas.sprites)) {
-        for (const f of [sprite.frame, ...(sprite.variants ?? [])]) {
+        const sets = [sprite.frames, ...(sprite.looks ?? [])].filter((s) => s !== undefined);
+        const all = sets.flatMap((s) => [...s.idle, ...s.run, ...(s.hit ?? [])]);
+        for (const f of [...all, sprite.weapon]) {
           if (f !== undefined && f >= frames)
             problems.push(`sprites: ${name}/${key} frame ${f} outside the sheet`);
         }

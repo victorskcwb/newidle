@@ -4,3 +4,4 @@ dist
 pnpm-lock.yaml
 Idle de loot — Prompt de desenvolvimento.md
 assets/maps/*.tmj
+apps/client/src/ui/icons.generated.ts

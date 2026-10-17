@@ -13,7 +13,6 @@ export type TownView = null | 'depositing' | 'idle';
 
 /** Full-panel screens reachable from the HUD (at most 2 taps away, section 11). */
 export type Screen =
-  | 'menu'
   | 'character'
   | 'skills'
   | 'cards'

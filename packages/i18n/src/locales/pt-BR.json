@@ -565,7 +565,10 @@
   "settings.creditsAuthors": "Autores",
   "settings.creditsLicense": "Licença CC BY 4.0",
   "settings.creditsSource": "Pack original",
-  "settings.creditsKenney": "Herói e monstros: Tiny Dungeon, de Kenney (CC0).",
-  "settings.creditsOwn": "Lápides, ossos, lava, ícones e sons: feitos para o Abismo Idle.",
-  "settings.creditsFont": "Fonte Pixelify Sans, de Stefie Justprince (SIL OFL 1.1)."
+  "settings.creditsKenney": "Herói, monstros e armas animados: 16x16 DungeonTileset II, de 0x72 (CC0). Efeitos de golpes e habilidades: Particle Pack, de Kenney (CC0).",
+  "settings.creditsOwn": "Lápides, ossos, lava, ícone do app e sons: feitos para o Abismo Idle.",
+  "settings.creditsFont": "Fonte Pixelify Sans, de Stefie Justprince (SIL OFL 1.1).",
+  "settings.creditsIcons": "Ícones da interface: game-icons.net, de Lorc, Delapouite, Skoll, Faithtoken, Caro Asercion, Sbed, Irongamer, Lucas e Zeromancer, sob a licença CC BY 3.0.",
+  "settings.creditsIconList": "Lista de ícones",
+  "settings.creditsIconLicense": "Licença CC BY 3.0"
 }

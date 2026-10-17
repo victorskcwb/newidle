@@ -2,17 +2,15 @@ import type { ReactNode } from 'react';
 import { t } from '../i18n.ts';
 import { useUi } from '../state/store.ts';
 
-/** A full-width panel over the game with a title, a back-to-menu and a close button. */
+/** A full-width panel over the game with a title and a close button. */
 export function Sheet({
   title,
   testId,
   children,
-  back = true,
 }: {
   title: string;
   testId: string;
   children: ReactNode;
-  back?: boolean;
 }) {
   const openScreen = useUi((s) => s.openScreen);
   return (
@@ -24,20 +22,10 @@ export function Sheet({
         data-testid={testId}
       >
         <header className="sheet-head">
-          {back && (
-            <button
-              type="button"
-              className="btn icon"
-              aria-label={t('action.back')}
-              onClick={() => openScreen('menu')}
-            >
-              ←
-            </button>
-          )}
           <h2 className="pixel sheet-title">{title}</h2>
           <button
             type="button"
-            className="btn icon"
+            className="round-btn"
             aria-label={t('action.close')}
             onClick={() => openScreen(null)}
           >
