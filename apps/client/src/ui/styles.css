@@ -2006,3 +2006,46 @@ input[type='range'] {
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.25);
 }
+
+/* --- Item tooltip (mouse) ------------------------------------------------------------------ */
+.item-tooltip {
+  position: fixed;
+  z-index: 50;
+  width: 280px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 2px solid;
+  background: linear-gradient(180deg, rgba(30, 26, 40, 0.98), rgba(14, 12, 20, 0.98));
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  font-size: 13px;
+}
+
+.tt-head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.item-tooltip .item-lines {
+  margin: 6px 0;
+}
+
+.tt-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tt-foot span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.inv-note {
+  margin: -4px 0 6px;
+}

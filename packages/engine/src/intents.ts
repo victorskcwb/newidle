@@ -1,8 +1,8 @@
-import type { ContentDb, EquipmentSlot, Rarity } from '@abismo/content';
+import { EQUIPMENT_SLOTS, type ContentDb, type EquipmentSlot, type Rarity } from '@abismo/content';
 import { MAX_LEVEL, TICKS_PER_SECOND } from './constants.ts';
 import { rarityRank, rollSalvage } from './items.ts';
 import { IntentError, addXp, autoAllocate } from './progression.ts';
-import { heroStats } from './stats.ts';
+import { computeHeroStats, heroStats, inactiveReason, type HeroStats } from './stats.ts';
 import type {
   AutoAllocateProfile,
   GameEvent,
@@ -170,4 +170,44 @@ export function salvageUpTo(s: GameState, content: ContentDb, maxRarity: Rarity)
 export function debugSetLevel(s: GameState, content: ContentDb, level: number) {
   const target = Math.max(1, Math.min(MAX_LEVEL, Math.floor(level)));
   while (s.hero.level < target) addXp(s, content, xpToNext(s.hero.level) - s.hero.xp, s.tick, null);
+}
+
+/**
+ * One number for "how strong the hero is": damage per second (with crits) times effective
+ * life (defence, evasion, leech). Used to pick the best items; not shown to the player.
+ */
+export function heroPower(st: HeroStats): number {
+  const avg = (st.damageMin + st.damageMax) / 2;
+  const crit = 1 + (st.critChancePpm / 1_000_000) * Math.max(0, st.critDamagePct / 100 - 1);
+  const dps = (avg * crit * TICKS_PER_SECOND) / Math.max(1, st.attackIntervalTicks);
+  const ehp =
+    st.maxHp * (1 + st.defense / 200) * (1 + st.evasion / 1000) * (1 + st.lifeLeechPct / 100);
+  return dps * ehp;
+}
+
+/**
+ * Equips, slot by slot, the backpack or stash item that raises the hero's power the most
+ * (items whose requirements the hero does not meet are skipped). Returns the uids equipped.
+ */
+export function equipBest(s: GameState, content: ContentDb): number[] {
+  const equipped: number[] = [];
+  for (const slot of EQUIPMENT_SLOTS) {
+    let best: ItemInstance | null = null;
+    let bestPower = heroPower(computeHeroStats(s.hero, content));
+    for (const item of [...s.backpack, ...s.stash]) {
+      if (content.itemBases.get(item.baseId)?.slot !== slot) continue;
+      if (inactiveReason(s.hero, item, content)) continue;
+      const trial = { ...s.hero, equipment: { ...s.hero.equipment, [slot]: item } };
+      const power = heroPower(computeHeroStats(trial, content));
+      if (power > bestPower * 1.000001) {
+        best = item;
+        bestPower = power;
+      }
+    }
+    if (best) {
+      equipItem(s, content, best.uid);
+      equipped.push(best.uid);
+    }
+  }
+  return equipped;
 }

@@ -11,6 +11,7 @@ import {
   computeRates,
   createGame,
   debugSetLevel,
+  equipBest,
   equipItem,
   forgeItem,
   heroStats,
@@ -182,6 +183,14 @@ export class GameSim {
     equipItem(this.state, this.content, uid);
     this.freshSnapshot();
     this.changed(true);
+  }
+
+  /** Equips the strongest items from the backpack and stash; returns how many changed. */
+  equipBest() {
+    const n = equipBest(this.state, this.content).length;
+    this.freshSnapshot();
+    this.changed(true);
+    return n;
   }
 
   salvage(uid: number) {

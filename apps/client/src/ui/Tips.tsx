@@ -25,7 +25,8 @@ const TIPS: Tip[] = [
 
 export function Tips() {
   const sim = useSim();
-  const { openScreen, openBackpack } = useUi();
+  const openScreen = useUi((u) => u.openScreen);
+  const openBackpack = useUi((u) => u.openBackpack);
   const s = sim.state;
   const tip = TIPS.find((x) => !s.flags.includes(x.flag) && x.when(s));
   if (!tip) return null;

@@ -17,7 +17,7 @@ test('the save survives closing the game and 2 hours away are resolved offline',
 
   await page.getByTestId('backpack-button').click();
   await page.getByTestId('backpack').getByTestId('item-cell').nth(1).click();
-  await page.getByRole('button', { name: 'Equipar' }).click();
+  await page.getByRole('button', { name: 'Equipar', exact: true }).click();
   await page.getByRole('button', { name: 'Fechar' }).click();
 
   // Refine the weapon at the blacksmith (+1 always succeeds). Debug resources pay for it.

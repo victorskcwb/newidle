@@ -1,9 +1,8 @@
-import { EQUIPMENT_SLOTS, type EquipmentSlot } from '@abismo/content';
+import { EQUIPMENT_SLOTS, RARITIES, type EquipmentSlot, type Rarity } from '@abismo/content';
 import {
   claimableQuests,
   forgeCost,
   forgeIlvl,
-  rarityRank,
   sellPrice,
   type CraftRarity,
   type ItemInstance,
@@ -130,12 +129,25 @@ function Shop() {
   const sim = useSim();
   const s = sim.state;
   const [tab, setTab] = useState<'buy' | 'sell'>('buy');
-  const [picked, setPicked] = useState<Set<number>>(new Set());
   const [msg, setMsg] = useState<string | null>(null);
-  const items = [...s.backpack, ...s.stash];
-  const total = items.filter((i) => picked.has(i.uid)).reduce((n, i) => n + sellPrice(i), 0);
-  const pickUpTo = (max: number) =>
-    setPicked(new Set(items.filter((i) => rarityRank(i.rarity) <= max).map((i) => i.uid)));
+  // Sell: rarities and places to sell from; every matching item is picked unless left out.
+  const [rarities, setRarities] = useState<Set<Rarity>>(new Set(['common', 'magic']));
+  const [from, setFrom] = useState<{ backpack: boolean; stash: boolean }>({
+    backpack: true,
+    stash: true,
+  });
+  const [kept, setKept] = useState<Set<number>>(new Set());
+  const items = [...(from.backpack ? s.backpack : []), ...(from.stash ? s.stash : [])].filter((i) =>
+    rarities.has(i.rarity),
+  );
+  const picked = items.filter((i) => !kept.has(i.uid));
+  const total = picked.reduce((n, i) => n + sellPrice(i), 0);
+  const toggleRarity = (r: Rarity) => {
+    const next = new Set(rarities);
+    if (next.has(r)) next.delete(r);
+    else next.add(r);
+    setRarities(next);
+  };
   return (
     <div className="service" data-testid="shop">
       <div className="tabs">
@@ -189,29 +201,47 @@ function Shop() {
         </div>
       ) : (
         <>
-          <div className="choice-row">
-            <button type="button" className="filter-chip" onClick={() => pickUpTo(0)}>
-              {t('shop.pickCommon')}
-            </button>
-            <button type="button" className="filter-chip" onClick={() => pickUpTo(1)}>
-              {t('shop.pickMagic')}
-            </button>
-            <button type="button" className="filter-chip" onClick={() => setPicked(new Set())}>
-              {t('shop.pickNone')}
-            </button>
+          <div className="muted small">{t('shop.sellRarities')}</div>
+          <div className="choice-row" data-testid="sell-rarities">
+            {RARITIES.map((r) => (
+              <button
+                key={r}
+                type="button"
+                className={`filter-chip${rarities.has(r) ? ' active' : ''}`}
+                style={{ color: RARITY_COLOR[r] }}
+                onClick={() => toggleRarity(r)}
+                aria-pressed={rarities.has(r)}
+              >
+                {t(`rarity.${r}`)}
+              </button>
+            ))}
           </div>
+          <div className="choice-row">
+            {(['backpack', 'stash'] as const).map((k) => (
+              <button
+                key={k}
+                type="button"
+                className={`filter-chip${from[k] ? ' active' : ''}`}
+                onClick={() => setFrom({ ...from, [k]: !from[k] })}
+                aria-pressed={from[k]}
+              >
+                {t(k === 'backpack' ? 'backpack.title' : 'backpack.stash')}
+              </button>
+            ))}
+          </div>
+          <div className="muted small">{t('shop.tapToKeep')}</div>
           <div className="grid shop-grid">
-            {items.length === 0 && <div className="muted">{t('backpack.empty')}</div>}
+            {items.length === 0 && <div className="muted">{t('shop.nothingToSell')}</div>}
             {items.map((item) => (
               <ItemCell
                 key={item.uid}
                 item={item}
-                selected={picked.has(item.uid)}
+                selected={!kept.has(item.uid)}
                 onSelect={() => {
-                  const next = new Set(picked);
+                  const next = new Set(kept);
                   if (next.has(item.uid)) next.delete(item.uid);
                   else next.add(item.uid);
-                  setPicked(next);
+                  setKept(next);
                 }}
               />
             ))}
@@ -219,15 +249,16 @@ function Shop() {
           <button
             type="button"
             className="btn btn-primary"
-            disabled={picked.size === 0}
+            disabled={picked.length === 0}
             data-testid="sell-selected"
             onClick={() => {
-              const err = tryIntent(() => sim.sell([...picked]));
-              setMsg(err ?? t('shop.sold', { n: picked.size, gold: formatNumber(total) }));
-              if (!err) setPicked(new Set());
+              const n = picked.length;
+              const err = tryIntent(() => sim.sell(picked.map((i) => i.uid)));
+              setMsg(err ?? t('shop.sold', { n, gold: formatNumber(total) }));
+              if (!err) setKept(new Set());
             }}
           >
-            {t('shop.sellPicked', { n: picked.size, gold: formatNumber(total) })}
+            {t('shop.sellAll', { n: picked.length, gold: formatNumber(total) })}
           </button>
         </>
       )}
@@ -243,7 +274,10 @@ function Shop() {
 export function NpcDialog() {
   const sim = useSim();
   const npc = useUi((s) => s.npc);
-  const { openNpc, openScreen, openBackpack, setTab } = useUi();
+  const openNpc = useUi((u) => u.openNpc);
+  const openScreen = useUi((u) => u.openScreen);
+  const openBackpack = useUi((u) => u.openBackpack);
+  const setTab = useUi((u) => u.setTab);
   const [note, setNote] = useState<string | null>(null);
   if (!npc) return null;
   const close = () => {

@@ -189,22 +189,16 @@ export class TownScene extends Phaser.Scene {
     this.sys.setVisible(true);
     this.scene.setVisible(false, 'hunt');
     if (arriving) {
-      this.cameras.main.fadeIn(300);
-      if (view === 'depositing') {
-        this.hero.place(this.stations.get('gate')!);
-        this.plan = ['stash', 'shop', 'smith', 'rest'];
-      } else {
-        this.hero.place(this.stations.get('rest')!);
-        this.plan = view === 'leaving' ? ['gate'] : [];
-      }
+      // Straight to the town square: no walk from the gate.
+      this.cameras.main.fadeIn(250);
+      this.plan = [];
+      this.waitMs = 0;
+      this.hero.place(this.stations.get('rest')!);
       this.hero.reset(false);
       this.cameras.main.centerOn(this.hero.x, this.hero.y);
     } else if (view === 'leaving') {
-      // Off to the hunt: walk out through the gate while the trip lasts.
       useUi.getState().openNpc(null);
       this.talkTo = null;
-      this.waitMs = 0;
-      this.plan = ['gate'];
     }
   }
 

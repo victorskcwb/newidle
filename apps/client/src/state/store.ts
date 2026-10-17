@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Rarity } from '@abismo/content';
+import type { ItemInstance } from '@abismo/engine';
 import type { Snapshot } from '../game/sim.ts';
 
 export interface LogLine {
@@ -40,6 +41,8 @@ interface UiState {
   zoom: number;
   /** The last level reached, for the level-up banner (id changes on every level up). */
   levelUp: { level: number; id: number } | null;
+  /** Item under the mouse, for the tooltip (desktop). */
+  hover: { item: ItemInstance; x: number; y: number } | null;
   /** Town keeper whose dialog is open. */
   npc: string | null;
   /** Bumped by the sim when inventory, equipment or rates change. */
@@ -56,6 +59,7 @@ interface UiState {
   setZoom: (zoom: number) => void;
   showLevelUp: (level: number) => void;
   openNpc: (npc: string | null) => void;
+  setHover: (hover: { item: ItemInstance; x: number; y: number } | null) => void;
   hideLevelUp: () => void;
   bump: () => void;
 }
@@ -76,12 +80,13 @@ export const useUi = create<UiState>((set) => ({
   zoom: 2,
   levelUp: null,
   npc: null,
+  hover: null,
   simVersion: 0,
   setPresented: (presented) => set({ presented }),
   pushLog: (line) =>
     set((s) => ({ log: [...s.log.slice(-(LOG_LIMIT - 1)), { ...line, id: ++logId }] })),
   toggleLog: () => set((s) => ({ logExpanded: !s.logExpanded })),
-  openBackpack: (backpackOpen) => set({ backpackOpen, selectedUid: null }),
+  openBackpack: (backpackOpen) => set({ backpackOpen, selectedUid: null, hover: null }),
   openScreen: (screen) => set({ screen, backpackOpen: false, selectedUid: null }),
   setTab: (tab) => set({ tab, selectedUid: null }),
   select: (selectedUid) => set({ selectedUid }),
@@ -90,6 +95,7 @@ export const useUi = create<UiState>((set) => ({
   setZoom: (zoom) => set({ zoom }),
   showLevelUp: (level) => set((s) => ({ levelUp: { level, id: (s.levelUp?.id ?? 0) + 1 } })),
   hideLevelUp: () => set({ levelUp: null }),
-  openNpc: (npc) => set({ npc, screen: null, backpackOpen: false }),
+  openNpc: (npc) => set({ npc, screen: null, backpackOpen: false, hover: null }),
+  setHover: (hover) => set({ hover }),
   bump: () => set((s) => ({ simVersion: s.simVersion + 1 })),
 }));

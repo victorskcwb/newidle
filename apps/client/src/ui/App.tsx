@@ -10,6 +10,7 @@ import { EventLog } from './EventLog.tsx';
 import { Hud } from './Hud.tsx';
 import { LevelUpBanner } from './LevelUpBanner.tsx';
 import { NpcDialog } from './NpcDialog.tsx';
+import { ItemTooltip } from './ItemTooltip.tsx';
 import { OfflineModal } from './OfflineModal.tsx';
 import { AltarScreen } from './screens/AltarScreen.tsx';
 import { CardsScreen } from './screens/CardsScreen.tsx';
@@ -91,6 +92,7 @@ function Game() {
       {Current && <Current />}
       <NpcDialog />
       <OfflineModal />
+      <ItemTooltip />
     </>
   );
 }

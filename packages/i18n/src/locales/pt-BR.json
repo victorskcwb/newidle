@@ -645,5 +645,14 @@
   "map.potions": "poções",
   "map.deaths": "derrotas",
   "map.allHunts": "Todas as caçadas",
-  "settings.creditsKyrise": "Ícones de itens, materiais e poções: Kyrise's 16x16 RPG Icon Pack, de Kyrise (CC BY 4.0). Calças e cintos desenhados para o Abismo Idle no mesmo estilo."
+  "settings.creditsKyrise": "Ícones de itens, materiais e poções: Kyrise's 16x16 RPG Icon Pack, de Kyrise (CC BY 4.0). Calças e cintos desenhados para o Abismo Idle no mesmo estilo.",
+  "shop.sellRarities": "Vender estas raridades:",
+  "shop.tapToKeep": "Todos os itens abaixo serão vendidos. Toque num item para mantê-lo.",
+  "shop.nothingToSell": "Nada com esses filtros.",
+  "shop.sellAll": "Vender todos ({n}) por {gold} de ouro",
+  "inventory.equipBest": "Equipar melhores",
+  "inventory.equippedBest": "{n} itens melhores equipados.",
+  "inventory.alreadyBest": "Você já está com os melhores itens.",
+  "tooltip.rightEquip": "Botão direito: equipar",
+  "tooltip.rightUnequip": "Botão direito: desequipar"
 }

@@ -19,7 +19,8 @@ const PROFILES: AutoAllocateProfile[] = ['off', 'balanced', 'strength', 'vitalit
 /** Equipment in the 10 slots, attributes and their distribution, derived stats. */
 export function CharacterScreen() {
   const sim = useSim();
-  const { selectedUid, select } = useUi();
+  const selectedUid = useUi((u) => u.selectedUid);
+  const select = useUi((u) => u.select);
   const [error, setError] = useState<string | null>(null);
   const hero = sim.state.hero;
   const stats = heroStats(hero, sim.content);

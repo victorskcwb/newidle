@@ -44,19 +44,33 @@ export function ItemCell({
   selected,
   onSelect,
   upgrade = false,
+  onRightClick,
 }: {
   item: ItemInstance;
   selected: boolean;
   onSelect: () => void;
   upgrade?: boolean;
+  /** Right button (desktop): a quick action such as equipping. */
+  onRightClick?: () => void;
 }) {
   const sim = useSim();
+  const setHover = useUi((s) => s.setHover);
   return (
     <button
       type="button"
       className={`cell rarity-${item.rarity}${selected ? ' selected' : ''}`}
       style={{ borderColor: RARITY_COLOR[item.rarity] }}
       onClick={onSelect}
+      onContextMenu={(e) => {
+        if (!onRightClick) return;
+        e.preventDefault();
+        setHover(null);
+        onRightClick();
+      }}
+      onPointerMove={(e) => {
+        if (e.pointerType === 'mouse') setHover({ item, x: e.clientX, y: e.clientY });
+      }}
+      onPointerLeave={() => setHover(null)}
       aria-label={`${itemName(sim.content, item)} (${t(`rarity.${item.rarity}`)})`}
       data-testid="item-cell"
     >
@@ -201,7 +215,8 @@ const DOLL_RIGHT: EquipmentSlot[] = ['chest', 'offhand', 'belt', 'pants', 'boots
 
 function Paperdoll() {
   const sim = useSim();
-  const { selectedUid, select } = useUi();
+  const selectedUid = useUi((u) => u.selectedUid);
+  const select = useUi((u) => u.select);
   const hero = sim.state.hero;
   const stats = heroStats(hero, sim.content);
   const slot = (s: EquipmentSlot) => {
@@ -212,6 +227,10 @@ function Paperdoll() {
         item={item}
         selected={item.uid === selectedUid}
         onSelect={() => select(item.uid)}
+        onRightClick={() => {
+          sim.unequip(s);
+          select(null);
+        }}
       />
     ) : (
       <div
@@ -293,10 +312,15 @@ function Materials() {
  */
 export function BackpackPanel() {
   const sim = useSim();
-  const { tab, setTab, selectedUid, select, openBackpack } = useUi();
+  const tab = useUi((u) => u.tab);
+  const setTab = useUi((u) => u.setTab);
+  const selectedUid = useUi((u) => u.selectedUid);
+  const select = useUi((u) => u.select);
+  const openBackpack = useUi((u) => u.openBackpack);
   const [filter, setFilter] = useState<EquipmentSlot | 'all'>('all');
   const [sort, setSort] = useState<SortKey>('recent');
   const [view, setView] = useState<'items' | 'materials'>('items');
+  const [note, setNote] = useState<string | null>(null);
   const s = sim.state;
   const source = tab === 'backpack' ? s.backpack : s.stash;
   const items = useMemo(() => {
@@ -331,6 +355,18 @@ export function BackpackPanel() {
           <h2 className="pixel sheet-title">{t('inventory.title')}</h2>
           <button
             type="button"
+            className="btn btn-small btn-primary"
+            data-testid="equip-best"
+            onClick={() => {
+              const n = sim.equipBest();
+              setNote(n > 0 ? t('inventory.equippedBest', { n }) : t('inventory.alreadyBest'));
+              select(null);
+            }}
+          >
+            {t('inventory.equipBest')}
+          </button>
+          <button
+            type="button"
             className="round-btn"
             aria-label={t('action.close')}
             onClick={() => openBackpack(false)}
@@ -338,6 +374,7 @@ export function BackpackPanel() {
             ✕
           </button>
         </header>
+        {note && <div className="small tone-good inv-note">{note}</div>}
         <div className="inv-layout">
           <Paperdoll />
           <div className="inv-main">
@@ -427,6 +464,9 @@ export function BackpackPanel() {
                       selected={item.uid === selectedUid}
                       upgrade={upgrades.has(item.uid)}
                       onSelect={() => select(item.uid)}
+                      onRightClick={() => {
+                        if (tryIntent(() => sim.equip(item.uid)) === null) select(null);
+                      }}
                     />
                   ))}
                 </div>
