@@ -45,7 +45,15 @@ function TownOverlay() {
   return (
     <div className="town-overlay" data-testid="town-overlay">
       <div className="pixel town-name">{t(`town.${hunt?.regionId ?? 'cinzarra'}`)}</div>
-      <div className="muted">{t(town === 'depositing' ? 'town.depositing' : 'town.idle')}</div>
+      <div className="muted">
+        {t(
+          town === 'depositing'
+            ? 'town.depositing'
+            : town === 'leaving'
+              ? 'town.leave'
+              : 'town.idle',
+        )}
+      </div>
     </div>
   );
 }

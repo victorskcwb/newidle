@@ -9,7 +9,8 @@ export interface LogLine {
   tone?: 'good' | 'bad' | 'info';
 }
 
-export type TownView = null | 'depositing' | 'idle';
+/** Town shown over the hunt: a supply visit, a rest, or the walk out while travelling. */
+export type TownView = null | 'depositing' | 'idle' | 'leaving';
 
 /** Full-panel screens reachable from the HUD (at most 2 taps away, section 11). */
 export type Screen =

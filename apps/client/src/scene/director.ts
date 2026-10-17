@@ -221,9 +221,13 @@ export class Director {
         });
         break;
       case 'ReturningToHunt':
-        this.leaveTown();
+        // The trip is shown in town (the hero walks out of the gate); the hunt map appears
+        // on arrival, with the first group already there.
+        if (this.mode === 'in_town') useUi.getState().setTown('leaving');
+        else this.leaveTown();
         break;
       case 'GroupSpawned':
+        if (useUi.getState().town !== null) this.leaveTown();
         this.spawnGroup(e);
         break;
       case 'GroupEngaged':
@@ -596,7 +600,7 @@ export class Director {
 
   // --- Town ---------------------------------------------------------------------------------
 
-  private enterTown(view: 'idle' | 'depositing') {
+  private enterTown(view: 'idle' | 'depositing' | 'leaving') {
     this.mode = 'in_town';
     this.hero.path = [];
     this.hero.container.setVisible(false);
@@ -763,10 +767,8 @@ export class Director {
         break;
       }
       case 'to_hunt':
-        ui.setTown(null);
-        this.hero.reset(true);
-        this.hero.place(this.exit);
-        this.roam();
+        this.enterTown('idle');
+        ui.setTown('leaving');
         break;
       default:
         this.enterTown(a.kind === 'idle_town' ? 'idle' : 'depositing');

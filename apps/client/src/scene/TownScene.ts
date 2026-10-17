@@ -66,6 +66,7 @@ export class TownScene extends Phaser.Scene {
   /** Keeper whose dialog opens when the hero arrives next to it. */
   private talkTo: Npc | null = null;
   private alertTimer = 0;
+  private keys: Record<'up' | 'down' | 'left' | 'right', Phaser.Input.Keyboard.Key[]> | null = null;
   private unsubscribe: (() => void) | null = null;
 
   constructor(
@@ -147,6 +148,23 @@ export class TownScene extends Phaser.Scene {
       this.onTap(p.worldX, p.worldY);
     });
 
+    // Arrows and WASD walk tile by tile while held; E talks to a keeper next to the hero
+    // (Enter and Space stay with the focused button). Keys are not captured, so typing in the interface still works.
+    const kb = this.input.keyboard;
+    if (kb) {
+      const K = Phaser.Input.Keyboard.KeyCodes;
+      const key = (code: number) => kb.addKey(code, false);
+      this.keys = {
+        up: [key(K.UP), key(K.W)],
+        down: [key(K.DOWN), key(K.S)],
+        left: [key(K.LEFT), key(K.A)],
+        right: [key(K.RIGHT), key(K.D)],
+      };
+      key(K.E).on('down', () => {
+        if (this.shown && !this.uiBusy()) this.talkNearby();
+      });
+    }
+
     // Asleep (no update, no drawing) until the hero comes to town.
     this.sys.setVisible(false);
     this.scene.sleep();
@@ -164,7 +182,7 @@ export class TownScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.DESTROY, cleanup);
   }
 
-  private show(view: 'depositing' | 'idle') {
+  private show(view: 'depositing' | 'idle' | 'leaving') {
     const arriving = !this.shown;
     this.shown = true;
     if (this.scene.isSleeping()) this.scene.wake();
@@ -177,11 +195,17 @@ export class TownScene extends Phaser.Scene {
         this.plan = ['stash', 'shop', 'smith', 'rest'];
       } else {
         this.hero.place(this.stations.get('rest')!);
-        this.plan = [];
+        this.plan = view === 'leaving' ? ['gate'] : [];
       }
+      this.hero.reset(false);
       this.cameras.main.centerOn(this.hero.x, this.hero.y);
+    } else if (view === 'leaving') {
+      // Off to the hunt: walk out through the gate while the trip lasts.
+      useUi.getState().openNpc(null);
+      this.talkTo = null;
+      this.waitMs = 0;
+      this.plan = ['gate'];
     }
-    this.hero.reset(false);
   }
 
   /** A white bubble with the keeper's service icon, bobbing over its head. */
@@ -227,6 +251,53 @@ export class TownScene extends Phaser.Scene {
     this.waitMs = 0;
     const a = this.sim.state.activity;
     if (a.kind === 'in_town' && a.then === 'hunt') this.sim.returnToTown();
+  }
+
+  /** A dialog, screen or text field has the keyboard. */
+  private uiBusy() {
+    const ui = useUi.getState();
+    const el = document.activeElement;
+    const typing = el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement;
+    return typing || ui.npc !== null || ui.screen !== null || ui.backpackOpen;
+  }
+
+  /** The direction held on the keyboard, if any. */
+  private heldDirection(): TilePoint | null {
+    if (!this.keys || this.uiBusy()) return null;
+    const down = (list: Phaser.Input.Keyboard.Key[]) => list.some((k) => k.isDown);
+    if (down(this.keys.up)) return { tx: 0, ty: -1 };
+    if (down(this.keys.down)) return { tx: 0, ty: 1 };
+    if (down(this.keys.left)) return { tx: -1, ty: 0 };
+    if (down(this.keys.right)) return { tx: 1, ty: 0 };
+    return null;
+  }
+
+  /** One step with the keyboard: the next tile if it is free, else just turn that way. */
+  private stepWithKeys(dir: TilePoint) {
+    this.takeControl();
+    this.talkTo = null;
+    const here = this.hero.tile;
+    const next = { tx: here.tx + dir.tx, ty: here.ty + dir.ty };
+    const blocked = this.npcs.some(
+      (n) => n.actor.tile.tx === next.tx && n.actor.tile.ty === next.ty,
+    );
+    if (this.paths.isWalkable(next) && !blocked) this.hero.path = [next];
+    else this.hero.face(this.hero.x + dir.tx * 32, this.hero.y + dir.ty * 32);
+  }
+
+  /** Talks to the closest keeper within one tile (diagonals count). */
+  private talkNearby() {
+    const here = this.hero.tile;
+    const npc = this.npcs.find(
+      (n) =>
+        NPC_SERVICE_ICON[n.id] &&
+        Math.abs(n.actor.tile.tx - here.tx) <= 1 &&
+        Math.abs(n.actor.tile.ty - here.ty) <= 1,
+    );
+    if (!npc) return;
+    this.takeControl();
+    this.hero.path = [];
+    this.talkTo = npc;
   }
 
   private onTap(x: number, y: number) {
@@ -294,7 +365,14 @@ export class TownScene extends Phaser.Scene {
   override update(_time: number, delta: number) {
     if (!this.shown) return;
     const dt = Math.min(delta, 250);
-    const moving = this.hero.update(dt, 1);
+    let moving = this.hero.update(dt, 1);
+    if (!moving) {
+      const dir = this.heldDirection();
+      if (dir) {
+        this.stepWithKeys(dir);
+        moving = this.hero.path.length > 0;
+      }
+    }
     // Keepers' bubbles follow them; the elder's shows "!" when goals wait to be claimed.
     this.alertTimer -= dt;
     if (this.alertTimer <= 0) {
