@@ -24,6 +24,13 @@
       "kind": "refine_protection",
       "restore": 0,
       "icon": "items/refine_charm"
+    },
+    {
+      "id": "tempering_stone",
+      "nameKey": "consumable.tempering_stone",
+      "kind": "refine_tempering",
+      "restore": 0,
+      "icon": "items/tempering_stone"
     }
   ],
   "materials": [

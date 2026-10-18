@@ -63,7 +63,8 @@
         "everyKills": 300
       },
       "startUnlocked": true,
-      "unlocks": "pale_woods"
+      "unlocks": "pale_woods",
+      "gatherTier": 1
     },
     {
       "id": "pale_woods",
@@ -99,7 +100,8 @@
         "monsterId": "spider_matriarch",
         "everyKills": 300
       },
-      "unlocks": "cracked_crypt"
+      "unlocks": "cracked_crypt",
+      "gatherTier": 1
     },
     {
       "id": "cracked_crypt",
@@ -135,7 +137,8 @@
         "monsterId": "lord_vharok",
         "everyKills": 300
       },
-      "unlocks": "murky_bog"
+      "unlocks": "murky_bog",
+      "gatherTier": 2
     },
     {
       "id": "murky_bog",
@@ -171,7 +174,8 @@
         "monsterId": "mire_mother",
         "everyKills": 300
       },
-      "unlocks": "drowned_village"
+      "unlocks": "drowned_village",
+      "gatherTier": 2
     },
     {
       "id": "drowned_village",
@@ -207,7 +211,8 @@
         "monsterId": "old_drowned",
         "everyKills": 300
       },
-      "unlocks": "rotting_heart"
+      "unlocks": "rotting_heart",
+      "gatherTier": 3
     },
     {
       "id": "rotting_heart",
@@ -243,7 +248,8 @@
         "monsterId": "morvel_root",
         "everyKills": 300
       },
-      "unlocks": "ash_gates"
+      "unlocks": "ash_gates",
+      "gatherTier": 3
     },
     {
       "id": "ash_gates",
@@ -279,7 +285,8 @@
         "monsterId": "ashen_captain",
         "everyKills": 300
       },
-      "unlocks": "molten_halls"
+      "unlocks": "molten_halls",
+      "gatherTier": 4
     },
     {
       "id": "molten_halls",
@@ -315,7 +322,8 @@
         "monsterId": "ember_priestess",
         "everyKills": 300
       },
-      "unlocks": "burning_throne"
+      "unlocks": "burning_throne",
+      "gatherTier": 4
     },
     {
       "id": "burning_throne",
@@ -350,7 +358,8 @@
       "boss": {
         "monsterId": "charred_king",
         "everyKills": 300
-      }
+      },
+      "gatherTier": 5
     }
   ]
 }

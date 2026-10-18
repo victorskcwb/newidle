@@ -11,6 +11,9 @@ import {
   type ItemInstance,
   type RefineResult,
   type RolledAffix,
+  consumableOfKind,
+  PPM,
+  TEMPERING_BONUS_PPM,
 } from '@abismo/engine';
 import { useState } from 'react';
 import { formatNumber, t } from '../../i18n.ts';
@@ -27,6 +30,7 @@ export function SmithScreen() {
   const s = sim.state;
   const [uid, setUid] = useState<number | null>(s.hero.equipment.weapon?.uid ?? null);
   const [protect, setProtect] = useState(false);
+  const [temper, setTemper] = useState(false);
   const [result, setResult] = useState<RefineResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [bulk, setBulk] = useState<Rarity>('common');
@@ -35,13 +39,17 @@ export function SmithScreen() {
   const protectionId =
     [...sim.content.consumables.values()].find((c) => c.kind === 'refine_protection')?.id ?? '';
   const charms = s.consumables[protectionId] ?? 0;
+  const temperingId = consumableOfKind(sim.content, 'refine_tempering');
+  const stones = s.consumables[temperingId] ?? 0;
 
   const equipped = Object.values(s.hero.equipment).filter((i): i is ItemInstance => !!i);
   const choices = [...equipped, ...s.backpack, ...s.stash];
   const item = uid !== null ? findItem(s, uid) : undefined;
   const target = item ? item.refine + 1 : 0;
   const cost = item && item.refine < MAX_REFINE ? refineCost(target) : null;
-  const block = item ? refineBlock(s, item, protect, protectionId) : null;
+  const block = item
+    ? refineBlock(s, item, protect, protectionId, temper && stones > 0, temperingId)
+    : null;
   const bulkCount = [...s.backpack, ...s.stash].filter(
     (i) => BULK.indexOf(i.rarity) >= 0 && BULK.indexOf(i.rarity) <= BULK.indexOf(bulk),
   ).length;
@@ -77,7 +85,13 @@ export function SmithScreen() {
             <>
               <div className="pixel" data-testid="refine-chance">
                 +{item.refine} → +{target} ·{' '}
-                {t('smith.chance', { pct: refineChancePpm(target) / 10_000 })}
+                {t('smith.chance', {
+                  pct:
+                    Math.min(
+                      PPM,
+                      refineChancePpm(target) + (temper && stones > 0 ? TEMPERING_BONUS_PPM : 0),
+                    ) / 10_000,
+                })}
               </div>
               <div className="muted small">
                 {target >= REFINE_LOSES_LEVEL_FROM ? t('smith.failDrops') : t('smith.failKeeps')}
@@ -106,11 +120,25 @@ export function SmithScreen() {
                   {t('smith.protect', { n: charms })}
                 </label>
               )}
+              <label className="check">
+                <input
+                  type="checkbox"
+                  checked={temper && stones > 0}
+                  disabled={stones === 0}
+                  onChange={(e) => setTemper(e.target.checked)}
+                  data-testid="refine-temper"
+                />
+                {t('smith.temper', { n: stones })}
+              </label>
               <button
                 type="button"
                 className="btn btn-primary wide"
                 disabled={block !== null}
-                onClick={() => setError(tryIntent(() => setResult(sim.refine(item.uid, protect))))}
+                onClick={() =>
+                  setError(
+                    tryIntent(() => setResult(sim.refine(item.uid, protect, temper && stones > 0))),
+                  )
+                }
                 data-testid="refine-button"
               >
                 {t('smith.refineButton', { n: target })}

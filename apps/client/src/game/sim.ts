@@ -8,6 +8,8 @@ import {
   buyUpgrade,
   claimQuest,
   claimLogin,
+  setGathering,
+  setRecipe,
   checkAchievements,
   setTitle,
   loginDue,
@@ -249,6 +251,16 @@ export class GameSim {
     this.changed(false);
   }
 
+  setGathering(professionId: string | null) {
+    setGathering(this.state, this.content, professionId);
+    this.changed(false);
+  }
+
+  setRecipe(recipeId: string | null) {
+    setRecipe(this.state, this.content, recipeId);
+    this.changed(false);
+  }
+
   /** Today's login calendar reward is waiting. */
   loginDue(): boolean {
     return loginDue(this.state, localDay());
@@ -315,8 +327,8 @@ export class GameSim {
     this.changed(true);
   }
 
-  refine(uid: number, useProtection: boolean): RefineResult {
-    const result = refineItem(this.state, this.content, uid, useProtection);
+  refine(uid: number, useProtection: boolean, useTempering = false): RefineResult {
+    const result = refineItem(this.state, this.content, uid, useProtection, useTempering);
     this.freshSnapshot();
     this.changed(true);
     return result;
@@ -424,7 +436,9 @@ export class GameSim {
           e.type === 'ArrivedInTown' ||
           e.type === 'MaterialsGained' ||
           e.type === 'ConsumableDropped' ||
-          e.type === 'HuntUnlocked'
+          e.type === 'HuntUnlocked' ||
+          e.type === 'ProfessionLevelUp' ||
+          e.type === 'ItemCrafted'
         ) {
           inventory = true;
         }

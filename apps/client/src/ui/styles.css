@@ -2726,3 +2726,85 @@ input[type='range'] {
     animation: none;
   }
 }
+
+/* --- Professions --------------------------------------------------------------------------- */
+.prof-skills {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.prof-skill {
+  display: grid;
+  gap: 4px;
+}
+
+.prof-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.prof-now {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.prof-stock {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+
+.prof-res {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.recipe-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.recipe {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+}
+
+.recipe.active {
+  border-color: var(--accent);
+  background: rgb(217 164 65 / 8%);
+}
+
+.recipe.locked {
+  opacity: 0.6;
+}
+
+.recipe-body {
+  flex: 1;
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.recipe-out {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

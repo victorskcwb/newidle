@@ -10,6 +10,7 @@ export * from './items.ts';
 export * from './login.ts';
 export * from './offline.ts';
 export * from './pity.ts';
+export * from './professions.ts';
 export * from './progression.ts';
 export * from './quests.ts';
 export * from './rates.ts';

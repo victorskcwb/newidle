@@ -8,6 +8,7 @@ import {
 } from './constants.ts';
 import { filterKeeps, generateItem, legendaryAllowed, rarityRank } from './items.ts';
 import { applyBulkPity } from './pity.ts';
+import { professionLevel, tickProfessions } from './professions.ts';
 import { autoSell, killXp } from './hunt.ts';
 import { cardChancePpm, pityThreshold } from './cards.ts';
 import { addXp } from './progression.ts';
@@ -16,7 +17,7 @@ import { categoryLoot, potionHoursLeft, type RateSheet } from './rates.ts';
 import { rngBinomial, rngChance, rngInt, type RngState } from './rng.ts';
 import { heroStats } from './stats.ts';
 import { offlineCapTicks } from './upgrades.ts';
-import type { GameState, ItemInstance } from './types.ts';
+import type { GameEvent, GameState, ItemInstance } from './types.ts';
 
 /** Offline XP is applied in this many time slices (see resolveOffline). */
 const OFFLINE_XP_SLICES = 48;
@@ -52,6 +53,11 @@ export interface OfflineReport {
   /** Cards gained while away: card id → copies gained. */
   cards: Record<string, number>;
   unlockedHunts: string[];
+  /** Resources gathered and recipes crafted while away. */
+  gathered: Record<string, number>;
+  crafted: Record<string, number>;
+  /** Profession levels gained while away: id → [before, after]. */
+  professionLevels: Record<string, [number, number]>;
 }
 
 /** floor(x) plus one with probability frac(x): unbiased rounding of an expected count. */
@@ -112,6 +118,46 @@ function rollOfflineCards(
   }
 }
 
+/**
+ * Gathering for the first `gatherTicks` (the time spent hunting), production for all of
+ * `ticks`, exactly as the live game would do them.
+ */
+function resolveProfessions(
+  s: GameState,
+  content: ContentDb,
+  ticks: number,
+  gatherTicks: number,
+  report: OfflineReport,
+) {
+  const p = s.professions;
+  if (!p.gathering && !p.recipe) return;
+  const resourcesBefore = { ...s.resources };
+  const levelsBefore = Object.fromEntries(
+    [...content.professions.keys()].map((id) => [id, professionLevel(s, id)]),
+  );
+  const events: GameEvent[] = [];
+  for (let i = 0; i < ticks; i++) tickProfessions(s, content, s.tick + i, events, i < gatherTicks);
+  for (const e of events) {
+    if (e.type === 'ItemCrafted')
+      report.crafted[e.recipeId] = (report.crafted[e.recipeId] ?? 0) + 1;
+  }
+  // Gathered = resources gained plus what the crafts consumed.
+  const used: Record<string, number> = {};
+  for (const [id, n] of Object.entries(report.crafted)) {
+    for (const [res, qty] of Object.entries(content.recipes.get(id)!.inputs)) {
+      used[res] = (used[res] ?? 0) + qty * n;
+    }
+  }
+  for (const id of new Set([...Object.keys(s.resources), ...Object.keys(used)])) {
+    const n = (s.resources[id] ?? 0) - (resourcesBefore[id] ?? 0) + (used[id] ?? 0);
+    if (n > 0) report.gathered[id] = n;
+  }
+  for (const [id, before] of Object.entries(levelsBefore)) {
+    const after = professionLevel(s, id);
+    if (after > before) report.professionLevels[id] = [before, after];
+  }
+}
+
 export function resolveOffline(
   s: GameState,
   content: ContentDb,
@@ -145,9 +191,14 @@ export function resolveOffline(
     newBosses: [],
     cards: {},
     unlockedHunts: [],
+    gathered: {},
+    crafted: {},
+    professionLevels: {},
   };
   const hunting = s.hunt !== null && s.activity.kind !== 'idle_town' && rates !== null;
   if (!hunting || rates.huntId !== s.hunt!.huntId) {
+    // Production keeps going in town.
+    resolveProfessions(s, content, resolvedTicks, 0, report);
     s.tick += elapsedTicks;
     return report;
   }
@@ -331,6 +382,9 @@ export function resolveOffline(
       }
     }
   }
+
+  // Professions: replayed tick by tick (plain counters, so it is exact and cheap).
+  resolveProfessions(s, content, resolvedTicks, report.huntingTicks, report);
 
   // 7. Where the hero is now. Offline loot already went to the stash; the backpack is kept.
   s.tick += elapsedTicks;

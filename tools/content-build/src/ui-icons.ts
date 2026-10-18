@@ -24,6 +24,7 @@ export const UI_ICONS: Record<string, string> = {
   log: 'lorc/quill-ink',
   offline: 'lorc/hourglass',
   journal: 'lorc/open-book',
+  professions: 'lorc/mining',
   achievement: 'lorc/trophy',
   // Resources
   gold: 'delapouite/two-coins',

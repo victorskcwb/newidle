@@ -3,6 +3,7 @@ import { bestiaryTier } from './bestiary.ts';
 import { regionComplete } from './cards.ts';
 import { rarityRank } from './items.ts';
 import { IntentError } from './progression.ts';
+import { professionLevel } from './professions.ts';
 import { RARITY_ORDER } from './constants.ts';
 import type { GameState } from './types.ts';
 
@@ -53,6 +54,10 @@ export function achievementProgress(s: GameState, content: ContentDb, a: Achieve
       return s.login.claimed;
     case 'gold_earned':
       return Number(s.lifetime.goldEarned);
+    case 'profession':
+      return Math.max(1, ...[...content.professions.keys()].map((id) => professionLevel(s, id)));
+    case 'profession_total':
+      return [...content.professions.keys()].reduce((n, id) => n + professionLevel(s, id), 0);
   }
 }
 

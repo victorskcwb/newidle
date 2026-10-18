@@ -1,3 +1,4 @@
+import { PROFESSION_MAX_LEVEL } from './professions.ts';
 import { EQUIPMENT_SLOTS, RARITIES, type ContentDb } from '@abismo/content';
 import { z } from 'zod';
 import type { GameState, ItemInstance } from './types.ts';
@@ -8,7 +9,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 11;
+export const SAVE_VERSION = 12;
 
 export interface SaveFile {
   version: number;
@@ -80,7 +81,7 @@ const quest = z.strictObject({
 });
 
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(11),
+  version: z.literal(12),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -174,6 +175,17 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
     unlocked: z.record(z.string(), nonNeg),
     title: z.string().nullable(),
   }),
+  professions: z.strictObject({
+    skills: z.record(
+      z.string(),
+      z.strictObject({ level: int.min(1).max(PROFESSION_MAX_LEVEL), xp: nonNeg }),
+    ),
+    gathering: z.string().nullable(),
+    gatherTicks: nonNeg,
+    recipe: z.string().nullable(),
+    craftTicks: nonNeg,
+  }),
+  resources: z.record(z.string(), nonNeg),
   quests: z.strictObject({
     day: int,
     daily: z.array(quest),
@@ -270,6 +282,16 @@ export const SAVE_MIGRATIONS: Record<
       ...(raw.state as object),
       version: 11,
       achievements: { unlocked: {}, title: null },
+    },
+  }),
+  /** v11 → v12: professions (all at level 1) and gathered resources. */
+  11: (raw) => ({
+    ...raw,
+    state: {
+      ...(raw.state as object),
+      version: 12,
+      professions: { skills: {}, gathering: null, gatherTicks: 0, recipe: null, craftTicks: 0 },
+      resources: {},
     },
   }),
 };

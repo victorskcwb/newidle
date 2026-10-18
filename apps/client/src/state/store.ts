@@ -19,6 +19,7 @@ export type Screen =
   | 'skills'
   | 'cards'
   | 'journal'
+  | 'professions'
   | 'quests'
   | 'hunts'
   | 'smith'

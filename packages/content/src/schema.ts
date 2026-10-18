@@ -175,7 +175,7 @@ export const consumableSchema = z
     id,
     nameKey: key,
     /** hp/mana potions are drunk automatically; refine_protection is spent by the blacksmith. */
-    kind: z.enum(['hp', 'mana', 'refine_protection']),
+    kind: z.enum(['hp', 'mana', 'refine_protection', 'refine_tempering']),
     /** Flat amount restored. */
     restore: nonNegInt,
     /** Extra percent of the maximum restored, so potions stay useful at every level. */
@@ -185,7 +185,7 @@ export const consumableSchema = z
     icon: z.string().min(1),
   })
   .refine(
-    (c) => c.kind === 'refine_protection' || c.restore > 0 || (c.restorePct ?? 0) > 0,
+    (c) => (c.kind !== 'hp' && c.kind !== 'mana') || c.restore > 0 || (c.restorePct ?? 0) > 0,
     'potions must restore something',
   );
 export type Consumable = z.infer<typeof consumableSchema>;
@@ -334,6 +334,8 @@ export const huntSchema = z
     walkSecondsBetweenGroups: z.number().positive().max(60),
     /** One-way trip between the hunt and town, in seconds. */
     travelSeconds: z.number().positive().max(300),
+    /** Best resource tier gathered here (professions); 1 when absent. */
+    gatherTier: posInt.max(5).optional(),
     eliteChancePpm: ppm,
     boss: z.strictObject({ monsterId: id, everyKills: posInt }).optional(),
     unlocks: id.optional(),
@@ -402,6 +404,8 @@ export const ACHIEVEMENT_KINDS = [
   'bestiary',
   'login_days',
   'gold_earned',
+  'profession',
+  'profession_total',
 ] as const;
 export type AchievementKind = (typeof ACHIEVEMENT_KINDS)[number];
 export const achievementSchema = z.strictObject({
@@ -418,6 +422,41 @@ export const achievementSchema = z.strictObject({
   titleKey: key.optional(),
 });
 export type Achievement = z.infer<typeof achievementSchema>;
+
+/** Professions (GDD 3.2): gathering runs alongside the hunt, production any time. */
+export const professionSchema = z.strictObject({
+  id,
+  nameKey: key,
+  kind: z.enum(['gathering', 'production']),
+  icon: z.string().min(1),
+});
+export type Profession = z.infer<typeof professionSchema>;
+
+/** A gathered resource: tier (matched against the hunt's gatherTier) and level needed. */
+export const resourceSchema = z.strictObject({
+  id,
+  nameKey: key,
+  professionId: id,
+  tier: posInt.max(5),
+  level: posInt.max(99),
+  /** Seconds per unit at the required level (1% faster per level above, up to 50%). */
+  seconds: posInt,
+  xp: posInt,
+  icon: z.string().min(1),
+});
+export type Resource = z.infer<typeof resourceSchema>;
+
+/** A production recipe: resources in, materials or consumables out. */
+export const recipeSchema = z.strictObject({
+  id,
+  professionId: id,
+  level: posInt.max(99),
+  seconds: posInt,
+  xp: posInt,
+  inputs: z.record(id, posInt),
+  outputs: z.record(id, posInt),
+});
+export type Recipe = z.infer<typeof recipeSchema>;
 
 export const contentSchema = z.strictObject({
   itemBases: z.array(itemBaseSchema),
@@ -436,5 +475,8 @@ export const contentSchema = z.strictObject({
   loginRewards: z.array(loginRewardSchema),
   bestiaryTiers: z.array(bestiaryTierSchema),
   achievements: z.array(achievementSchema),
+  professions: z.array(professionSchema),
+  resources: z.array(resourceSchema),
+  recipes: z.array(recipeSchema),
 });
 export type ContentFile = z.infer<typeof contentSchema>;

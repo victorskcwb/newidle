@@ -280,6 +280,44 @@
       "target": 10000000,
       "points": 30,
       "titleKey": "title.gold_10m"
+    },
+    {
+      "id": "prof_25",
+      "nameKey": "achievement.prof_25",
+      "kind": "profession",
+      "target": 25,
+      "points": 10
+    },
+    {
+      "id": "prof_50",
+      "nameKey": "achievement.prof_50",
+      "kind": "profession",
+      "target": 50,
+      "points": 20
+    },
+    {
+      "id": "prof_99",
+      "nameKey": "achievement.prof_99",
+      "kind": "profession",
+      "target": 99,
+      "points": 60,
+      "titleKey": "title.prof_99"
+    },
+    {
+      "id": "prof_total_200",
+      "nameKey": "achievement.prof_total_200",
+      "kind": "profession_total",
+      "target": 200,
+      "points": 30,
+      "titleKey": "title.prof_total_200"
+    },
+    {
+      "id": "prof_total_396",
+      "nameKey": "achievement.prof_total_396",
+      "kind": "profession_total",
+      "target": 396,
+      "points": 100,
+      "titleKey": "title.prof_total_396"
     }
   ]
 }

@@ -1,5 +1,5 @@
 import type { ContentDb } from '@abismo/content';
-import { MAX_REFINE, REFINE_LOSES_LEVEL_FROM, REFINE_SUCCESS_PPM } from './constants.ts';
+import { MAX_REFINE, PPM, REFINE_LOSES_LEVEL_FROM, REFINE_SUCCESS_PPM } from './constants.ts';
 import { IntentError } from './progression.ts';
 import { questProgress } from './quests.ts';
 import { rngChance } from './rng.ts';
@@ -35,13 +35,22 @@ export function findItem(s: GameState, uid: number): ItemInstance | undefined {
   );
 }
 
-export type RefineBlock = 'max' | 'gold' | 'materials' | 'no_protection';
+export type RefineBlock = 'max' | 'gold' | 'materials' | 'no_protection' | 'no_tempering';
+
+/** A tempering stone adds this many points (ppm) to one attempt's success chance. */
+export const TEMPERING_BONUS_PPM = 100_000;
+
+export function consumableOfKind(content: ContentDb, kind: string): string {
+  return [...content.consumables.values()].find((c) => c.kind === kind)?.id ?? '';
+}
 
 export function refineBlock(
   s: GameState,
   item: ItemInstance,
   useProtection: boolean,
   protectionId: string,
+  useTempering = false,
+  temperingId = '',
 ): RefineBlock | null {
   if (item.refine >= MAX_REFINE) return 'max';
   const cost = refineCost(item.refine + 1);
@@ -50,6 +59,7 @@ export function refineBlock(
     if ((s.materials[id] ?? 0n) < BigInt(qty)) return 'materials';
   }
   if (useProtection && (s.consumables[protectionId] ?? 0) <= 0) return 'no_protection';
+  if (useTempering && (s.consumables[temperingId] ?? 0) <= 0) return 'no_tempering';
   return null;
 }
 
@@ -70,12 +80,13 @@ export function refineItem(
   content: ContentDb,
   uid: number,
   useProtection = false,
+  useTempering = false,
 ): RefineResult {
   const item = findItem(s, uid);
   if (!item) throw new IntentError('item_not_found');
-  const protectionId =
-    [...content.consumables.values()].find((c) => c.kind === 'refine_protection')?.id ?? '';
-  const block = refineBlock(s, item, useProtection, protectionId);
+  const protectionId = consumableOfKind(content, 'refine_protection');
+  const temperingId = consumableOfKind(content, 'refine_tempering');
+  const block = refineBlock(s, item, useProtection, protectionId, useTempering, temperingId);
   if (block) throw new IntentError(`refine_${block}`);
   const target = item.refine + 1;
   const cost = refineCost(target);
@@ -85,7 +96,12 @@ export function refineItem(
   }
   const from = item.refine;
   questProgress(s, 'refine', 1);
-  if (rngChance(s.rng, refineChancePpm(target))) {
+  let chance = refineChancePpm(target);
+  if (useTempering) {
+    s.consumables[temperingId] = (s.consumables[temperingId] ?? 0) - 1;
+    chance = Math.min(PPM, chance + TEMPERING_BONUS_PPM);
+  }
+  if (rngChance(s.rng, chance)) {
     item.refine = target;
     return { success: true, from, to: target, protectionUsed: false };
   }

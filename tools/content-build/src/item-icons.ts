@@ -12,9 +12,11 @@ const S = 16;
 const COLS = 16;
 
 type Drawn = { kind: 'pants' | 'belt'; tier: 0 | 1 | 2 | 3 };
+/** A pack icon recoloured by its brightness (ores and herbs of each tier). */
+type Tinted = { file: string; tint: string };
 
 /** Icon name → Kyrise file (without .png) or a drawn icon. */
-const ITEM_ICONS: Record<string, string | Drawn> = {
+const ITEM_ICONS: Record<string, string | Drawn | Tinted> = {
   'item.sword_rusty': 'sword_01a',
   'item.iron_blade': 'sword_01b',
   'item.blackened_sword': 'sword_02b',
@@ -63,6 +65,17 @@ const ITEM_ICONS: Record<string, string | Drawn> = {
   'consumable.potion_hp_small': 'potion_02a',
   'consumable.potion_mana_small': 'potion_02b',
   'consumable.refine_charm': 'pearl_01b',
+  'consumable.tempering_stone': 'ingot_01a',
+  'resource.ore_copper': { file: 'stoneblock_01a', tint: '#d0803c' },
+  'resource.ore_iron': { file: 'stoneblock_01a', tint: '#a4adb8' },
+  'resource.ore_silver': { file: 'stoneblock_01a', tint: '#e4eef8' },
+  'resource.ore_obsidian': { file: 'stoneblock_01a', tint: '#8a62c4' },
+  'resource.ore_abyssal': { file: 'stoneblock_01a', tint: '#40c8bc' },
+  'resource.herb_ashleaf': 'leaf_01a',
+  'resource.herb_bogbloom': 'flower_01a',
+  'resource.herb_ghostcap': 'flower_02a',
+  'resource.herb_emberroot': { file: 'leaf_01a', tint: '#f07040' },
+  'resource.herb_voidpetal': { file: 'flower_01a', tint: '#9c7cff' },
   gold: 'coin_04d',
   quest: 'scroll_01a',
   key: 'key_01a',
@@ -154,15 +167,24 @@ export function buildItemIcons(assets: URL, out: URL) {
     const dx = (i % COLS) * S;
     const dy = Math.floor(i / COLS) * S;
     const src = ITEM_ICONS[name]!;
-    if (typeof src === 'string') {
+    if (typeof src === 'string' || 'file' in src) {
+      const file = typeof src === 'string' ? src : src.file;
+      const tint = typeof src === 'string' ? null : hex(src.tint);
       const png = PNG.sync.read(
-        readFileSync(new URL(`vendor/kyrise-rpg-icons/${src}.png`, assets)),
+        readFileSync(new URL(`vendor/kyrise-rpg-icons/${file}.png`, assets)),
       );
       for (let y = 0; y < S; y++) {
         for (let x = 0; x < S; x++) {
           const si = (y * png.width + x) * 4;
           const di = ((dy + y) * sheet.width + dx + x) * 4;
           for (let c = 0; c < 4; c++) sheet.data[di + c] = png.data[si + c]!;
+          if (tint) {
+            // Brightness drives the tint; the dark outline stays dark.
+            const lum = (png.data[si]! * 3 + png.data[si + 1]! * 6 + png.data[si + 2]!) / 10;
+            for (let c = 0; c < 3; c++) {
+              sheet.data[di + c] = Math.min(255, Math.round((tint[c]! * lum) / 150));
+            }
+          }
         }
       }
     } else {

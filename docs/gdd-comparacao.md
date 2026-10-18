@@ -58,7 +58,7 @@ O critério é o do GDD: retenção antes de monetização, e primeiro o que nã
 
 ### C. Sistemas grandes fora da especificação (decidir se entram)
 
-12. **Skills de coleta e produção estilo OSRS** (3.2): mineração, pesca, forja, alquimia, até o nível 99. É o maior gancho de retenção do GDD que o jogo não tem, e também o maior escopo: economia, conteúdo e interface novos.
+12. 🟡 **Skills de coleta e produção estilo OSRS** (3.2): Mineração, Herbalismo, Forja e Alquimia prontas (decisão 147); faltam simulador com ofícios, pesca/culinária e elixires.
 13. **Pets** (3.4, 8.2.7).
 14. **4ª classe (invocador)** (3.1). A especificação prevê 3.
 

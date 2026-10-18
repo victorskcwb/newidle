@@ -1,6 +1,7 @@
 import type { EquipmentSlot, Rarity } from '@abismo/content';
 import type { Quests } from './quests.ts';
 import type { RngState } from './rng.ts';
+import type { Professions } from './professions.ts';
 
 export type Attribute = 'strength' | 'dexterity' | 'vitality' | 'energy';
 export const ATTRIBUTES: readonly Attribute[] = ['strength', 'dexterity', 'vitality', 'energy'];
@@ -152,7 +153,7 @@ export interface DropPity {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 11;
+  version: 12;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;
@@ -183,6 +184,10 @@ export interface GameState {
   bestiary: Record<string, number>;
   /** Achievements unlocked (id → tick) and the title shown next to the hero's name. */
   achievements: { unlocked: Record<string, number>; title: string | null };
+  /** Profession levels and what they are doing (kept across resets). */
+  professions: Professions;
+  /** Gathered resources (ores, herbs). */
+  resources: Record<string, number>;
   /** Daily and weekly goals. */
   quests: Quests;
 }
@@ -238,6 +243,8 @@ export type GameEvent =
   | { type: 'ReturningToHunt'; tick: number; arriveTick: number }
   | { type: 'BossDefeated'; tick: number; monsterId: string; firstTime: boolean }
   | { type: 'HuntUnlocked'; tick: number; huntId: string }
+  | { type: 'ProfessionLevelUp'; tick: number; professionId: string; level: number }
+  | { type: 'ItemCrafted'; tick: number; recipeId: string }
   | { type: 'HuntStopped'; tick: number; reason: 'manual' | 'too_many_deaths' | 'no_potions' };
 
 export type GameEventType = GameEvent['type'];

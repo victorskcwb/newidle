@@ -2,6 +2,7 @@ import { RARITIES } from '@abismo/content';
 import { OFFLINE_CAP_TICKS, TICKS_PER_HOUR } from '@abismo/engine';
 import { formatDuration, formatNumber, t } from '../i18n.ts';
 import { itemName } from './items.ts';
+import { rewardText } from './LoginCalendar.tsx';
 import { RARITY_COLOR, RARITY_GLYPH } from './rarity.ts';
 import { useSim } from './useSim.ts';
 
@@ -60,6 +61,33 @@ export function OfflineModal() {
                     </span>
                   ) : null;
                 })}
+              </div>
+            )}
+            {(Object.keys(r.gathered).length > 0 || Object.keys(r.crafted).length > 0) && (
+              <div className="offline-items" data-testid="offline-professions">
+                <div className="muted">{t('offline.professions')}</div>
+                {Object.entries(r.professionLevels).map(([id, [from, to]]) => (
+                  <div key={id} className="tone-good">
+                    {t('offline.professionLevel', {
+                      profession: t(sim.content.professions.get(id)!.nameKey),
+                      from,
+                      to,
+                    })}
+                  </div>
+                ))}
+                {Object.entries(r.gathered).map(([id, n]) => (
+                  <div key={id}>
+                    {t(sim.content.resources.get(id)!.nameKey)} +{formatNumber(n)}
+                  </div>
+                ))}
+                {Object.entries(r.crafted).map(([id, n]) => (
+                  <div key={id}>
+                    {t('offline.crafted', {
+                      n: formatNumber(n),
+                      what: rewardText(sim, sim.content.recipes.get(id)!.outputs),
+                    })}
+                  </div>
+                ))}
               </div>
             )}
             {Object.keys(r.cards).length > 0 && (

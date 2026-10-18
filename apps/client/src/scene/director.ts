@@ -461,6 +461,15 @@ export class Director {
           tone: 'good',
         });
         break;
+      case 'ProfessionLevelUp':
+        this.log(
+          t('log.professionLevel', {
+            profession: t(this.content.professions.get(e.professionId)!.nameKey),
+            level: e.level,
+          }),
+          { tone: 'good' },
+        );
+        break;
       case 'HuntStopped':
         this.log(t(`log.stopped.${e.reason}`), { tone: e.reason === 'manual' ? 'info' : 'bad' });
         this.enterTown('idle');

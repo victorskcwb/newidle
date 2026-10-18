@@ -10,6 +10,9 @@ import {
   type LootTable,
   type LoginReward,
   type Achievement,
+  type Profession,
+  type Recipe,
+  type Resource,
   type BestiaryTier,
   type Material,
   type Monster,
@@ -41,6 +44,9 @@ export interface ContentDb {
   /** Bestiary tiers, in increasing order (GDD 3.4). */
   readonly bestiaryTiers: readonly BestiaryTier[];
   readonly achievements: ReadonlyMap<string, Achievement>;
+  readonly professions: ReadonlyMap<string, Profession>;
+  readonly resources: ReadonlyMap<string, Resource>;
+  readonly recipes: ReadonlyMap<string, Recipe>;
   /** Material yielded by salvaging each rarity. */
   readonly salvageMaterial: Readonly<Record<Rarity, Material>>;
 }
@@ -83,6 +89,9 @@ export function mergeContentFiles(files: readonly Partial<ContentFile>[]): Conte
     loginRewards: [],
     bestiaryTiers: [],
     achievements: [],
+    professions: [],
+    resources: [],
+    recipes: [],
   };
   for (const file of files) {
     for (const k of Object.keys(merged) as (keyof ContentFile)[]) {
@@ -121,6 +130,9 @@ export function buildContentDb(raw: unknown): ContentDb {
     loginRewards: c.loginRewards,
     bestiaryTiers: c.bestiaryTiers,
     achievements: indexById('achievement', c.achievements, problems),
+    professions: indexById('profession', c.professions, problems),
+    resources: indexById('resource', c.resources, problems),
+    recipes: indexById('recipe', c.recipes, problems),
   };
 
   const ref = (ok: boolean, message: string) => {
@@ -209,6 +221,24 @@ export function buildContentDb(raw: unknown): ContentDb {
       );
     }
   });
+  for (const r of c.resources) {
+    ref(
+      db.professions.get(r.professionId)?.kind === 'gathering',
+      `resource ${r.id}: ${r.professionId} is not a gathering profession`,
+    );
+  }
+  for (const r of c.recipes) {
+    ref(
+      db.professions.get(r.professionId)?.kind === 'production',
+      `recipe ${r.id}: ${r.professionId} is not a production profession`,
+    );
+    for (const id of Object.keys(r.inputs)) {
+      ref(db.resources.has(id), `recipe ${r.id}: unknown input ${id}`);
+    }
+    for (const id of Object.keys(r.outputs)) {
+      ref(db.materials.has(id) || db.consumables.has(id), `recipe ${r.id}: unknown output ${id}`);
+    }
+  }
   for (const a of c.achievements) {
     ref(a.kind !== 'items' || !!a.rarity, `achievement ${a.id}: items needs a rarity`);
     ref(
@@ -258,6 +288,8 @@ export function translationKeys(db: ContentDb): string[] {
     keys.push(a.nameKey, `achievement.kind.${a.kind}`);
     if (a.titleKey) keys.push(a.titleKey);
   }
+  for (const p of db.professions.values()) keys.push(p.nameKey);
+  for (const r of db.resources.values()) keys.push(r.nameKey);
   for (const u of db.uniqueItems.values()) keys.push(u.nameKey, u.descKey);
   return keys;
 }

@@ -1,0 +1,301 @@
+{
+  "professions": [
+    {
+      "id": "mining",
+      "nameKey": "profession.mining",
+      "kind": "gathering",
+      "icon": "items/ore_iron"
+    },
+    {
+      "id": "herbalism",
+      "nameKey": "profession.herbalism",
+      "kind": "gathering",
+      "icon": "items/herb_ashleaf"
+    },
+    {
+      "id": "smithing",
+      "nameKey": "profession.smithing",
+      "kind": "production",
+      "icon": "items/tempering_stone"
+    },
+    {
+      "id": "alchemy",
+      "nameKey": "profession.alchemy",
+      "kind": "production",
+      "icon": "items/potion_hp_small"
+    }
+  ],
+  "resources": [
+    {
+      "id": "ore_copper",
+      "nameKey": "resource.ore_copper",
+      "professionId": "mining",
+      "tier": 1,
+      "level": 1,
+      "seconds": 30,
+      "xp": 6,
+      "icon": "items/ore_copper"
+    },
+    {
+      "id": "ore_iron",
+      "nameKey": "resource.ore_iron",
+      "professionId": "mining",
+      "tier": 2,
+      "level": 15,
+      "seconds": 32,
+      "xp": 14,
+      "icon": "items/ore_iron"
+    },
+    {
+      "id": "ore_silver",
+      "nameKey": "resource.ore_silver",
+      "professionId": "mining",
+      "tier": 3,
+      "level": 30,
+      "seconds": 34,
+      "xp": 28,
+      "icon": "items/ore_silver"
+    },
+    {
+      "id": "ore_obsidian",
+      "nameKey": "resource.ore_obsidian",
+      "professionId": "mining",
+      "tier": 4,
+      "level": 50,
+      "seconds": 36,
+      "xp": 48,
+      "icon": "items/ore_obsidian"
+    },
+    {
+      "id": "ore_abyssal",
+      "nameKey": "resource.ore_abyssal",
+      "professionId": "mining",
+      "tier": 5,
+      "level": 70,
+      "seconds": 38,
+      "xp": 75,
+      "icon": "items/ore_abyssal"
+    },
+    {
+      "id": "herb_ashleaf",
+      "nameKey": "resource.herb_ashleaf",
+      "professionId": "herbalism",
+      "tier": 1,
+      "level": 1,
+      "seconds": 30,
+      "xp": 6,
+      "icon": "items/herb_ashleaf"
+    },
+    {
+      "id": "herb_bogbloom",
+      "nameKey": "resource.herb_bogbloom",
+      "professionId": "herbalism",
+      "tier": 2,
+      "level": 15,
+      "seconds": 32,
+      "xp": 14,
+      "icon": "items/herb_bogbloom"
+    },
+    {
+      "id": "herb_ghostcap",
+      "nameKey": "resource.herb_ghostcap",
+      "professionId": "herbalism",
+      "tier": 3,
+      "level": 30,
+      "seconds": 34,
+      "xp": 28,
+      "icon": "items/herb_ghostcap"
+    },
+    {
+      "id": "herb_emberroot",
+      "nameKey": "resource.herb_emberroot",
+      "professionId": "herbalism",
+      "tier": 4,
+      "level": 50,
+      "seconds": 36,
+      "xp": 48,
+      "icon": "items/herb_emberroot"
+    },
+    {
+      "id": "herb_voidpetal",
+      "nameKey": "resource.herb_voidpetal",
+      "professionId": "herbalism",
+      "tier": 5,
+      "level": 70,
+      "seconds": 38,
+      "xp": 75,
+      "icon": "items/herb_voidpetal"
+    }
+  ],
+  "recipes": [
+    {
+      "id": "smith_fragments",
+      "professionId": "smithing",
+      "level": 1,
+      "seconds": 20,
+      "xp": 22,
+      "inputs": {
+        "ore_copper": 3
+      },
+      "outputs": {
+        "fragment": 6
+      }
+    },
+    {
+      "id": "smith_tempering_copper",
+      "professionId": "smithing",
+      "level": 5,
+      "seconds": 60,
+      "xp": 58,
+      "inputs": {
+        "ore_copper": 8
+      },
+      "outputs": {
+        "tempering_stone": 1
+      }
+    },
+    {
+      "id": "smith_fragments_iron",
+      "professionId": "smithing",
+      "level": 15,
+      "seconds": 20,
+      "xp": 50,
+      "inputs": {
+        "ore_iron": 3
+      },
+      "outputs": {
+        "fragment": 12
+      }
+    },
+    {
+      "id": "smith_tempering_iron",
+      "professionId": "smithing",
+      "level": 20,
+      "seconds": 60,
+      "xp": 101,
+      "inputs": {
+        "ore_iron": 6
+      },
+      "outputs": {
+        "tempering_stone": 1
+      }
+    },
+    {
+      "id": "smith_tempering_silver",
+      "professionId": "smithing",
+      "level": 35,
+      "seconds": 60,
+      "xp": 168,
+      "inputs": {
+        "ore_silver": 5
+      },
+      "outputs": {
+        "tempering_stone": 2
+      }
+    },
+    {
+      "id": "smith_charm_obsidian",
+      "professionId": "smithing",
+      "level": 55,
+      "seconds": 600,
+      "xp": 6912,
+      "inputs": {
+        "ore_obsidian": 120
+      },
+      "outputs": {
+        "refine_charm": 1
+      }
+    },
+    {
+      "id": "smith_charm_abyssal",
+      "professionId": "smithing",
+      "level": 75,
+      "seconds": 600,
+      "xp": 7200,
+      "inputs": {
+        "ore_abyssal": 80
+      },
+      "outputs": {
+        "refine_charm": 1
+      }
+    },
+    {
+      "id": "alch_hp",
+      "professionId": "alchemy",
+      "level": 1,
+      "seconds": 20,
+      "xp": 14,
+      "inputs": {
+        "herb_ashleaf": 2
+      },
+      "outputs": {
+        "potion_hp_small": 3
+      }
+    },
+    {
+      "id": "alch_mana",
+      "professionId": "alchemy",
+      "level": 5,
+      "seconds": 20,
+      "xp": 14,
+      "inputs": {
+        "herb_ashleaf": 2
+      },
+      "outputs": {
+        "potion_mana_small": 3
+      }
+    },
+    {
+      "id": "alch_essence",
+      "professionId": "alchemy",
+      "level": 15,
+      "seconds": 45,
+      "xp": 101,
+      "inputs": {
+        "herb_bogbloom": 6
+      },
+      "outputs": {
+        "essence": 1
+      }
+    },
+    {
+      "id": "alch_crystal",
+      "professionId": "alchemy",
+      "level": 30,
+      "seconds": 120,
+      "xp": 672,
+      "inputs": {
+        "herb_ghostcap": 20
+      },
+      "outputs": {
+        "crystal": 1
+      }
+    },
+    {
+      "id": "alch_core",
+      "professionId": "alchemy",
+      "level": 50,
+      "seconds": 600,
+      "xp": 4608,
+      "inputs": {
+        "herb_emberroot": 80
+      },
+      "outputs": {
+        "core": 1
+      }
+    },
+    {
+      "id": "alch_core_void",
+      "professionId": "alchemy",
+      "level": 70,
+      "seconds": 600,
+      "xp": 5400,
+      "inputs": {
+        "herb_voidpetal": 60
+      },
+      "outputs": {
+        "core": 1
+      }
+    }
+  ]
+}

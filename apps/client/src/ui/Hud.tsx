@@ -268,6 +268,7 @@ function TopBar() {
     { screen: 'quests', icon: 'quests', label: t('top.quests'), badge: claimable || undefined },
     { screen: 'cards', icon: 'cards', label: t('screen.cards') },
     { screen: 'journal', icon: 'journal', label: t('screen.journal') },
+    { screen: 'professions', icon: 'professions', label: t('screen.professions') },
     { screen: 'smith', icon: 'smith', label: t('screen.smith') },
     { screen: 'altar', icon: 'altar', label: t('screen.altar'), badge: altarBadge },
     { screen: 'filter', icon: 'filter', label: t('top.filter') },

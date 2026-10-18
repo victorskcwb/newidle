@@ -20,6 +20,7 @@ Licença: [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) (Zeromancer:
 | log | lorc/quill-ink.svg | Lorc |
 | offline | lorc/hourglass.svg | Lorc |
 | journal | lorc/open-book.svg | Lorc |
+| professions | lorc/mining.svg | Lorc |
 | achievement | lorc/trophy.svg | Lorc |
 | gold | delapouite/two-coins.svg | Delapouite |
 | potion | delapouite/health-potion.svg | Delapouite |
