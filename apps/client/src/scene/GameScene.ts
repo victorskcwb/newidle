@@ -1,7 +1,9 @@
 import { spriteManifestSchema, tiledMapSchema, walkableGrid, type TiledMap } from '@abismo/content';
 import Phaser from 'phaser';
 import type { GameSim } from '../game/sim.ts';
+import { usePrefs } from '../state/prefs.ts';
 import { useUi } from '../state/store.ts';
+import { bootDone } from '../boot.ts';
 import { Director } from './director.ts';
 import { REGION_TINT, addAtmosphere, renderMap } from './mapRender.ts';
 import { TownScene } from './TownScene.ts';
@@ -59,6 +61,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
+    // The map is loaded: the loading screen can go.
+    bootDone();
     const raw = this.cache.tilemap.get('map').data as unknown;
     const mapData: TiledMap = tiledMapSchema.parse(raw);
     const manifest = spriteManifestSchema.parse(this.cache.json.get('manifest'));
@@ -68,7 +72,7 @@ export class GameScene extends Phaser.Scene {
     // Dark-fantasy mood per region over the bright tiles.
     const tint = REGION_TINT[this.regionId] ?? 0xffffff;
     const map = renderMap(this, 'map', mapData, tint, activeProps(mapData));
-    if (!this.options.noParticles) {
+    if (!this.options.noParticles && usePrefs.getState().gfx.atmosphere) {
       addAtmosphere(this, this.regionId, map.widthInPixels, map.heightInPixels);
     }
 

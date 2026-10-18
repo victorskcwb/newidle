@@ -695,5 +695,22 @@
   "adventures.none": "Nenhuma caçada com esses filtros.",
   "adventures.defeated": "derrotado ✓",
   "adventures.undefeated": "ainda não derrotado",
-  "town.leaveIn": "({s} s)"
+  "town.leaveIn": "({s} s)",
+  "boot.save": "Lendo o seu progresso…",
+  "boot.away": "Calculando o tempo fora…",
+  "boot.map": "Desenhando o mapa…",
+  "settings.graphics": "Gráficos",
+  "settings.graphicsHint": "Desligue o que pesar no seu aparelho. Nada aqui muda o jogo: os golpes, o loot e os números continuam os mesmos.",
+  "settings.gfx.hitFx": "Efeitos de golpes e habilidades",
+  "settings.gfx.hitFx.hint": "Cortes, explosões, chamas e cristais nos ataques. O level up continua aparecendo.",
+  "settings.gfx.numbers": "Números de dano",
+  "settings.gfx.numbers.hint": "O dano e a cura que sobem dos personagens.",
+  "settings.gfx.atmosphere": "Partículas do ambiente",
+  "settings.gfx.atmosphere.hint": "Poeira, vaga-lumes e brasas flutuando sobre o mapa.",
+  "settings.gfx.names": "Nomes e vida dos outros",
+  "settings.gfx.names.hint": "Nome e barra de vida sobre monstros e moradores. Os do herói ficam sempre.",
+  "settings.gfx.lootFx": "Animação do loot",
+  "settings.gfx.lootFx.hint": "Os itens pulando dos monstros e voando para a mochila. O registro continua mostrando o que caiu.",
+  "settings.gfx.flashes": "Clarões na tela",
+  "settings.gfx.flashes.hint": "O brilho rápido no level up, nos chefes e na derrota."
 }

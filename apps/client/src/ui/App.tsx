@@ -72,6 +72,7 @@ function Game() {
   const screen = useUi((s) => s.screen);
   const eco = usePrefs((s) => s.eco);
   const reducedMotion = usePrefs((s) => s.reducedMotion);
+  const gfxKey = usePrefs((s) => `${s.gfx.atmosphere}${s.gfx.names}`);
   const hunt =
     (sim.state.hunt && sim.content.hunts.get(sim.state.hunt.huntId)) ??
     [...sim.content.hunts.values()].find((h) => h.startUnlocked)!;
@@ -80,7 +81,7 @@ function Game() {
     <>
       {/* A new map (another hunt) or new device prefs rebuild the scene from the state. */}
       <SceneView
-        key={`${hunt.mapId}|${eco}|${reducedMotion}`}
+        key={`${hunt.mapId}|${eco}|${reducedMotion}|${gfxKey}`}
         sim={sim}
         mapId={hunt.mapId}
         regionId={hunt.regionId}

@@ -5,8 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0e0d12" />
     <title>Abismo Idle</title>
+    <!-- The loading screen lives in the HTML so it shows before any script has run. -->
+    <style>
+      #boot {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(circle at 50% 40%, #2a2034, #0e0d12 70%);
+        color: #e6e3dc;
+        font:
+          14px system-ui,
+          sans-serif;
+        transition: opacity 0.4s ease;
+      }
+      #boot.done {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .boot-box {
+        display: grid;
+        justify-items: center;
+        gap: 14px;
+        width: min(320px, 80vw);
+        text-align: center;
+      }
+      .boot-title {
+        font:
+          700 30px Georgia,
+          serif;
+        letter-spacing: 0.2em;
+        color: #d9a441;
+        text-shadow: 0 3px 0 #000;
+      }
+      .boot-bar {
+        width: 100%;
+        height: 8px;
+        border-radius: 4px;
+        background: #000;
+        overflow: hidden;
+        border: 1px solid #3a3546;
+      }
+      .boot-bar i {
+        display: block;
+        height: 100%;
+        width: 15%;
+        background: linear-gradient(90deg, #8a6420, #ffd36a);
+        transition: width 0.3s ease;
+      }
+      #boot-step {
+        color: #a39fb0;
+      }
+      #boot-help {
+        display: none;
+        color: #ff7a7a;
+        font-size: 13px;
+      }
+    </style>
   </head>
   <body>
+    <div id="boot">
+      <div class="boot-box">
+        <div class="boot-title">ABISMO</div>
+        <div class="boot-bar"><i id="boot-progress"></i></div>
+        <span id="boot-step">Carregando o jogo…</span>
+        <span id="boot-help">
+          Está demorando mais que o normal. Verifique a conexão e recarregue a página.
+        </span>
+      </div>
+    </div>
+    <script>
+      // Safety net: if the game never takes the screen away, say so after 15 s.
+      window.setTimeout(function () {
+        var help = document.getElementById('boot-help');
+        var boot = document.getElementById('boot');
+        if (help && boot && !boot.classList.contains('done')) help.style.display = 'block';
+      }, 15000);
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

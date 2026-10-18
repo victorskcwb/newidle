@@ -12,6 +12,7 @@ import type Phaser from 'phaser';
 import type { GameSim, SimSignal } from '../game/sim.ts';
 import { t } from '../i18n.ts';
 import { sfx } from '../audio/sfx.ts';
+import { usePrefs } from '../state/prefs.ts';
 import { useUi } from '../state/store.ts';
 import { itemName } from '../ui/items.ts';
 import { Actor, type Animations } from './actor.ts';
@@ -398,7 +399,9 @@ export class Director {
         this.fx.spell('levelup', this.hero.x, this.hero.y);
         this.fx.burst(this.hero.x, this.hero.y, 0xffd84a, 16);
         this.hero.celebrate();
-        if (!this.calm) this.scene.cameras.main.flash(250, 255, 220, 140);
+        if (!this.calm && usePrefs.getState().gfx.flashes) {
+          this.scene.cameras.main.flash(250, 255, 220, 140);
+        }
         useUi.getState().showLevelUp(e.level);
         this.fx.number(this.hero.x, this.hero.y - 20, t('log.levelUp', { level: e.level }), 'crit');
         this.log(t('log.levelUp', { level: e.level }), { tone: 'good' });
@@ -543,6 +546,7 @@ export class Director {
           : base,
         color,
       );
+      actor.setOverhead(usePrefs.getState().gfx.names);
       actor.place(spot);
       actor.face(this.hero.x, this.hero.y);
       const hp = m.hp ?? m.maxHp;
@@ -565,7 +569,7 @@ export class Director {
   }
 
   private flash(r: number, g: number, b: number) {
-    if (!this.calm) this.scene.cameras.main.flash(220, r, g, b);
+    if (!this.calm && usePrefs.getState().gfx.flashes) this.scene.cameras.main.flash(220, r, g, b);
   }
 
   private showBoss(v: MonsterView | null) {

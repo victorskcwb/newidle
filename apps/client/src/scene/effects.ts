@@ -7,6 +7,7 @@ import {
   type Rarity,
 } from '@abismo/content';
 import Phaser from 'phaser';
+import { usePrefs } from '../state/prefs.ts';
 import { rarityHex } from '../ui/rarity.ts';
 
 /** Spell and hit effects, drawn with the particle textures of sprites/fx.png. */
@@ -103,6 +104,7 @@ export class Effects {
   }
 
   number(x: number, y: number, text: string, kind: NumberKind) {
+    if (!usePrefs.getState().gfx.numbers) return;
     const t = this.takeNumber();
     const style = NUMBER_STYLE[kind];
     t.setText(text)
@@ -138,6 +140,7 @@ export class Effects {
 
   /** Plays a pixel effect animation once at (x, y), from a pool of sprites. */
   pixelFx(name: HitFxName, x: number, y: number, scale = 1.5, flipX = false) {
+    if (!usePrefs.getState().gfx.hitFx && name !== 'energy') return;
     const free = this.anims.find((a) => !a.active);
     const sprite = free ?? this.scene.add.sprite(0, 0, 'hitfx', 0);
     if (!free) {
@@ -203,6 +206,8 @@ export class Effects {
    * The textures are 128 px, so a scale of 0.25 covers one tile.
    */
   spell(kind: SpellFx, x: number, y: number, to?: { x: number; y: number }) {
+    // Level up keeps its effect: it is news, not noise.
+    if (!usePrefs.getState().gfx.hitFx && kind !== 'levelup') return;
     const dir = to ? Phaser.Math.RadToDeg(Math.atan2(to.y - y, to.x - x)) : 0;
     switch (kind) {
       case 'slash': {
@@ -429,6 +434,7 @@ export class Effects {
     kept: boolean,
     target: () => { x: number; y: number },
   ) {
+    if (!usePrefs.getState().gfx.lootFx) return;
     const d = this.takeDrop();
     const color = rarityHex(rarity);
     const landX = fromX + Phaser.Math.Between(-18, 18);

@@ -205,6 +205,9 @@ O Victor saiu e pediu para seguir sozinho com o que eu recomendasse. Tudo abaixo
 
 131. **Mais peças do OpenTibia Sprite Pack nas vilas e caçadas:** portas em arco nas casas (`otsp_doors_01`), fornalha acesa na ferraria, fonte no centro da praça, braseiros nos cantos, pilha de lenha e duas estátuas (`otsp_town_01`); braseiros também espalhados na Cripta, nos Salões Derretidos e no Trono Ardente.
 
+132. **Tela de carregamento no HTML** (`index.html`): aparece antes de qualquer script, com barra e etapas (lendo o progresso, calculando o tempo fora, desenhando o mapa), some quando o mapa termina de carregar e, se nada acontecer em 15 s, pede para conferir a conexão.
+133. **Gráficos, uma chave por item** (Opções → Gráficos, no aparelho): efeitos de golpes, números de dano, partículas do ambiente, nomes e vida dos outros, animação do loot e clarões. Só a apresentação muda; o level up mantém o efeito. Somam-se ao modo econômico e ao "reduzir movimento".
+
 ## Perguntas para revisão
 
 - ~~**Resets cada vez mais rápidos (seção 12.2):** a meta "cada reset chega ao 100 pelo menos 10% mais rápido que o anterior, até o reset 10" não é atingida. No simulador (perfil ativo), os ciclos ficam em 3,0 → 1,9 → 1,8 → 1,6 → 1,7 → 1,8 → 1,4 dias: caem no começo e depois estabilizam. Com 10 pontos por reset (a fórmula da seção 8.1, até a masmorra do marco 3) e a Sabedoria dando +10% de XP por nível com custo linear, o bônus de XP não cresce 10% a cada ciclo. Opções: (a) pontos de reset crescerem com o número do reset (ex.: 10 + 2 × resets); (b) Sabedoria multiplicativa (×1,1 por nível); (c) aceitar até a masmorra existir. Recomendo (a), porque é uma linha de conteúdo/constante e mantém a loja simples.~~ Resolvido: decisões 68–70.

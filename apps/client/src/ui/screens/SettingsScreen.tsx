@@ -2,7 +2,7 @@ import { MAX_LEVEL, type PotionSettings } from '@abismo/engine';
 import { useState } from 'react';
 import { t } from '../../i18n.ts';
 import { Reminders } from '../../game/notify.ts';
-import { usePrefs } from '../../state/prefs.ts';
+import { GFX_KEYS, usePrefs } from '../../state/prefs.ts';
 import { useUi } from '../../state/store.ts';
 import { Sheet, tryIntent } from '../Sheet.tsx';
 import { useSim } from '../useSim.ts';
@@ -155,6 +155,25 @@ export function SettingsScreen() {
           onChange={(e) => prefs.set({ volume: Number(e.target.value) / 100 })}
         />
       </label>
+
+      <h3 className="pixel">{t('settings.graphics')}</h3>
+      <p className="muted small">{t('settings.graphicsHint')}</p>
+      <div className="gfx-list" data-testid="gfx">
+        {GFX_KEYS.map((k) => (
+          <label key={k} className="check gfx-row">
+            <input
+              type="checkbox"
+              checked={prefs.gfx[k]}
+              onChange={(e) => prefs.set({ gfx: { ...prefs.gfx, [k]: e.target.checked } })}
+            />
+            <span>
+              {t(`settings.gfx.${k}`)}
+              <br />
+              <small className="muted">{t(`settings.gfx.${k}.hint`)}</small>
+            </span>
+          </label>
+        ))}
+      </div>
 
       <h3 className="pixel">{t('settings.credits')}</h3>
       <div className="credits small" data-testid="credits">

@@ -10,6 +10,7 @@ import { useUi } from './state/store.ts';
 import { Reminders } from './game/notify.ts';
 import { registerSW } from 'virtual:pwa-register';
 import { App } from './ui/App.tsx';
+import { bootDone, bootStep } from './boot.ts';
 import { CreateHeroScreen, type NewHeroChoice } from './ui/screens/CreateHeroScreen.tsx';
 import './ui/styles.css';
 
@@ -48,12 +49,14 @@ function run(sim: GameSim): GameSim {
 
 /** Loads the save, applies the time away (offline), or asks for a new hero. */
 async function boot(): Promise<Phase> {
+  bootStep(t('boot.save'), 40);
   const result = await loadSave(content);
   if (result.kind === 'empty') return { kind: 'create' };
   if (result.kind === 'broken') return { kind: 'broken', result };
   const sim = new GameSim(result.file.state, speed);
   // A clock that went backwards counts as no time away.
   const awayMs = Math.max(0, Date.now() - result.file.savedAt);
+  bootStep(t('boot.away'), 65);
   sim.applyAway(Math.floor((awayMs * speed) / TICK_MS));
   return { kind: 'game', sim: run(sim) };
 }
@@ -88,7 +91,13 @@ function Root() {
   const [phase, setPhase] = useState<Phase>({ kind: 'loading' });
   useEffect(() => {
     let live = true;
-    void booting.then((p) => live && setPhase(p));
+    void booting.then((p) => {
+      if (!live) return;
+      setPhase(p);
+      // The game screen hides the loading screen once its map is drawn; the others now.
+      if (p.kind === 'game') bootStep(t('boot.map'), 85);
+      else bootDone();
+    });
     return () => {
       live = false;
     };
@@ -111,6 +120,7 @@ function Root() {
             const sim = GameSim.newHero(hero, speed);
             sim.startHunt(firstHunt.id);
             void writeSave(sim.state);
+            bootStep(t('boot.map'), 85);
             setPhase({ kind: 'game', sim: run(sim) });
           }}
         />

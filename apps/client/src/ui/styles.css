@@ -2416,3 +2416,17 @@ input[type='range'] {
   transform-origin: bottom center;
   margin: 0 8px;
 }
+
+.gfx-list {
+  display: grid;
+  gap: 2px;
+}
+
+.gfx-row {
+  align-items: flex-start;
+  padding: 4px 0;
+}
+
+.gfx-row input {
+  margin-top: 3px;
+}

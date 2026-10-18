@@ -145,6 +145,15 @@ export class Actor {
       .setAngle(side * 25);
   }
 
+  /** Hides the name and life bar (graphics option); the hero keeps them. */
+  setOverhead(visible: boolean) {
+    this.overhead = visible;
+    this.label.setVisible(visible);
+    if (!visible) this.bar.setVisible(false);
+  }
+
+  private overhead = true;
+
   setName(name: string, color: string) {
     this.label.setText(name).setColor(color);
   }
@@ -346,7 +355,7 @@ export class Actor {
     this.hitUntil = 0;
     this.applyLook();
     this.label.setAlpha(1);
-    this.bar.setVisible(showBar);
+    this.bar.setVisible(showBar && this.overhead);
     this.hpRatio = 1;
     this.drawBar();
     this.path = [];

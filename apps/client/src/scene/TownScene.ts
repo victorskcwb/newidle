@@ -9,6 +9,7 @@ import {
 import Phaser from 'phaser';
 import type { GameSim } from '../game/sim.ts';
 import { t } from '../i18n.ts';
+import { usePrefs } from '../state/prefs.ts';
 import { useUi, type TownView } from '../state/store.ts';
 import { Actor } from './actor.ts';
 import { Effects } from './effects.ts';
@@ -88,7 +89,7 @@ export class TownScene extends Phaser.Scene {
     const manifest = spriteManifestSchema.parse(this.cache.json.get('manifest'));
     const tint = REGION_TINT[this.regionId] ?? 0xffffff;
     const map = renderMap(this, 'townmap', mapData, tint, null);
-    if (!this.options.noParticles) {
+    if (!this.options.noParticles && usePrefs.getState().gfx.atmosphere) {
       addAtmosphere(this, this.regionId, map.widthInPixels, map.heightInPixels);
     }
     this.paths = new Pathfinder(mapData);
@@ -115,6 +116,7 @@ export class TownScene extends Phaser.Scene {
         },
       );
       actor.speed = 1.6;
+      actor.setOverhead(usePrefs.getState().gfx.names);
       const home = toTile(mapData, o.x, o.y);
       actor.place(home);
       const npc: Npc = {
