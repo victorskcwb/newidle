@@ -194,8 +194,8 @@ function softTint(hex: string): number {
   return (mix(n >> 16) << 16) | (mix((n >> 8) & 255) << 8) | mix(n & 255);
 }
 
-/** Creates (once) the idle, run and hit animations of a frame set. */
-function loopsFor(scene: Phaser.Scene, sheet: string, name: string, set: FrameSet): Look['loops'] {
+/** Creates (once) the idle, run and hit animations of a frame set, per facing if it has them. */
+function loopsFor(scene: Phaser.Scene, sheet: string, name: string, set: FrameSet) {
   const make = (kind: string, frames: number[], ms: number, repeat: number) => {
     const key = `${name}:${kind}`;
     if (!scene.anims.exists(key)) {
@@ -208,30 +208,47 @@ function loopsFor(scene: Phaser.Scene, sheet: string, name: string, set: FrameSe
     }
     return key;
   };
-  return {
+  const loops: Look['loops'] = {
     idle: make('idle', set.idle, 160, -1),
-    run: make('run', set.run, 95, -1),
+    run: make('run', set.run, 120, -1),
     hit: set.hit ? make('hit', set.hit, 160, 0) : undefined,
   };
+  const dirLoops: Look['dirLoops'] = set.dirs
+    ? (Object.fromEntries(
+        (['up', 'right', 'down', 'left'] as const).map((d) => [
+          d,
+          {
+            idle: make(`${d}:idle`, set.dirs![d].idle, 220, -1),
+            run: make(`${d}:run`, set.dirs![d].run, 120, -1),
+          },
+        ]),
+      ) as Look['dirLoops'])
+    : undefined;
+  return { loops, dirLoops };
 }
 
-/** The hero's look: one of the sheet's warriors (by outfit) holding a sword. */
+/** Sheets drawn at the map's own scale (32 px a tile) need no enlarging. */
+const sheetScale = (set: FrameSet) => (set.dirs ? 1 : 2);
+
+/** The hero's look: one of the sheet's characters (by outfit) holding a sword. */
 export function heroLook(scene: Phaser.Scene, manifest: SpriteManifest, outfit: number): LookFor {
   const atlas = manifest.atlases.hero;
   const sprite = atlas?.sprites.warrior;
   const set = sprite?.looks?.[outfit % sprite.looks.length];
   if (atlas?.image && set) {
     const key = sheetKey(atlas.image);
-    const loops = loopsFor(scene, key, `hero${outfit % sprite!.looks!.length}`, set);
+    const { loops, dirLoops } = loopsFor(scene, key, `hero${outfit % sprite!.looks!.length}`, set);
     const weapon =
       sprite!.weapon !== undefined ? { texture: key, frame: sprite!.weapon } : undefined;
-    const height = set.height ? set.height * 2 : undefined;
+    const scale = sheetScale(set);
+    const height = set.height ? set.height * scale : undefined;
     return () => ({
       texture: key,
       frame: set.idle[0],
       flipX: false,
-      scale: 2,
+      scale,
       loops,
+      dirLoops,
       weapon,
       height,
     });
@@ -239,18 +256,30 @@ export function heroLook(scene: Phaser.Scene, manifest: SpriteManifest, outfit: 
   return (dir) => ({ texture: heroTextureKey(dir), flipX: false, scale: 1 });
 }
 
-/** A monster's look: its animated sheet character (tinted, scaled for bosses) or a shape. */
+/**
+ * A monster's look: its animated sheet character (scaled for bosses) or a shape. Sheets in
+ * four directions keep their own colours; single-facing ones are tinted by the content.
+ */
 export function monsterLook(scene: Phaser.Scene, manifest: SpriteManifest, def: Monster): LookFor {
   const atlas = manifest.atlases[def.sprite.atlas];
   const sprite = atlas?.sprites[def.sprite.key];
   const set = sprite?.frames;
   if (atlas?.image && set) {
     const key = sheetKey(atlas.image);
-    const loops = loopsFor(scene, key, `${def.sprite.atlas}/${def.sprite.key}`, set);
-    const scale = 2 * (sprite!.scale ?? 1) * (def.sprite.scale ?? 1);
-    const tint = softTint(def.sprite.tint);
+    const { loops, dirLoops } = loopsFor(scene, key, `${def.sprite.atlas}/${def.sprite.key}`, set);
+    const scale = sheetScale(set) * (sprite!.scale ?? 1) * (def.sprite.scale ?? 1);
+    const tint = set.dirs ? undefined : softTint(def.sprite.tint);
     const height = set.height ? set.height * scale : undefined;
-    return () => ({ texture: key, frame: set.idle[0], flipX: false, scale, tint, loops, height });
+    return () => ({
+      texture: key,
+      frame: set.idle[0],
+      flipX: false,
+      scale,
+      tint,
+      loops,
+      dirLoops,
+      height,
+    });
   }
   return (dir) => ({ texture: monsterTextureKey(def.sprite.key, dir), flipX: false, scale: 1 });
 }
@@ -261,7 +290,16 @@ export function npcLook(scene: Phaser.Scene, manifest: SpriteManifest, id: strin
   const set = atlas?.sprites[id]?.frames;
   if (!atlas?.image || !set) return null;
   const key = sheetKey(atlas.image);
-  const loops = loopsFor(scene, key, `npc/${id}`, set);
-  const height = set.height ? set.height * 2 : undefined;
-  return () => ({ texture: key, frame: set.idle[0], flipX: false, scale: 2, loops, height });
+  const { loops, dirLoops } = loopsFor(scene, key, `npc/${id}`, set);
+  const scale = sheetScale(set);
+  const height = set.height ? set.height * scale : undefined;
+  return () => ({
+    texture: key,
+    frame: set.idle[0],
+    flipX: false,
+    scale,
+    loops,
+    dirLoops,
+    height,
+  });
 }

@@ -9,7 +9,8 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
-import { buildActors, buildFx } from './actors.ts';
+import { buildFx } from './actors.ts';
+import { buildOtspActors } from './otsp-actors.ts';
 import { buildHitFx } from './hit-fx.ts';
 import { buildItemIcons } from './item-icons.ts';
 import { buildWorldMap } from './gen-worldmap.ts';
@@ -286,8 +287,8 @@ propSlots.forEach(({ sheet, index }, id) => {
 });
 
 writeFileSync(new URL('sprites/tiles.png', assets), PNG.sync.write(tiles));
-const actorFrames = buildActors(assets);
 const fxCount = buildFx(assets);
+console.log(`wrote assets/sprites/fx.png (${fxCount})`);
 console.log(`wrote assets/sprites/hitfx.png (${buildHitFx(assets)} frames)`);
 const iconCount = buildUiIcons(
   assets,
@@ -299,7 +300,8 @@ const itemIconCount = buildItemIcons(
   new URL('../../../apps/client/src/ui/itemIcons.generated.ts', import.meta.url),
 );
 console.log(`wrote assets/sprites/items.png (${itemIconCount} pixel icons)`);
-console.log(`wrote assets/sprites/actors.png (${actorFrames} frames) and fx.png (${fxCount})`);
+const creatures = buildOtspActors(assets);
+console.log(`wrote assets/sprites/creatures.png (${creatures.cells} frames)`);
 writeFileSync(new URL('sprites/props.png', assets), PNG.sync.write(props));
 const worldNodes = buildWorldMap(
   assets,

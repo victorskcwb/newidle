@@ -66,7 +66,7 @@ function HeroPanel() {
         aria-label={t('screen.character')}
       >
         <span className="portrait-art">
-          <HeroSprite outfit={hero.appearance.outfit} scale={1.8} />
+          <HeroSprite outfit={hero.appearance.outfit} scale={1} />
         </span>
         <span className="portrait-level pixel">{p.level}</span>
       </button>

@@ -61,7 +61,7 @@ export function CreateHeroScreen({ onCreate }: { onCreate: (hero: NewHeroChoice)
                 className={`look${outfit === i ? ' active' : ''}`}
                 onClick={() => setOutfit(i)}
               >
-                <HeroSprite outfit={i} scale={2} />
+                <HeroSprite outfit={i} scale={1.2} />
               </button>
             ))}
           </div>

@@ -31,6 +31,15 @@ const frameSet = z.strictObject({
   hit: frameList.optional(),
   /** Height of the drawing inside the cell, in sheet pixels (labels sit above it). */
   height: z.number().int().min(1).optional(),
+  /** Frames per facing, for sheets drawn in four directions (no mirroring). */
+  dirs: z
+    .strictObject({
+      up: z.strictObject({ idle: frameList, run: frameList }),
+      right: z.strictObject({ idle: frameList, run: frameList }),
+      down: z.strictObject({ idle: frameList, run: frameList }),
+      left: z.strictObject({ idle: frameList, run: frameList }),
+    })
+    .optional(),
 });
 export type FrameSet = z.infer<typeof frameSet>;
 

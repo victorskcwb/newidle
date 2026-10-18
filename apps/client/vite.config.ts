@@ -33,9 +33,9 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,json,tmj}'],
+        globPatterns: ['**/*.{js,css,html,png,json,tmj}', 'vendor/kenney-audio/*.ogg'],
         // Source sheets and the placeholder tiles are only read by the art tools.
-        globIgnores: ['vendor/**', 'sprites/placeholder_tiles.png'],
+        globIgnores: ['vendor/!(kenney-audio)/**', 'vendor/*.png', 'sprites/placeholder_tiles.png'],
         // The Phaser bundle is larger than Workbox's 2 MB default.
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         runtimeCaching: [

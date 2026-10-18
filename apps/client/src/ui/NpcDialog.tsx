@@ -30,7 +30,7 @@ function NpcPortrait({ id }: { id: string }) {
         width={atlas.frameWidth}
         height={atlas.frameHeight ?? atlas.frameWidth}
         columns={atlas.columns ?? 16}
-        scale={2.5}
+        scale={1.3}
       />
     </span>
   );

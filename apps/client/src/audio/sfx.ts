@@ -17,11 +17,55 @@ export type SoundName =
 const MAX_PER_WINDOW = 4;
 
 /**
- * Sound effects synthesized with Web Audio: no audio files, so nothing to license. The
- * context starts on the first tap or key press (browsers block audio before a gesture).
+ * Recorded samples from Kenney's RPG Audio, Impact Sounds and Interface Sounds (CC0, in
+ * assets/vendor/kenney-audio), a random variant each time with a slight pitch change; the
+ * fanfares (level up, boss, legendary) layer a synthesized chord over them. Until a sample
+ * has loaded, the synthesized version plays. The context starts on the first tap or key
+ * press (browsers block audio before a gesture).
  */
+const SAMPLES: Partial<Record<SoundName, { files: string[]; gain: number }>> = {
+  hit: {
+    files: [
+      'impactMetal_medium_000',
+      'impactMetal_medium_001',
+      'impactMetal_medium_002',
+      'knifeSlice',
+      'knifeSlice2',
+    ],
+    gain: 0.55,
+  },
+  crit: {
+    files: ['impactMetal_heavy_000', 'impactMetal_heavy_001', 'impactPlate_heavy_000'],
+    gain: 0.75,
+  },
+  miss: { files: ['drawKnife1', 'drawKnife2', 'drawKnife3'], gain: 0.35 },
+  hurt: {
+    files: ['impactPunch_medium_000', 'impactPunch_medium_001', 'impactPunch_heavy_000'],
+    gain: 0.6,
+  },
+  kill: { files: ['impactSoft_heavy_000', 'impactSoft_medium_000'], gain: 0.6 },
+  potion: { files: ['impactGlass_light_000', 'impactGlass_light_001'], gain: 0.55 },
+  levelUp: { files: ['confirmation_004'], gain: 0.7 },
+  card: { files: ['bookFlip1', 'pluck_001'], gain: 0.6 },
+  bossAppear: { files: ['impactBell_heavy_000'], gain: 0.8 },
+  bossDefeat: { files: ['confirmation_002'], gain: 0.7 },
+  drop_common: { files: ['cloth1', 'cloth2'], gain: 0.35 },
+  drop_magic: { files: ['handleCoins', 'handleCoins2'], gain: 0.45 },
+  drop_rare: { files: ['glass_001'], gain: 0.55 },
+  drop_epic: { files: ['glass_003', 'maximize_006'], gain: 0.6 },
+  drop_legendary: { files: ['confirmation_001'], gain: 0.8 },
+};
+/** Sounds that keep their synthesized layer on top of the sample. */
+const LAYERED = new Set<SoundName>([
+  'levelUp',
+  'bossAppear',
+  'bossDefeat',
+  'drop_legendary',
+  'drop_epic',
+]);
 export class Sfx {
   private ctx: AudioContext | null = null;
+  private buffers = new Map<string, AudioBuffer>();
   private master: GainNode | null = null;
   private windowStart = 0;
   private inWindow = 0;
@@ -44,9 +88,39 @@ export class Sfx {
       this.ctx = new AudioContext();
       this.master = this.ctx.createGain();
       this.master.connect(this.ctx.destination);
+      this.loadSamples(this.ctx);
     } catch {
       this.ctx = null;
     }
+  }
+
+  private loadSamples(ctx: AudioContext) {
+    const files = new Set(Object.values(SAMPLES).flatMap((s) => s.files));
+    for (const name of files) {
+      void fetch(`vendor/kenney-audio/${name}.ogg`)
+        .then((r) => r.arrayBuffer())
+        .then((data) => ctx.decodeAudioData(data))
+        .then((buffer) => this.buffers.set(name, buffer))
+        .catch(() => undefined);
+    }
+  }
+
+  /** Plays a random loaded variant; false when none is ready yet. */
+  private sample(name: SoundName, at: number): boolean {
+    const spec = SAMPLES[name];
+    if (!spec) return false;
+    const ready = spec.files.map((f) => this.buffers.get(f)).filter((b) => b !== undefined);
+    if (ready.length === 0) return false;
+    const ctx = this.ctx!;
+    const src = ctx.createBufferSource();
+    // Presentation only: Math.random is fine outside the engine.
+    src.buffer = ready[Math.floor(Math.random() * ready.length)]!;
+    src.playbackRate.value = 0.92 + Math.random() * 0.16;
+    const g = ctx.createGain();
+    g.gain.value = spec.gain;
+    src.connect(g).connect(this.master!);
+    src.start(at);
+    return true;
   }
 
   setVolume(enabled: boolean, volume: number) {
@@ -64,6 +138,7 @@ export class Sfx {
     }
     if (++this.inWindow > MAX_PER_WINDOW && !name.startsWith('drop_') && name !== 'levelUp') return;
     this.master.gain.value = this.volume * 0.35;
+    if (this.sample(name, now) && !LAYERED.has(name)) return;
     switch (name) {
       case 'hit':
         this.noise(now, 0.06, 1800, 0.5);

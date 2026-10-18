@@ -44,7 +44,7 @@ export function MonsterSprite({ monster }: { monster: Monster }) {
         width={atlas.frameWidth}
         height={atlas.frameHeight ?? atlas.frameWidth}
         columns={atlas.columns ?? 16}
-        scale={2}
+        scale={1}
       />
     </span>
   );
@@ -260,7 +260,7 @@ export function WorldMap({ rates }: { rates: Record<string, RateSheet> }) {
                 data-testid={`map-node-${n.id}`}
               >
                 {here ? (
-                  <HeroSprite outfit={s.hero.appearance.outfit} scale={0.9} />
+                  <HeroSprite outfit={s.hero.appearance.outfit} scale={0.6} />
                 ) : (
                   <Icon name={locked ? 'quests' : 'hunt'} size={16} />
                 )}

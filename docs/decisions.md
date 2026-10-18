@@ -197,6 +197,12 @@ O Victor saiu e pediu para seguir sozinho com o que eu recomendasse. Tudo abaixo
 
 127. **Partida rápida:** mandar caçar leva no máximo 2 s (a caminhada até o portão), em vez dos 10 a 14 s de viagem da caçada, que pareciam a tela congelada na vila. As voltas automáticas depois de abastecer mantêm o tempo de viagem, que entra nas taxas e no offline. A vila some assim que o engine registra a chegada, e a faixa da vila segue a atividade real (descansando, abastecendo, partindo com contagem).
 
+## Personagens do OpenTibia Sprite Pack e sons gravados (2026-10-18)
+
+128. **Clients do Tibia recusados:** as pastas `tibia-client-15.25.0a00a0` e `tibia-1533-assets` são o client oficial da CipSoft (sprites, mapa e sons, sem licença). Mesmo com a restrição 1 do prompt liberada pelo Victor, a arte tem dono e não foi usada; as pastas estão no `.gitignore`.
+129. **Personagens do OpenTibia Sprite Pack (CC BY 4.0):** o leitor de `otsp.dat`/`otsp.spr` (formato 10.41) em `tools/content-build/src/otsp-actors.ts` monta `sprites/creatures.png` com o herói (4 visuais), os 8 moradores e os 27 monstros, em 4 direções com a animação de andar e na escala nativa de 32 px por tile (sem espelhar). As roupas de jogador são coloridas pela máscara do pack (cabeça, corpo, pernas, pés), como no Tibia. O 0x72 ficou só para a espada do herói.
+130. **Sons gravados da Kenney (CC0):** golpes de metal, críticos pesados, socos ao apanhar, vidro na poção, moedas e pano nos drops, sino no chefe e acordes de confirmação; cada som escolhe uma variante e varia levemente o tom. Level up, chefe e lendário mantêm o acorde sintetizado por cima. Os sons entram no pré-cache do PWA (o pré-cache foi a 6,7 MB).
+
 ## Perguntas para revisão
 
 - ~~**Resets cada vez mais rápidos (seção 12.2):** a meta "cada reset chega ao 100 pelo menos 10% mais rápido que o anterior, até o reset 10" não é atingida. No simulador (perfil ativo), os ciclos ficam em 3,0 → 1,9 → 1,8 → 1,6 → 1,7 → 1,8 → 1,4 dias: caem no começo e depois estabilizam. Com 10 pontos por reset (a fórmula da seção 8.1, até a masmorra do marco 3) e a Sabedoria dando +10% de XP por nível com custo linear, o bônus de XP não cresce 10% a cada ciclo. Opções: (a) pontos de reset crescerem com o número do reset (ex.: 10 + 2 × resets); (b) Sabedoria multiplicativa (×1,1 por nível); (c) aceitar até a masmorra existir. Recomendo (a), porque é uma linha de conteúdo/constante e mantém a loja simples.~~ Resolvido: decisões 68–70.

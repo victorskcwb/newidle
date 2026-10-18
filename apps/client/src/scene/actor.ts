@@ -28,6 +28,8 @@ export interface Look {
   height?: number;
   /** Frame animations of the sheet (Phaser animation keys), looping while idle or running. */
   loops?: { idle: string; run: string; hit?: string };
+  /** The same per facing, for sheets drawn in four directions (then nothing is mirrored). */
+  dirLoops?: Record<Direction, { idle: string; run: string }>;
   /** A weapon held in front of the body, swung on attacks. */
   weapon?: { texture: string; frame: number };
 }
@@ -125,7 +127,7 @@ export class Actor {
   }
 
   private playLoop(kind: 'idle' | 'run', force = false) {
-    const key = this.look.loops?.[kind];
+    const key = this.look.dirLoops?.[this.dir][kind] ?? this.look.loops?.[kind];
     if (!key) return;
     if (!force && this.sprite.anims.currentAnim?.key === key) return;
     if (this.scene.time.now < this.hitUntil) return;
@@ -135,7 +137,7 @@ export class Actor {
   /** The sheets face right; left is mirrored, and up/down keep the last side. */
   private setFacing(left: boolean) {
     this.facingLeft = left;
-    this.sprite.setFlipX(left);
+    this.sprite.setFlipX(left && !this.look.dirLoops);
     const side = left ? -1 : 1;
     this.weapon
       .setFlipX(left)
@@ -166,8 +168,11 @@ export class Actor {
     if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
     const dir: Direction =
       Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'up' : 'down';
+    const turned = dir !== this.dir;
     this.dir = dir;
     if (Math.abs(dx) >= 1 && dx < 0 !== this.facingLeft) this.setFacing(dx < 0);
+    // Four-direction sheets switch to the animation of the new facing.
+    if (turned && this.look.dirLoops) this.playLoop(this.moving ? 'run' : 'idle');
   }
 
   setHp(ratio: number) {

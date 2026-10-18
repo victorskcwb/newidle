@@ -1795,8 +1795,8 @@ input[type='range'] {
 
 .mob-sprite {
   position: relative;
-  width: 48px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   flex: none;
   overflow: hidden;
 }
@@ -2412,7 +2412,7 @@ input[type='range'] {
 }
 
 .adv-mob .mob-sprite {
-  transform: scale(1.5);
+  transform: scale(1.2);
   transform-origin: bottom center;
   margin: 0 8px;
 }
