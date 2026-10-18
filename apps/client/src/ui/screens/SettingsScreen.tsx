@@ -4,6 +4,7 @@ import { t } from '../../i18n.ts';
 import { Reminders } from '../../game/notify.ts';
 import { GFX_KEYS, usePrefs } from '../../state/prefs.ts';
 import { useUi } from '../../state/store.ts';
+import { PRESETS, presetLayout, useWindows } from '../../state/windows.ts';
 import { Sheet, tryIntent } from '../Sheet.tsx';
 import { useSim } from '../useSim.ts';
 import { Icon } from '../Icon.tsx';
@@ -16,6 +17,8 @@ export function SettingsScreen() {
   const sim = useSim();
   const prefs = usePrefs();
   const openScreen = useUi((s) => s.openScreen);
+  const windows = useWindows();
+  const [layoutNote, setLayoutNote] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const st = sim.state.settings;
   const current: PotionSettings = {
@@ -155,6 +158,50 @@ export function SettingsScreen() {
           onChange={(e) => prefs.set({ volume: Number(e.target.value) / 100 })}
         />
       </label>
+
+      <h3 className="pixel">{t('settings.windows')}</h3>
+      <p className="muted small">{t('settings.windowsHint')}</p>
+      <div className="choice-row" data-testid="layouts">
+        {PRESETS.map((id) => (
+          <button
+            key={id}
+            type="button"
+            className="filter-chip"
+            onClick={() => {
+              windows.apply(presetLayout(id));
+              setLayoutNote(t('settings.layoutApplied', { name: t(`settings.layout.${id}`) }));
+            }}
+            data-testid={`layout-${id}`}
+          >
+            {t(`settings.layout.${id}`)}
+          </button>
+        ))}
+      </div>
+      <div className="choice-row">
+        <button
+          type="button"
+          className="filter-chip"
+          onClick={() => {
+            windows.saveMine();
+            setLayoutNote(t('settings.layoutSaved'));
+          }}
+        >
+          {t('settings.layout.saveMine')}
+        </button>
+        <button
+          type="button"
+          className="filter-chip"
+          disabled={!windows.mine()}
+          onClick={() => {
+            const mine = windows.mine();
+            if (mine) windows.apply(mine);
+            setLayoutNote(t('settings.layoutApplied', { name: t('settings.layout.mine') }));
+          }}
+        >
+          {t('settings.layout.mine')}
+        </button>
+      </div>
+      {layoutNote && <p className="small tone-good">{layoutNote}</p>}
 
       <h3 className="pixel">{t('settings.graphics')}</h3>
       <p className="muted small">{t('settings.graphicsHint')}</p>

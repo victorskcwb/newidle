@@ -1,31 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { t } from '../i18n.ts';
-
-interface Pos {
-  x: number;
-  y: number;
-}
-
-const KEY = 'abismo.windows';
-
-function loadPos(id: string): Pos | null {
-  try {
-    const all = JSON.parse(localStorage.getItem(KEY) ?? '{}') as Record<string, Pos>;
-    return all[id] ?? null;
-  } catch {
-    return null;
-  }
-}
-
-function savePos(id: string, pos: Pos) {
-  try {
-    const all = JSON.parse(localStorage.getItem(KEY) ?? '{}') as Record<string, Pos>;
-    all[id] = pos;
-    localStorage.setItem(KEY, JSON.stringify(all));
-  } catch {
-    // Private mode or blocked storage: the window just opens at its default place.
-  }
-}
+import { useWindows, type WinPos as Pos, type WindowId } from '../state/windows.ts';
 
 /**
  * A small window over the map: drag it by the title bar, minimise it to the bar, close it.
@@ -42,7 +17,7 @@ export function FloatWindow({
   children,
   testId,
 }: {
-  id: string;
+  id: WindowId;
   title: string;
   icon?: ReactNode;
   /** Default position (px from the top left), used until the player moves it. */
@@ -53,7 +28,13 @@ export function FloatWindow({
   children: ReactNode;
   testId?: string;
 }) {
-  const [pos, setPos] = useState<Pos>(() => loadPos(id) ?? initial);
+  // Placed by the player or a layout preset; the local copy follows drags smoothly.
+  const stored = useWindows((w) => w.pos[id]);
+  const move = useWindows((w) => w.move);
+  const [pos, setPos] = useState<Pos>(() => stored ?? initial);
+  useEffect(() => {
+    if (stored && !drag.current) setPos(stored);
+  }, [stored]);
   const [min, setMin] = useState(false);
   const drag = useRef<{ dx: number; dy: number } | null>(null);
   const box = useRef<HTMLElement>(null);
@@ -93,7 +74,7 @@ export function FloatWindow({
           });
         }}
         onPointerUp={() => {
-          if (drag.current) savePos(id, pos);
+          if (drag.current) move(id, pos);
           drag.current = null;
         }}
       >

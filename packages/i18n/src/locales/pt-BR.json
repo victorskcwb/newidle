@@ -728,5 +728,15 @@
   "monster.ember_herald": "Arauto das brasas",
   "card.ember_herald": "Arauto das brasas",
   "monster.cinder_worm": "Verme de brasa",
-  "card.cinder_worm": "Verme de brasa"
+  "card.cinder_worm": "Verme de brasa",
+  "settings.windows": "Janelas",
+  "settings.windowsHint": "Arrume o inventário e o registro de uma vez. Você ainda pode arrastar cada janela pelo título.",
+  "settings.layout.default": "Padrão",
+  "settings.layout.hunt": "Caçada",
+  "settings.layout.loot": "Loot",
+  "settings.layout.clean": "Tela limpa",
+  "settings.layout.saveMine": "Salvar como meu layout",
+  "settings.layout.mine": "Meu layout",
+  "settings.layoutApplied": "Layout \"{name}\" aplicado.",
+  "settings.layoutSaved": "Layout salvo neste aparelho."
 }

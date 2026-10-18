@@ -88,7 +88,7 @@ export const useUi = create<UiState>((set) => ({
   pushLog: (line) =>
     set((s) => ({ log: [...s.log.slice(-(LOG_LIMIT - 1)), { ...line, id: ++logId }] })),
   openBackpack: (backpackOpen) => set({ backpackOpen, selectedUid: null, hover: null }),
-  openScreen: (screen) => set({ screen, backpackOpen: false, selectedUid: null }),
+  openScreen: (screen) => set({ screen, selectedUid: null }),
   setTab: (tab) => set({ tab, selectedUid: null }),
   select: (selectedUid) => set({ selectedUid }),
   setTown: (town) => set(town ? { town } : { town, npc: null }),
