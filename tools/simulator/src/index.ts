@@ -5,6 +5,7 @@
  * better gear, skill points, refining, salvage, reset at level 100, reset shop.
  *
  *   pnpm sim [profile=active|casual] [days=20] [seed=1]
+ *   PROFESSIONS=1 also gathers and crafts; SIM_TAG=x writes <profile>x.csv.
  *
  * Writes tools/simulator/out/<profile>.csv (one row per session) and prints a summary
  * against the targets of section 12.2.
@@ -161,14 +162,11 @@ function professions(s: GameState) {
   const recipes = [...content.recipes.values()].filter(
     (r) =>
       r.professionId === 'alchemy' &&
-      (process.env.PROF_NO_POTIONS !== '1' ||
-        (!r.id.startsWith('alch_hp') && !r.id.startsWith('alch_mana'))) &&
       r.level <= level &&
       Object.keys(r.inputs).every((id) => (content.resources.get(id)?.tier ?? 9) <= huntTier),
   );
   const best = recipes[recipes.length - 1];
-  if (process.env.PROF_NO_RECIPE !== '1' && best && s.professions.recipe !== best.id)
-    setRecipe(s, content, best.id);
+  if (best && s.professions.recipe !== best.id) setRecipe(s, content, best.id);
 }
 
 function session(s: GameState) {
