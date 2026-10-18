@@ -127,6 +127,12 @@ export const RESPEC_BASE_COST = 200;
 
 // --- Refine (section 7.5) -------------------------------------------------------------------
 export const MAX_REFINE = 15;
+/** Refine gold = factor × N² × max(minIlvl, item level). */
+export const REFINE_GOLD_FACTOR = 30;
+export const REFINE_MIN_ILVL = 5;
+/** Crystals and cores per attempt from +11: this × (N − 10). */
+export const REFINE_CRYSTALS_PER_LEVEL = 3;
+export const REFINE_CORES_PER_LEVEL = 2;
 /** Failed attempts for this level and above drop the item one level. */
 export const REFINE_LOSES_LEVEL_FROM = 10;
 /** Success chance by target level (index = target, 1..15), in ppm. */

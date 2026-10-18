@@ -128,7 +128,12 @@ describe('skill tree', () => {
 
 function withMaterials(s: GameState) {
   s.gold = 1_000_000_000n;
-  s.materials = { fragment: 10_000_000n, essence: 10_000_000n, crystal: 10_000_000n };
+  s.materials = {
+    fragment: 10_000_000n,
+    essence: 10_000_000n,
+    crystal: 10_000_000n,
+    core: 10_000_000n,
+  };
 }
 
 describe('refine (section 7.5)', () => {
@@ -138,10 +143,15 @@ describe('refine (section 7.5)', () => {
   });
 
   it('costs gold and materials, growing with the level', () => {
-    expect(refineCost(1)).toEqual({ gold: 50n, materials: { fragment: 3 } });
+    expect(refineCost(1)).toEqual({ gold: 150n, materials: { fragment: 3 } });
     expect(refineCost(12)).toEqual({
-      gold: 7200n,
-      materials: { fragment: 36, essence: 7, crystal: 2 },
+      gold: 21_600n,
+      materials: { fragment: 36, essence: 7, crystal: 6, core: 4 },
+    });
+    // High item levels cost more gold.
+    expect(refineCost(15, 93)).toEqual({
+      gold: 627_750n,
+      materials: { fragment: 45, essence: 10, crystal: 15, core: 10 },
     });
     const s = newGame();
     expect(intentCode(() => refineItem(s, content, 1))).toBe('refine_gold');

@@ -92,7 +92,12 @@ describe('professions', () => {
   it('a tempering stone adds 10 points to a refine attempt and is spent', () => {
     const s = newGame();
     s.gold = 10_000_000_000n;
-    s.materials = { fragment: 10_000_000n, essence: 10_000_000n, crystal: 10_000_000n };
+    s.materials = {
+      fragment: 10_000_000n,
+      essence: 10_000_000n,
+      crystal: 10_000_000n,
+      core: 10_000_000n,
+    };
     const item = s.hero.equipment.weapon!;
     item.refine = 6;
     expect(() => refineItem(s, content, item.uid, false, true)).toThrow(IntentError);

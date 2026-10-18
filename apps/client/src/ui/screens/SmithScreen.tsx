@@ -46,7 +46,7 @@ export function SmithScreen() {
   const choices = [...equipped, ...s.backpack, ...s.stash];
   const item = uid !== null ? findItem(s, uid) : undefined;
   const target = item ? item.refine + 1 : 0;
-  const cost = item && item.refine < MAX_REFINE ? refineCost(target) : null;
+  const cost = item && item.refine < MAX_REFINE ? refineCost(target, item.ilvl) : null;
   const block = item
     ? refineBlock(s, item, protect, protectionId, temper && stones > 0, temperingId)
     : null;

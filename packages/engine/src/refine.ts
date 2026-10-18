@@ -1,5 +1,14 @@
 import type { ContentDb } from '@abismo/content';
-import { MAX_REFINE, PPM, REFINE_LOSES_LEVEL_FROM, REFINE_SUCCESS_PPM } from './constants.ts';
+import {
+  MAX_REFINE,
+  PPM,
+  REFINE_CORES_PER_LEVEL,
+  REFINE_CRYSTALS_PER_LEVEL,
+  REFINE_GOLD_FACTOR,
+  REFINE_LOSES_LEVEL_FROM,
+  REFINE_MIN_ILVL,
+  REFINE_SUCCESS_PPM,
+} from './constants.ts';
 import { IntentError } from './progression.ts';
 import { questProgress } from './quests.ts';
 import { rngChance } from './rng.ts';
@@ -16,14 +25,17 @@ export function refineChancePpm(target: number): number {
 }
 
 /**
- * Cost of an attempt to reach `target`: gold grows with the square of the level; fragments
- * always, essences from +6 and crystals from +11.
+ * Cost of an attempt to reach `target` on an item of level `ilvl` (decision 152): gold grows
+ * with the square of the refine level and with the item level; fragments always, essences
+ * from +6, crystals and cores from +11.
  */
-export function refineCost(target: number): RefineCost {
+export function refineCost(target: number, ilvl = REFINE_MIN_ILVL): RefineCost {
   const materials: Record<string, number> = { fragment: 3 * target };
   if (target >= 6) materials.essence = target - 5;
-  if (target >= 11) materials.crystal = target - 10;
-  return { gold: BigInt(50 * target * target), materials };
+  if (target >= 11) materials.crystal = REFINE_CRYSTALS_PER_LEVEL * (target - 10);
+  if (target >= 11) materials.core = REFINE_CORES_PER_LEVEL * (target - 10);
+  const gold = REFINE_GOLD_FACTOR * target * target * Math.max(REFINE_MIN_ILVL, ilvl);
+  return { gold: BigInt(gold), materials };
 }
 
 /** The item with this uid wherever the hero keeps it (equipped, backpack or stash). */
@@ -53,7 +65,7 @@ export function refineBlock(
   temperingId = '',
 ): RefineBlock | null {
   if (item.refine >= MAX_REFINE) return 'max';
-  const cost = refineCost(item.refine + 1);
+  const cost = refineCost(item.refine + 1, item.ilvl);
   if (s.gold < cost.gold) return 'gold';
   for (const [id, qty] of Object.entries(cost.materials)) {
     if ((s.materials[id] ?? 0n) < BigInt(qty)) return 'materials';
@@ -89,7 +101,7 @@ export function refineItem(
   const block = refineBlock(s, item, useProtection, protectionId, useTempering, temperingId);
   if (block) throw new IntentError(`refine_${block}`);
   const target = item.refine + 1;
-  const cost = refineCost(target);
+  const cost = refineCost(target, item.ilvl);
   s.gold -= cost.gold;
   for (const [id, qty] of Object.entries(cost.materials)) {
     s.materials[id] = (s.materials[id] ?? 0n) - BigInt(qty);
