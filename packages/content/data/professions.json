@@ -13,6 +13,12 @@
       "icon": "items/herb_ashleaf"
     },
     {
+      "id": "fishing",
+      "nameKey": "profession.fishing",
+      "kind": "gathering",
+      "icon": "items/fish_minnow"
+    },
+    {
       "id": "smithing",
       "nameKey": "profession.smithing",
       "kind": "production",
@@ -23,6 +29,12 @@
       "nameKey": "profession.alchemy",
       "kind": "production",
       "icon": "items/potion_hp_small"
+    },
+    {
+      "id": "cooking",
+      "nameKey": "profession.cooking",
+      "kind": "production",
+      "icon": "items/meal_grilled_fish"
     }
   ],
   "resources": [
@@ -125,6 +137,56 @@
       "seconds": 38,
       "xp": 75,
       "icon": "items/herb_voidpetal"
+    },
+    {
+      "id": "fish_minnow",
+      "nameKey": "resource.fish_minnow",
+      "professionId": "fishing",
+      "tier": 1,
+      "level": 1,
+      "seconds": 30,
+      "xp": 6,
+      "icon": "items/fish_minnow"
+    },
+    {
+      "id": "fish_bogcarp",
+      "nameKey": "resource.fish_bogcarp",
+      "professionId": "fishing",
+      "tier": 2,
+      "level": 15,
+      "seconds": 32,
+      "xp": 14,
+      "icon": "items/fish_bogcarp"
+    },
+    {
+      "id": "fish_ghostfin",
+      "nameKey": "resource.fish_ghostfin",
+      "professionId": "fishing",
+      "tier": 3,
+      "level": 30,
+      "seconds": 34,
+      "xp": 28,
+      "icon": "items/fish_ghostfin"
+    },
+    {
+      "id": "fish_embereel",
+      "nameKey": "resource.fish_embereel",
+      "professionId": "fishing",
+      "tier": 4,
+      "level": 50,
+      "seconds": 36,
+      "xp": 48,
+      "icon": "items/fish_embereel"
+    },
+    {
+      "id": "fish_abyssal",
+      "nameKey": "resource.fish_abyssal",
+      "professionId": "fishing",
+      "tier": 5,
+      "level": 70,
+      "seconds": 38,
+      "xp": 75,
+      "icon": "items/fish_abyssal"
     }
   ],
   "recipes": [
@@ -295,6 +357,71 @@
       },
       "outputs": {
         "core": 1
+      }
+    },
+    {
+      "id": "cook_grilled_fish",
+      "professionId": "cooking",
+      "level": 1,
+      "seconds": 40,
+      "xp": 29,
+      "inputs": {
+        "fish_minnow": 4
+      },
+      "outputs": {
+        "meal_grilled_fish": 2
+      }
+    },
+    {
+      "id": "cook_fish_stew",
+      "professionId": "cooking",
+      "level": 15,
+      "seconds": 40,
+      "xp": 67,
+      "inputs": {
+        "fish_bogcarp": 4
+      },
+      "outputs": {
+        "meal_fish_stew": 2
+      }
+    },
+    {
+      "id": "cook_lucky_pie",
+      "professionId": "cooking",
+      "level": 30,
+      "seconds": 40,
+      "xp": 134,
+      "inputs": {
+        "fish_ghostfin": 4
+      },
+      "outputs": {
+        "meal_lucky_pie": 2
+      }
+    },
+    {
+      "id": "cook_hunter_feast",
+      "professionId": "cooking",
+      "level": 50,
+      "seconds": 40,
+      "xp": 230,
+      "inputs": {
+        "fish_embereel": 4
+      },
+      "outputs": {
+        "meal_hunter_feast": 2
+      }
+    },
+    {
+      "id": "cook_abyss_banquet",
+      "professionId": "cooking",
+      "level": 70,
+      "seconds": 40,
+      "xp": 360,
+      "inputs": {
+        "fish_abyssal": 4
+      },
+      "outputs": {
+        "meal_abyss_banquet": 2
       }
     }
   ]

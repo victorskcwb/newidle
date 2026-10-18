@@ -30,6 +30,7 @@ import {
 import { pityRarity, recordDrop } from './pity.ts';
 import { bestiaryDamagePct } from './bestiary.ts';
 import { tickProfessions } from './professions.ts';
+import { tickMeal } from './meals.ts';
 import { sellPrice } from './town.ts';
 import { rollCard } from './cards.ts';
 import { questLoot, questProgress } from './quests.ts';
@@ -757,6 +758,7 @@ export function tickOnce(
   if (t % TICKS_PER_SECOND === 0 && a.kind !== 'dead') regenerate(s, stats);
   // Professions do not change combat, so rate sampling skips them.
   if (!o.freezeLevel) tickProfessions(s, content, t, out);
+  tickMeal(s, content, !!o.freezeLevel);
   switch (a.kind) {
     case 'idle_town':
       break;

@@ -31,6 +31,66 @@
       "kind": "refine_tempering",
       "restore": 0,
       "icon": "items/tempering_stone"
+    },
+    {
+      "id": "meal_grilled_fish",
+      "nameKey": "consumable.meal_grilled_fish",
+      "kind": "meal",
+      "restore": 0,
+      "icon": "items/meal_grilled_fish",
+      "buff": {
+        "stat": "goldPct",
+        "value": 10
+      },
+      "durationSeconds": 1800
+    },
+    {
+      "id": "meal_fish_stew",
+      "nameKey": "consumable.meal_fish_stew",
+      "kind": "meal",
+      "restore": 0,
+      "icon": "items/meal_fish_stew",
+      "buff": {
+        "stat": "xpPct",
+        "value": 5
+      },
+      "durationSeconds": 1800
+    },
+    {
+      "id": "meal_lucky_pie",
+      "nameKey": "consumable.meal_lucky_pie",
+      "kind": "meal",
+      "restore": 0,
+      "icon": "items/meal_lucky_pie",
+      "buff": {
+        "stat": "magicFindPct",
+        "value": 15
+      },
+      "durationSeconds": 1800
+    },
+    {
+      "id": "meal_hunter_feast",
+      "nameKey": "consumable.meal_hunter_feast",
+      "kind": "meal",
+      "restore": 0,
+      "icon": "items/meal_hunter_feast",
+      "buff": {
+        "stat": "damagePct",
+        "value": 8
+      },
+      "durationSeconds": 1800
+    },
+    {
+      "id": "meal_abyss_banquet",
+      "nameKey": "consumable.meal_abyss_banquet",
+      "kind": "meal",
+      "restore": 0,
+      "icon": "items/meal_abyss_banquet",
+      "buff": {
+        "stat": "xpPct",
+        "value": 8
+      },
+      "durationSeconds": 1800
     }
   ],
   "materials": [

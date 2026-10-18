@@ -32,7 +32,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
     refine: 0,
   };
   const s: GameState = {
-    version: 12,
+    version: 13,
     tick: 0,
     rng: createRng(hero.seed),
     nextUid: 2,
@@ -55,6 +55,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
       freeRespec: false,
       resets: { count: 0, points: 0, upgrades: {}, newBossesThisCycle: 0 },
       cards: {},
+      meal: null,
     },
     backpack: [],
     stash: [],
@@ -74,6 +75,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
       lootFilter: { keepFromRarity: 'common', alwaysKeepAffixes: [] },
       targetPriority: 'first',
       autoSellUpTo: null,
+      mealId: null,
     },
     hunt: null,
     activity: { kind: 'idle_town' },

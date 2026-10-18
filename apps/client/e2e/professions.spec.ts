@@ -13,6 +13,11 @@ test('gathering and production while hunting', async ({ page }) => {
   await expect(page.getByTestId('recipe-smith_fragments')).toHaveText('Parar');
   // A recipe above the level stays locked.
   await expect(page.getByTestId('recipe-smith_tempering_iron')).toBeDisabled();
+  // Fishing feeds cooking; the chosen meal is eaten while hunting.
+  await page.getByTestId('gather-fishing').click();
+  await expect(page.getByTestId('gather-now')).toContainText('Lambari-cinza');
+  await page.getByTestId('meal-meal_grilled_fish').click();
+  await expect(page.getByTestId('meal-meal_grilled_fish')).toHaveText('Parar');
   await page.getByRole('button', { name: 'Fechar' }).last().click();
   expect(errors).toEqual([]);
 });

@@ -106,6 +106,57 @@ function RecipeRow({ recipe, onPick }: { recipe: Recipe; onPick: () => void }) {
   );
 }
 
+/** The meal the hero eats while hunting, with the one under way. */
+function MealPicker({ onError }: { onError: (e: string | null) => void }) {
+  const sim = useSim();
+  const s = sim.state;
+  const meals = [...sim.content.consumables.values()].filter((c) => c.kind === 'meal');
+  const current = s.hero.meal ? sim.content.consumables.get(s.hero.meal.mealId) : undefined;
+  return (
+    <>
+      <h3 className="pixel">{t('meal.title')}</h3>
+      <p className="muted small">{t('meal.hint')}</p>
+      {current && s.hero.meal && (
+        <p className="tone-good small" data-testid="meal-now">
+          {t('meal.now', {
+            meal: t(current.nameKey),
+            minutes: Math.ceil(s.hero.meal.ticksLeft / 600),
+          })}
+        </p>
+      )}
+      <ul className="recipe-list">
+        {meals.map((m) => {
+          const chosen = s.settings.mealId === m.id;
+          return (
+            <li key={m.id} className={`recipe${chosen ? ' active' : ''}`}>
+              <div className="recipe-body">
+                <div className="recipe-out">
+                  <PixelIcon name={`consumable.${m.id}`} size={22} />
+                  <span>
+                    {t(m.nameKey)} ({formatNumber(s.consumables[m.id] ?? 0)})
+                  </span>
+                </div>
+                <div className="small muted">
+                  {m.buff && t(`stat.${m.buff.stat}`, { value: m.buff.value })} ·{' '}
+                  {t('meal.duration', { minutes: (m.durationSeconds ?? 0) / 60 })}
+                </div>
+              </div>
+              <button
+                type="button"
+                className="btn btn-small"
+                data-testid={`meal-${m.id}`}
+                onClick={() => onError(tryIntent(() => sim.setMeal(chosen ? null : m.id)))}
+              >
+                {chosen ? t('meal.stop') : t('meal.eat')}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </>
+  );
+}
+
 /** Professions (GDD 3.2): gathering beside the hunt, production any time, levels 1–99. */
 export function ProfessionsScreen() {
   const sim = useSim();
@@ -198,6 +249,7 @@ export function ProfessionsScreen() {
           </ul>
         </section>
       ))}
+      <MealPicker onError={setError} />
       {error && <p className="tone-bad">{error}</p>}
     </Sheet>
   );

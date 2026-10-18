@@ -13,7 +13,8 @@ import { autoSell, killXp } from './hunt.ts';
 import { cardChancePpm, pityThreshold } from './cards.ts';
 import { addXp } from './progression.ts';
 import { questLoot, questProgress } from './quests.ts';
-import { categoryLoot, potionHoursLeft, type RateSheet } from './rates.ts';
+import { categoryLoot, computeRates, potionHoursLeft, type RateSheet } from './rates.ts';
+import { consumeMeals, fedTicks } from './meals.ts';
 import { rngBinomial, rngChance, rngInt, type RngState } from './rng.ts';
 import { heroStats } from './stats.ts';
 import { offlineCapTicks } from './upgrades.ts';
@@ -58,6 +59,7 @@ export interface OfflineReport {
   crafted: Record<string, number>;
   /** Profession levels gained while away: id → [before, after]. */
   professionLevels: Record<string, [number, number]>;
+  mealsEaten: number;
 }
 
 /** floor(x) plus one with probability frac(x): unbiased rounding of an expected count. */
@@ -158,12 +160,92 @@ function resolveProfessions(
   }
 }
 
+/**
+ * Resolves the time away (section 9.2). Meals change the hero's stats, so when the food runs
+ * out partway the time is resolved in two stretches: fed, with the given sheet, then unfed,
+ * with a sheet computed for the hero without a meal.
+ */
 export function resolveOffline(
   s: GameState,
   content: ContentDb,
   rates: RateSheet | null,
   elapsedTicks: number,
   capTicks = offlineCapTicks(s.hero, content),
+): OfflineReport {
+  const resolved = Math.max(0, Math.min(elapsedTicks, capTicks));
+  const fed = fedTicks(s, content);
+  const hunting = s.hunt !== null && s.activity.kind !== 'idle_town' && rates !== null;
+  if (!hunting || fed === 0 || fed >= resolved) {
+    const report = resolveStretch(s, content, rates, elapsedTicks, capTicks);
+    report.mealsEaten = consumeMeals(s, content, report.huntingTicks);
+    return report;
+  }
+  const first = resolveStretch(s, content, rates, fed, fed);
+  first.mealsEaten = consumeMeals(s, content, first.huntingTicks);
+  s.hero.meal = null;
+  const stillHunting = s.hunt !== null && s.activity.kind !== 'idle_town';
+  const unfed = stillHunting ? computeRates(s, content, s.hunt!.huntId) : null;
+  const second = resolveStretch(s, content, unfed, elapsedTicks - fed, capTicks - fed);
+  return mergeReports(first, second);
+}
+
+function addRecord(a: Record<string, number>, b: Record<string, number>) {
+  for (const [k, v] of Object.entries(b)) a[k] = (a[k] ?? 0) + v;
+}
+
+/** One report for two stretches of time away, in order. */
+export function mergeReports(a: OfflineReport, b: OfflineReport): OfflineReport {
+  const out: OfflineReport = {
+    ...a,
+    elapsedTicks: a.elapsedTicks + b.elapsedTicks,
+    resolvedTicks: a.resolvedTicks + b.resolvedTicks,
+    huntingTicks: a.huntingTicks + b.huntingTicks,
+    stoppedBy: b.stoppedBy ?? a.stoppedBy,
+    levelAfter: b.levelAfter,
+    xp: a.xp + b.xp,
+    xpLost: a.xpLost + b.xpLost,
+    gold: a.gold + b.gold,
+    goldSpent: a.goldSpent + b.goldSpent,
+    kills: a.kills + b.kills,
+    deaths: a.deaths + b.deaths,
+    bossKills: a.bossKills + b.bossKills,
+    potionsUsed: { ...a.potionsUsed },
+    potionsBought: { ...a.potionsBought },
+    dropsByRarity: { ...a.dropsByRarity },
+    items: [...a.items, ...b.items].sort(
+      (x, y) => rarityRank(y.rarity) - rarityRank(x.rarity) || x.uid - y.uid,
+    ),
+    materials: { ...a.materials },
+    consumables: { ...a.consumables },
+    newBosses: [...new Set([...a.newBosses, ...b.newBosses])],
+    cards: { ...a.cards },
+    unlockedHunts: [...new Set([...a.unlockedHunts, ...b.unlockedHunts])],
+    gathered: { ...a.gathered },
+    crafted: { ...a.crafted },
+    professionLevels: { ...a.professionLevels },
+    mealsEaten: a.mealsEaten + b.mealsEaten,
+  };
+  addRecord(out.potionsUsed, b.potionsUsed);
+  addRecord(out.potionsBought, b.potionsBought);
+  addRecord(out.dropsByRarity, b.dropsByRarity);
+  addRecord(out.materials, b.materials);
+  addRecord(out.consumables, b.consumables);
+  addRecord(out.cards, b.cards);
+  addRecord(out.gathered, b.gathered);
+  addRecord(out.crafted, b.crafted);
+  for (const [id, [from, to]] of Object.entries(b.professionLevels)) {
+    const before = out.professionLevels[id]?.[0] ?? from;
+    out.professionLevels[id] = [before, to];
+  }
+  return out;
+}
+
+function resolveStretch(
+  s: GameState,
+  content: ContentDb,
+  rates: RateSheet | null,
+  elapsedTicks: number,
+  capTicks: number,
 ): OfflineReport {
   const rng = s.rng;
   const resolvedTicks = Math.max(0, Math.min(elapsedTicks, capTicks));
@@ -194,6 +276,7 @@ export function resolveOffline(
     gathered: {},
     crafted: {},
     professionLevels: {},
+    mealsEaten: 0,
   };
   const hunting = s.hunt !== null && s.activity.kind !== 'idle_town' && rates !== null;
   if (!hunting || rates.huntId !== s.hunt!.huntId) {

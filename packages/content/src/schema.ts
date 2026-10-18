@@ -175,18 +175,25 @@ export const consumableSchema = z
     id,
     nameKey: key,
     /** hp/mana potions are drunk automatically; refine_protection is spent by the blacksmith. */
-    kind: z.enum(['hp', 'mana', 'refine_protection', 'refine_tempering']),
+    kind: z.enum(['hp', 'mana', 'refine_protection', 'refine_tempering', 'meal']),
     /** Flat amount restored. */
     restore: nonNegInt,
     /** Extra percent of the maximum restored, so potions stay useful at every level. */
     restorePct: z.number().int().min(0).max(100).optional(),
     /** Price at the potion seller; absent = not sold. */
     price: posInt.optional(),
+    /** Meals: the bonus while fed and how long one meal lasts (hunting time). */
+    buff: z.strictObject({ stat: statSchema, value: posInt }).optional(),
+    durationSeconds: posInt.optional(),
     icon: z.string().min(1),
   })
   .refine(
     (c) => (c.kind !== 'hp' && c.kind !== 'mana') || c.restore > 0 || (c.restorePct ?? 0) > 0,
     'potions must restore something',
+  )
+  .refine(
+    (c) => c.kind !== 'meal' || (!!c.buff && !!c.durationSeconds),
+    'meals need a buff and a duration',
   );
 export type Consumable = z.infer<typeof consumableSchema>;
 

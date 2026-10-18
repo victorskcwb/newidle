@@ -1,3 +1,4 @@
+import { mealMods } from './meals.ts';
 import {
   EQUIPMENT_SLOTS,
   type ContentDb,
@@ -152,7 +153,7 @@ function statsKey(hero: Hero): string {
   const ups = Object.entries(hero.resets.upgrades)
     .map(([id, l]) => `${id}${l}`)
     .join(',');
-  return `${hero.level}|${a.strength},${a.dexterity},${a.vitality},${a.energy}|${items}|${skills}|${ups}|${cards}`;
+  return `${hero.level}|${a.strength},${a.dexterity},${a.vitality},${a.energy}|${items}|${skills}|${ups}|${cards}|${hero.meal?.mealId ?? ''}`;
 }
 
 /** Derived stats of the hero. Cached per hero object; the cache key covers every input. */
@@ -195,6 +196,8 @@ export function computeHeroStats(hero: Hero, content: ContentDb): HeroStats {
   }
   // Cards and completed regions.
   add(cardMods(hero, content));
+  // The meal under way.
+  add(mealMods(hero, content));
   // Reset shop bonuses.
   add({
     xpPct: upgradeTotal(hero, content, 'xpPct'),

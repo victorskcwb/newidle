@@ -1,3 +1,4 @@
+import { eatIfHungry } from './meals.ts';
 import type { ContentDb, Rarity } from '@abismo/content';
 import {
   ELITE_DAMAGE_PCT,
@@ -72,6 +73,8 @@ export function newCounters(): SimCounters {
 /** Puts a copy of the hero at the start of a hunt (no travel), ready to sample it. */
 export function prepareSample(state: GameState, content: ContentDb, huntId: string): GameState {
   const s = cloneState(state);
+  // Fed when there is a meal to eat, so the sheet measures the setup the hero will hunt with.
+  eatIfHungry(s, content);
   const stats = heroStats(s.hero, content);
   const same = s.hunt?.huntId === huntId;
   s.hunt = { huntId, killsSinceBoss: same ? s.hunt!.killsSinceBoss : 0, consecutiveDeaths: 0 };
@@ -174,7 +177,7 @@ export function computeRates(
   const perHourRecord = (r: Record<string, number>) =>
     Object.fromEntries(Object.entries(r).map(([k, v]) => [k, perHour(v)]));
 
-  const stats = heroStats(state.hero, content);
+  const stats = heroStats(s.hero, content);
   const categories: KillCategory[] = [];
   const dropsPerHour = { common: 0, magic: 0, rare: 0, epic: 0, legendary: 0 } as Record<
     Rarity,

@@ -5,7 +5,7 @@
  * better gear, skill points, refining, salvage, reset at level 100, reset shop.
  *
  *   pnpm sim [profile=active|casual] [days=20] [seed=1]
- *   PROFESSIONS=alchemy|smithing also gathers and crafts; REFINE_MAX=15 refines past +9;
+ *   PROFESSIONS=alchemy|smithing|cooking also gathers and crafts; REFINE_MAX=15 refines past +9;
  *   SIM_TAG=x writes <profile>x.csv.
  *
  * Writes tools/simulator/out/<profile>.csv (one row per session) and prints a summary
@@ -25,6 +25,7 @@ import {
   performReset,
   professionLevel,
   setGathering,
+  setMeal,
   setRecipe,
   refineBlock,
   refineItem,
@@ -170,7 +171,11 @@ const PROFESSIONS = process.env.PROFESSIONS;
 function professions(s: GameState) {
   if (!PROFESSIONS) return;
   const [gather, craft] =
-    PROFESSIONS === 'smithing' ? ['mining', 'smithing'] : ['herbalism', 'alchemy'];
+    PROFESSIONS === 'smithing'
+      ? ['mining', 'smithing']
+      : PROFESSIONS === 'cooking'
+        ? ['fishing', 'cooking']
+        : ['herbalism', 'alchemy'];
   if (s.professions.gathering !== gather) setGathering(s, content, gather);
   const huntTier = s.hunt ? (content.hunts.get(s.hunt.huntId)?.gatherTier ?? 1) : 1;
   const level = professionLevel(s, craft);
@@ -182,6 +187,14 @@ function professions(s: GameState) {
   );
   const best = recipes[recipes.length - 1];
   if (best && s.professions.recipe !== best.id) setRecipe(s, content, best.id);
+  if (craft === 'cooking') {
+    // Eat the best meal in stock (the last one cooked).
+    const meals = [...content.consumables.values()].filter(
+      (c) => c.kind === 'meal' && (s.consumables[c.id] ?? 0) > 0,
+    );
+    const meal = meals[meals.length - 1];
+    if (meal && s.settings.mealId !== meal.id) setMeal(s, content, meal.id);
+  }
 }
 
 function session(s: GameState) {

@@ -10,6 +10,7 @@ import {
   claimLogin,
   setGathering,
   setRecipe,
+  setMeal,
   checkAchievements,
   setTitle,
   loginDue,
@@ -254,6 +255,11 @@ export class GameSim {
   setGathering(professionId: string | null) {
     setGathering(this.state, this.content, professionId);
     this.changed(false);
+  }
+
+  setMeal(mealId: string | null) {
+    setMeal(this.state, this.content, mealId);
+    this.changed(true);
   }
 
   setRecipe(recipeId: string | null) {

@@ -4,7 +4,7 @@ GDD 3.2: "skills de coleta alimentam produção, que alimenta combate". O que o 
 
 ## Regras
 
-- **Quatro ofícios, níveis 1 a 99.** Curva: XP do nível L ao L+1 = floor(50 × 1,09^(L−1)), ~2,5 milhões de XP até o 99.
+- **Seis ofícios, níveis 1 a 99.** Curva: XP do nível L ao L+1 = floor(50 × 1,09^(L−1)), ~2,5 milhões de XP até o 99.
 - **Coleta (Mineração, Herbalismo):** um ofício de coleta ativo por vez, em paralelo à caça. Coleta enquanto o herói está numa caçada (toda atividade fora da vila parada), como o combate. Cada caçada tem uma faixa de recurso (1 a 5); o herói coleta o melhor recurso com faixa ≤ a da caçada e nível exigido ≤ o dele. Velocidade: 1 unidade a cada `seconds` do recurso, +1% por nível acima do exigido (até +50%).
 - **Produção (Forja, Alquimia):** uma receita ativa por vez, que roda sempre (também na vila e offline) enquanto houver insumos. Cada receita tem nível exigido, insumos, produto, tempo e XP.
 - **Os produtos alimentam o que já existe:** a Alquimia faz poções e materiais de refino (essência, cristal, núcleo); a Forja faz fragmentos, a **liga de têmpera** (+10 pontos de chance numa tentativa de refino) e, no nível alto, o amuleto de proteção.
@@ -15,8 +15,8 @@ GDD 3.2: "skills de coleta alimentam produção, que alimenta combate". O que o 
 
 1. ✅ Conteúdo, engine (estado, tick, offline, refino com têmpera), save v12, testes.
 2. ✅ Tela de Ofícios (níveis, coleta, receitas), opção de têmpera no ferreiro, resumo offline, registro.
-3. 🟡 Conquistas de ofício (✅), simulador com ofícios, balanceamento.
-4. Pesca e Culinária com refeições (abaixo). Depois: lenhador.
+3. ✅ Conquistas de ofício, simulador com ofícios, balanceamento (decisões 148–149).
+4. ✅ Pesca e Culinária com refeições (abaixo, decisão 150). Depois: lenhador.
 
 ## Etapa 4 — Pesca, Culinária e refeições
 

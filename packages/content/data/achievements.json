@@ -312,12 +312,12 @@
       "titleKey": "title.prof_total_200"
     },
     {
-      "id": "prof_total_396",
-      "nameKey": "achievement.prof_total_396",
+      "id": "prof_total_594",
+      "nameKey": "achievement.prof_total_594",
       "kind": "profession_total",
-      "target": 396,
+      "target": 594,
       "points": 100,
-      "titleKey": "title.prof_total_396"
+      "titleKey": "title.prof_total_594"
     }
   ]
 }

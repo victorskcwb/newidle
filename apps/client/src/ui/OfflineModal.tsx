@@ -66,6 +66,7 @@ export function OfflineModal() {
             {(Object.keys(r.gathered).length > 0 || Object.keys(r.crafted).length > 0) && (
               <div className="offline-items" data-testid="offline-professions">
                 <div className="muted">{t('offline.professions')}</div>
+                {r.mealsEaten > 0 && <div>{t('offline.meals', { n: r.mealsEaten })}</div>}
                 {Object.entries(r.professionLevels).map(([id, [from, to]]) => (
                   <div key={id} className="tone-good">
                     {t('offline.professionLevel', {

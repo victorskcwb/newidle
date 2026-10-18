@@ -2808,3 +2808,12 @@ input[type='range'] {
   align-items: center;
   gap: 6px;
 }
+
+.meal-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 3px;
+  border-radius: 6px;
+  background: rgb(107 224 107 / 15%);
+  border: 1px solid rgb(107 224 107 / 40%);
+}

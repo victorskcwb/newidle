@@ -9,7 +9,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 12;
+export const SAVE_VERSION = 13;
 
 export interface SaveFile {
   version: number;
@@ -81,7 +81,7 @@ const quest = z.strictObject({
 });
 
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(12),
+  version: z.literal(13),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -109,6 +109,7 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
       newBossesThisCycle: nonNeg,
     }),
     cards: z.record(z.string(), nonNeg),
+    meal: z.strictObject({ mealId: id, ticksLeft: nonNeg }).nullable(),
   }),
   backpack: z.array(item),
   stash: z.array(item),
@@ -128,6 +129,7 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
     lootFilter: z.strictObject({ keepFromRarity: rarity, alwaysKeepAffixes: z.array(id) }),
     targetPriority: z.enum(['first', 'weakest', 'strongest']),
     autoSellUpTo: rarity.nullable(),
+    mealId: id.nullable(),
   }),
   hunt: z
     .strictObject({ huntId: id, killsSinceBoss: nonNeg, consecutiveDeaths: nonNeg })
@@ -294,6 +296,19 @@ export const SAVE_MIGRATIONS: Record<
       resources: {},
     },
   }),
+  /** v12 → v13: meals (none eaten, none chosen). */
+  12: (raw) => {
+    const state = raw.state as { hero: object; settings: object };
+    return {
+      ...raw,
+      state: {
+        ...state,
+        version: 13,
+        hero: { ...state.hero, meal: null },
+        settings: { ...state.settings, mealId: null },
+      },
+    };
+  },
 };
 
 export function encodeSave(state: GameState, savedAt: number): string {

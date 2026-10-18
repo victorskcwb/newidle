@@ -65,6 +65,8 @@ export interface Hero {
   resets: ResetProgress;
   /** Card copies by card id (section 8.4). */
   cards: Record<string, number>;
+  /** Meal under way: its bonus lasts `ticksLeft` more ticks of hunting. */
+  meal: { mealId: string; ticksLeft: number } | null;
 }
 
 export interface LootFilter {
@@ -79,6 +81,8 @@ export interface Settings {
   manaPotionThresholdPct: number;
   hpPotionId: string;
   manaPotionId: string;
+  /** Meal the hero eats when the last one ends (null: none). */
+  mealId: string | null;
   /** Potions bought up to this amount on every town visit (0 = never buy). */
   potionTarget: number;
   returnWhenOutOfPotions: boolean;
@@ -153,7 +157,7 @@ export interface DropPity {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 12;
+  version: 13;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;

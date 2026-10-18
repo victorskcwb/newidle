@@ -80,6 +80,18 @@ function HeroPanel() {
               {t(titleKey)}
             </span>
           )}
+          {hero.meal && (
+            <span
+              className="meal-chip"
+              data-testid="meal-chip"
+              title={t('meal.now', {
+                meal: t(sim.content.consumables.get(hero.meal.mealId)?.nameKey ?? ''),
+                minutes: Math.ceil(hero.meal.ticksLeft / 600),
+              })}
+            >
+              <PixelIcon name={`consumable.${hero.meal.mealId}`} size={14} />
+            </span>
+          )}
           <span className="muted small" data-testid="hero-level">
             {t('hud.level', { level: p.level })}
           </span>
