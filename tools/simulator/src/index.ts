@@ -5,7 +5,8 @@
  * better gear, skill points, refining, salvage, reset at level 100, reset shop.
  *
  *   pnpm sim [profile=active|casual] [days=20] [seed=1]
- *   PROFESSIONS=1 also gathers and crafts; SIM_TAG=x writes <profile>x.csv.
+ *   PROFESSIONS=alchemy|smithing also gathers and crafts; REFINE_MAX=15 refines past +9;
+ *   SIM_TAG=x writes <profile>x.csv.
  *
  * Writes tools/simulator/out/<profile>.csv (one row per session) and prints a summary
  * against the targets of section 12.2.
@@ -122,12 +123,21 @@ function spendSkills(s: GameState) {
   }
 }
 
-/** Refines equipped weapon and chest while it is safe (+1..+9) and affordable. */
+/** Highest refine the player goes for (REFINE_MAX, default +9: no risk of losing a level). */
+const REFINE_MAX = Number(process.env.REFINE_MAX ?? 9);
+
+/**
+ * Refines the main gear while affordable. Above +9 a failure costs a level, so a protection
+ * charm is used when there is one; tempering alloys are used on attempts from +7.
+ */
 function refineGear(s: GameState) {
   for (const slot of ['weapon', 'chest', 'helm', 'offhand'] as const) {
     const item = s.hero.equipment[slot];
-    while (item && item.refine < 9 && refineBlock(s, item, false, 'refine_charm') === null) {
-      refineItem(s, content, item.uid);
+    for (let tries = 0; item && item.refine < REFINE_MAX && tries < 200; tries++) {
+      const protect = item.refine + 1 >= 10 && (s.consumables.refine_charm ?? 0) > 0;
+      const temper = item.refine + 1 >= 7 && (s.consumables.tempering_stone ?? 0) > 0;
+      if (refineBlock(s, item, protect, 'refine_charm', temper, 'tempering_stone') !== null) break;
+      refineItem(s, content, item.uid, protect, temper);
     }
   }
 }
@@ -152,16 +162,21 @@ function shop(s: GameState) {
   }
 }
 
-/** PROFESSIONS=1: gathers herbs and crafts the best alchemy recipe the hunt can feed. */
-const PROFESSIONS = process.env.PROFESSIONS === '1';
+/**
+ * PROFESSIONS=1 (or alchemy): gathers herbs and crafts the best alchemy recipe the hunt can
+ * feed. PROFESSIONS=smithing: mines and smiths instead.
+ */
+const PROFESSIONS = process.env.PROFESSIONS;
 function professions(s: GameState) {
   if (!PROFESSIONS) return;
-  if (s.professions.gathering !== 'herbalism') setGathering(s, content, 'herbalism');
+  const [gather, craft] =
+    PROFESSIONS === 'smithing' ? ['mining', 'smithing'] : ['herbalism', 'alchemy'];
+  if (s.professions.gathering !== gather) setGathering(s, content, gather);
   const huntTier = s.hunt ? (content.hunts.get(s.hunt.huntId)?.gatherTier ?? 1) : 1;
-  const level = professionLevel(s, 'alchemy');
+  const level = professionLevel(s, craft);
   const recipes = [...content.recipes.values()].filter(
     (r) =>
-      r.professionId === 'alchemy' &&
+      r.professionId === craft &&
       r.level <= level &&
       Object.keys(r.inputs).every((id) => (content.resources.get(id)?.tier ?? 9) <= huntTier),
   );

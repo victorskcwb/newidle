@@ -16,7 +16,15 @@ GDD 3.2: "skills de coleta alimentam produção, que alimenta combate". O que o 
 1. ✅ Conteúdo, engine (estado, tick, offline, refino com têmpera), save v12, testes.
 2. ✅ Tela de Ofícios (níveis, coleta, receitas), opção de têmpera no ferreiro, resumo offline, registro.
 3. 🟡 Conquistas de ofício (✅), simulador com ofícios, balanceamento.
-4. Depois: mais ofícios (pesca e culinária, lenhador), elixires temporários.
+4. Pesca e Culinária com refeições (abaixo). Depois: lenhador.
+
+## Etapa 4 — Pesca, Culinária e refeições
+
+- **Pesca** (coleta): peixes de faixa 1 a 5, como minérios e ervas, nas mesmas faixas das caçadas.
+- **Culinária** (produção): peixes → refeições.
+- **Refeição:** consumível com um bônus (um atributo) e duração de 30 min de caça. O jogador escolhe uma refeição; o herói come sozinho quando a anterior acaba e há estoque. Só conta o tempo de caça (o mesmo da coleta). Bônus pequenos e quase todos fora do XP (ouro, chance de item mágico, dano), para não acelerar o nível além da meta.
+- **Offline:** a refeição muda os atributos, então muda a ficha de taxas. Se o estoque acabar no meio do tempo fora, o offline resolve em dois trechos: com refeição (ficha atual) e sem (ficha recalculada), somando os dois relatórios.
+- **Atributos:** a refeição ativa fica no herói e entra na chave do cache de atributos.
 
 ## Riscos
 
