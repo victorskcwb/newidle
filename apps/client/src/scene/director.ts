@@ -132,7 +132,7 @@ export class Director {
     // waiting for the first group's event to come up in the queue.
     const k = this.sim.state.activity.kind;
     if (this.mode === 'in_town' && (k === 'walking' || k === 'fighting')) {
-      if (useUi.getState().town === 'leaving') this.leaveTown();
+      if (useUi.getState().town !== null) this.leaveTown();
     }
     if (this.hitStop > 0) {
       this.hitStop -= dtMs;
@@ -424,6 +424,13 @@ export class Director {
       case 'TownTripStarted':
         this.log(t(`log.townTrip.${e.reason}`), { tone: 'info' });
         if (this.mode === 'in_town' || this.mode === 'dead') break;
+        if (e.reason === 'manual') {
+          // The player's order is a teleport: a flash where the hero stood, then the town.
+          this.fx.spell('teleport', this.hero.x, this.hero.y);
+          sfx.play('potion');
+          this.enterTown('idle');
+          break;
+        }
         this.clearMonsters(true);
         this.mode = 'return_town';
         this.hero.path = this.paths.find(this.hero.tile, this.exit) ?? [];
@@ -621,6 +628,7 @@ export class Director {
       this.hero.reset(true);
       this.hero.place(this.exit);
       this.scene.cameras.main.fadeIn(300);
+      this.fx.spell('teleport', this.hero.x, this.hero.y);
     }
     this.roam();
   }

@@ -1,5 +1,5 @@
 import { EQUIPMENT_SLOTS, type ContentDb, type EquipmentSlot, type Rarity } from '@abismo/content';
-import { DEPART_SECONDS, MAX_LEVEL, TICKS_PER_SECOND } from './constants.ts';
+import { MAX_LEVEL, TELEPORT_TICKS, TICKS_PER_SECOND } from './constants.ts';
 import { rarityRank, rollSalvage } from './items.ts';
 import { IntentError, addXp, autoAllocate } from './progression.ts';
 import { computeHeroStats, heroStats, inactiveReason, type HeroStats } from './stats.ts';
@@ -30,8 +30,7 @@ export function startHunt(s: GameState, content: ContentDb, huntId: string): Gam
     killsSinceBoss: sameHunt ? s.hunt!.killsSinceBoss : 0,
     consecutiveDeaths: 0,
   };
-  const travel = Math.min(hunt.travelSeconds, DEPART_SECONDS);
-  const arriveTick = s.tick + Math.max(1, Math.round(travel * TICKS_PER_SECOND));
+  const arriveTick = s.tick + TELEPORT_TICKS;
   s.activity = { kind: 'to_hunt', untilTick: arriveTick };
   return [
     { type: 'HuntStarted', tick: s.tick, huntId },
@@ -39,8 +38,8 @@ export function startHunt(s: GameState, content: ContentDb, huntId: string): Gam
   ];
 }
 
-/** Walks back to town and stays there. */
-export function returnToTown(s: GameState, content: ContentDb): GameEvent[] {
+/** Teleports back to town and stays there. */
+export function returnToTown(s: GameState, _content: ContentDb): GameEvent[] {
   const a = s.activity;
   if (a.kind === 'idle_town' || a.kind === 'dead') return [];
   if (a.kind === 'to_town') {
@@ -51,9 +50,7 @@ export function returnToTown(s: GameState, content: ContentDb): GameEvent[] {
     a.then = 'idle';
     return [];
   }
-  const hunt = s.hunt ? content.hunts.get(s.hunt.huntId) : undefined;
-  const arriveTick =
-    s.tick + Math.max(1, Math.round((hunt?.travelSeconds ?? 0) * TICKS_PER_SECOND));
+  const arriveTick = s.tick + TELEPORT_TICKS;
   s.activity = { kind: 'to_town', untilTick: arriveTick, reason: 'manual' };
   return [{ type: 'TownTripStarted', tick: s.tick, reason: 'manual', arriveTick }];
 }

@@ -64,10 +64,11 @@ export const BACKPACK_SIZE = 40;
 /** Time spent in town depositing and buying before heading back. */
 export const TOWN_STAY_TICKS = 5 * TICKS_PER_SECOND;
 /**
- * Setting off on the player's order takes this long (the walk out of the gate). Automatic
- * trips back after a town visit keep the hunt's travel time, which the rates count.
+ * Trips the player orders (hunt now, back to town now) are teleports: they land on the next
+ * tick. Automatic trips (supplies, full backpack, out of potions) keep the hunt's travel
+ * time, which the rates and the offline resolution count.
  */
-export const DEPART_SECONDS = 2;
+export const TELEPORT_TICKS = 1;
 export const RESPAWN_TICKS = 5 * TICKS_PER_SECOND;
 /** Death costs this share of the XP earned inside the current level. */
 export const DEATH_XP_LOSS_PCT = 10;

@@ -214,6 +214,8 @@ O Victor saiu e pediu para seguir sozinho com o que eu recomendasse. Tudo abaixo
 
 136. **Balanceamento conferido depois dos monstros novos** (simulador, 2026-10-18): perfil ativo, sementes 1 a 3, primeiro nível 100 nos dias 2,8 / 3,4 / 3,4 e primeiro lendário nos dias 0,9 / 1,4 / 1,6; perfil casual (semente 1) com nível 100 no dia 3,9 e lendário no 2,9. Ciclos de reset cada vez mais curtos, até cerca de 1 dia. Tudo dentro das metas da seção 12.2; a semente 1 do perfil ativo ficou um pouco abaixo dos 3 dias, sem ajuste por enquanto.
 
+137. **Teletransporte:** "Parar" e escolher uma caçada levam o herói na hora (1 tick), com um clarão azul na saída e na chegada, no lugar dos 2 s de partida e da caminhada até a borda do mapa. As viagens automáticas (abastecer, mochila cheia, sem poções) mantêm o tempo de viagem, que conta nas taxas e no offline. A vila some assim que o engine põe o herói na caçada, sem esperar a fila de eventos da cena.
+
 ## Perguntas para revisão
 
 - ~~**Resets cada vez mais rápidos (seção 12.2):** a meta "cada reset chega ao 100 pelo menos 10% mais rápido que o anterior, até o reset 10" não é atingida. No simulador (perfil ativo), os ciclos ficam em 3,0 → 1,9 → 1,8 → 1,6 → 1,7 → 1,8 → 1,4 dias: caem no começo e depois estabilizam. Com 10 pontos por reset (a fórmula da seção 8.1, até a masmorra do marco 3) e a Sabedoria dando +10% de XP por nível com custo linear, o bônus de XP não cresce 10% a cada ciclo. Opções: (a) pontos de reset crescerem com o número do reset (ex.: 10 + 2 × resets); (b) Sabedoria multiplicativa (×1,1 por nível); (c) aceitar até a masmorra existir. Recomendo (a), porque é uma linha de conteúdo/constante e mantém a loja simples.~~ Resolvido: decisões 68–70.

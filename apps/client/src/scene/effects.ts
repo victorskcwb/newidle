@@ -21,7 +21,8 @@ export type SpellFx =
   | 'death'
   | 'potion'
   | 'levelup'
-  | 'hurt';
+  | 'hurt'
+  | 'teleport';
 
 /** Skill effect ids from content (skills.json `effect`) to the scene's effects. */
 export const SKILL_FX: Record<string, SpellFx> = {
@@ -207,7 +208,7 @@ export class Effects {
    */
   spell(kind: SpellFx, x: number, y: number, to?: { x: number; y: number }) {
     // Level up keeps its effect: it is news, not noise.
-    if (!usePrefs.getState().gfx.hitFx && kind !== 'levelup') return;
+    if (!usePrefs.getState().gfx.hitFx && kind !== 'levelup' && kind !== 'teleport') return;
     const dir = to ? Phaser.Math.RadToDeg(Math.atan2(to.y - y, to.x - x)) : 0;
     switch (kind) {
       case 'slash': {
@@ -336,6 +337,11 @@ export class Effects {
           ms: 500,
           rise: 14,
         });
+        break;
+      case 'teleport':
+        this.pixelFx('energy', x, y - 10, 2);
+        this.glow('light_03', x, y - 8, { tint: 0x8fd8ff, from: 0.2, to: 0.8, ms: 600 });
+        this.glow('circle_03', x, y + 4, { tint: 0x8fd8ff, from: 0.1, to: 0.6, ms: 500 });
         break;
       case 'levelup': {
         this.pixelFx('energy', x, y - 10, 2.4);
