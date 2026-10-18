@@ -157,7 +157,7 @@ export interface DropPity {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 13;
+  version: 14;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;
@@ -166,6 +166,8 @@ export interface GameState {
   backpack: ItemInstance[];
   stash: ItemInstance[];
   gold: bigint;
+  /** Fraction of a gold coin carried between kills, in 1/10,000ths. */
+  goldRemainder: number;
   materials: Record<string, bigint>;
   consumables: Record<string, number>;
   unlockedHunts: string[];

@@ -9,7 +9,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 13;
+export const SAVE_VERSION = 14;
 
 export interface SaveFile {
   version: number;
@@ -81,7 +81,7 @@ const quest = z.strictObject({
 });
 
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(13),
+  version: z.literal(14),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -114,6 +114,7 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
   backpack: z.array(item),
   stash: z.array(item),
   gold: z.bigint().nonnegative(),
+  goldRemainder: int.min(0).max(9_999),
   materials: z.record(z.string(), z.bigint().nonnegative()),
   consumables: z.record(z.string(), nonNeg),
   unlockedHunts: z.array(id),
@@ -296,6 +297,8 @@ export const SAVE_MIGRATIONS: Record<
       resources: {},
     },
   }),
+  /** v13 → v14: gold fractions carried between kills. */
+  13: (raw) => ({ ...raw, state: { ...(raw.state as object), version: 14, goldRemainder: 0 } }),
   /** v12 → v13: meals (none eaten, none chosen). */
   12: (raw) => {
     const state = raw.state as { hero: object; settings: object };

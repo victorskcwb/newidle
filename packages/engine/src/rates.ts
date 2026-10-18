@@ -130,11 +130,9 @@ export function expectedGold(
 ): number {
   const def = content.monsters.get(monsterId)!;
   const rewardPct = elite ? ELITE_REWARD_PCT : 100;
-  let total = 0;
-  for (let roll = def.gold[0]; roll <= def.gold[1]; roll++) {
-    total += Math.floor((roll * rewardPct * (100 + goldPct)) / 10_000);
-  }
-  return total / (def.gold[1] - def.gold[0] + 1);
+  // Exact mean: the live game carries the fractions from kill to kill.
+  const meanRoll = (def.gold[0] + def.gold[1]) / 2;
+  return (meanRoll * rewardPct * (100 + goldPct)) / 10_000;
 }
 
 export function categoryLoot(

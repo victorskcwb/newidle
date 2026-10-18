@@ -32,7 +32,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
     refine: 0,
   };
   const s: GameState = {
-    version: 13,
+    version: 14,
     tick: 0,
     rng: createRng(hero.seed),
     nextUid: 2,
@@ -60,6 +60,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
     backpack: [],
     stash: [],
     gold: 0n,
+    goldRemainder: 0,
     materials: {},
     consumables: { [STARTER_POTION]: STARTING_POTIONS },
     unlockedHunts: [...content.hunts.values()].filter((h) => h.startUnlocked).map((h) => h.id),

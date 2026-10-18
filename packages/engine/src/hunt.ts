@@ -471,7 +471,11 @@ function killMonster(
   const rewardPct = m.elite ? ELITE_REWARD_PCT : 100;
   const xp = killXp(def, m.elite, s.hero.level, stats.xpPct);
   const goldRoll = rngInt(s.rng, def.gold[0], def.gold[1]);
-  const gold = Math.floor((goldRoll * rewardPct * (100 + stats.goldPct)) / 10_000);
+  // Gold in 1/10,000ths: the fraction carries to the next kill, so small bonuses on cheap
+  // monsters are not lost to rounding.
+  const raw = goldRoll * rewardPct * (100 + stats.goldPct) + s.goldRemainder;
+  const gold = Math.floor(raw / 10_000);
+  s.goldRemainder = raw % 10_000;
 
   s.lifetime.kills++;
   // Like cards, the bestiary does not grow while measuring rates (it would change power mid-sample).
