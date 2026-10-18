@@ -11,7 +11,13 @@
 import { TILE } from './gen-maps-tiles.ts';
 
 export type Sheet =
-  'otsp_tiles' | 'otsp_nature' | 'otsp_town' | 'otsp_walls' | 'placeholder' | 'drawn';
+  | 'otsp_tiles'
+  | 'otsp_nature'
+  | 'otsp_town'
+  | 'otsp_walls'
+  | 'otsp_doors'
+  | 'placeholder'
+  | 'drawn';
 export type Drawn = 'grave' | 'grave_cross' | 'bones' | 'skull' | 'lava';
 export interface Slot {
   sheet: Sheet;
@@ -171,6 +177,8 @@ export const DECOR = {
   benches: many('otsp_town', [11, 12, 13, 14]),
   chairs: many('otsp_town', [7, 8, 9, 10]),
   pots: many('otsp_town', [1, 2, 99]),
+  /** A bowl of fire (blocking). */
+  brazier: many('otsp_town', [128]),
   bones: [add('drawn', 2, 'bones'), add('drawn', 3, 'skull')],
 };
 
@@ -197,6 +205,13 @@ export const PROPS = {
   wallHorizontal: prop(2, 'otsp_walls'),
   wallPole: prop(4, 'otsp_walls'),
   wallCorner: prop(6, 'otsp_walls'),
+  /** A stone wall piece with an arched wooden door. */
+  archDoor: prop(12, 'otsp_doors'),
+  forge: prop(230, 'otsp_town'),
+  fountain: prop(232, 'otsp_town'),
+  woodpile: prop(200, 'otsp_town'),
+  statue: prop(256, 'otsp_town'),
+  hoodedStatue: prop(288, 'otsp_town'),
   chestGold: prop(48, 'otsp_town'),
   chestIron: prop(52, 'otsp_town'),
   crate: prop(56, 'otsp_town'),

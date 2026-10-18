@@ -36,6 +36,7 @@ const sheets: Record<Exclude<Sheet, 'drawn'>, PNG> = {
   otsp_nature: read('vendor/opentibia-sprite-pack/otsp_nature_01.png'),
   otsp_town: read('vendor/opentibia-sprite-pack/otsp_town_01.png'),
   otsp_walls: read('vendor/opentibia-sprite-pack/otsp_walls_01.png'),
+  otsp_doors: read('vendor/opentibia-sprite-pack/otsp_doors_01.png'),
   placeholder: read('sprites/placeholder_tiles.png'),
 };
 const PLACEHOLDER_COLS = 8;

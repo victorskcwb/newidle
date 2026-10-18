@@ -96,7 +96,11 @@ export function buildTownMap(region: string, seed: number) {
     for (let y = h.y0; y <= h.y1; y++) {
       for (let x = h.x0; x <= h.x1; x++) {
         const edge = x === h.x0 || x === h.x1 || y === h.y0 || y === h.y1;
-        if (!edge || (x === h.door.x && y === h.door.y)) continue;
+        if (!edge) continue;
+        if (x === h.door.x && y === h.door.y) {
+          g.propAt(x, y, PROPS.archDoor, true);
+          continue;
+        }
         const piece =
           x === h.x0 && y === h.y0
             ? PROPS.wallCorner
@@ -113,7 +117,7 @@ export function buildTownMap(region: string, seed: number) {
   }
   // Furniture.
   const inside = (x: number, y: number, prop: number) => g.propAt(x, y, prop, true);
-  inside(4, 4, PROPS.stove);
+  inside(4, 4, PROPS.forge);
   inside(7, 4, PROPS.barrels);
   inside(7, 6, PROPS.crate);
   inside(3, 6, PROPS.bigTable);
@@ -134,7 +138,26 @@ export function buildTownMap(region: string, seed: number) {
     g.decor[i] = rng.pick(tiles) + 1;
     g.block(x, y);
   };
-  place(15, 11, DECOR.well);
+  // A fountain in the middle of the plaza (2×2), braziers at its corners.
+  g.propAt(16, 12, PROPS.fountain, true);
+  for (const [x, y] of [
+    [15, 11],
+    [16, 11],
+    [15, 12],
+  ] as const) {
+    g.block(x, y);
+  }
+  for (const [x, y] of [
+    [10, 8],
+    [21, 8],
+    [10, 15],
+    [21, 15],
+  ] as const) {
+    place(x, y, DECOR.brazier);
+  }
+  g.propAt(3, 9, PROPS.woodpile, true);
+  g.propAt(28, 15, PROPS.statue, true);
+  g.propAt(23, 15, PROPS.hoodedStatue, true);
   place(11, 9, DECOR.benches);
   place(20, 9, DECOR.benches);
   place(11, 14, DECOR.benches);
