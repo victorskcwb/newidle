@@ -273,11 +273,15 @@ function Paperdoll() {
           </div>
           <div title={t('pity.hint')} data-testid="pity-epic">
             <dt style={{ color: RARITY_COLOR.epic }}>{t('pity.epic')}</dt>
-            <dd>{formatNumber(pityDropsLeft(sim.state.dropPity, 'epic'))}</dd>
+            <dd>
+              {t('pity.items', { n: formatNumber(pityDropsLeft(sim.state.dropPity, 'epic')) })}
+            </dd>
           </div>
           <div title={t('pity.hint')}>
             <dt style={{ color: RARITY_COLOR.legendary }}>{t('pity.legendary')}</dt>
-            <dd>{formatNumber(pityDropsLeft(sim.state.dropPity, 'legendary'))}</dd>
+            <dd>
+              {t('pity.items', { n: formatNumber(pityDropsLeft(sim.state.dropPity, 'legendary')) })}
+            </dd>
           </div>
         </dl>
       </div>

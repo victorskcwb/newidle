@@ -2527,3 +2527,57 @@ input[type='range'] {
   font-size: 13px;
   line-height: 1.35;
 }
+
+/* Login calendar (GDD 6.1): 7 columns, big days highlighted. */
+.login-cal {
+  display: grid;
+  gap: 8px;
+}
+
+.login-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.login-day {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  background: rgb(255 255 255 / 4%);
+}
+
+.login-day.big {
+  border-color: #ff8c1a;
+}
+
+.login-day.claimed {
+  opacity: 0.45;
+}
+
+.login-day.today {
+  outline: 2px solid var(--accent);
+  box-shadow: 0 0 10px rgb(255 216 74 / 45%);
+}
+
+.login-n {
+  position: absolute;
+  top: 1px;
+  left: 3px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.login-check {
+  position: absolute;
+  right: 3px;
+  bottom: 1px;
+  font-size: 11px;
+  color: var(--good);
+}

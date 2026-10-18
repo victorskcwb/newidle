@@ -8,6 +8,7 @@ import {
   type Hunt,
   type ItemBase,
   type LootTable,
+  type LoginReward,
   type Material,
   type Monster,
   type Rarity,
@@ -33,6 +34,8 @@ export interface ContentDb {
   readonly resetUpgrades: ReadonlyMap<string, ResetUpgrade>;
   readonly monsterAffixes: ReadonlyMap<string, MonsterAffix>;
   readonly uniqueItems: ReadonlyMap<string, UniqueItem>;
+  /** Login calendar, in order (GDD 6.1). */
+  readonly loginRewards: readonly LoginReward[];
   /** Material yielded by salvaging each rarity. */
   readonly salvageMaterial: Readonly<Record<Rarity, Material>>;
 }
@@ -72,6 +75,7 @@ export function mergeContentFiles(files: readonly Partial<ContentFile>[]): Conte
     resetUpgrades: [],
     monsterAffixes: [],
     uniqueItems: [],
+    loginRewards: [],
   };
   for (const file of files) {
     for (const k of Object.keys(merged) as (keyof ContentFile)[]) {
@@ -107,6 +111,7 @@ export function buildContentDb(raw: unknown): ContentDb {
     resetUpgrades: indexById('resetUpgrade', c.resetUpgrades, problems),
     monsterAffixes: indexById('monsterAffix', c.monsterAffixes, problems),
     uniqueItems: indexById('uniqueItem', c.uniqueItems, problems),
+    loginRewards: c.loginRewards,
   };
 
   const ref = (ok: boolean, message: string) => {
@@ -187,6 +192,14 @@ export function buildContentDb(raw: unknown): ContentDb {
     ref(!positions.has(pos), `skill ${sk.id}: tree position taken`);
     positions.add(pos);
   }
+  c.loginRewards.forEach((day, i) => {
+    for (const rewardId of Object.keys(day.reward)) {
+      ref(
+        db.materials.has(rewardId) || db.consumables.has(rewardId),
+        `loginRewards[${i}]: unknown reward ${rewardId}`,
+      );
+    }
+  });
   for (const a of c.affixes) {
     ref(a.tiers[0]?.minIlvl === a.minIlvl, `affix ${a.id}: first tier must start at minIlvl`);
   }

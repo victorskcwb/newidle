@@ -13,6 +13,7 @@ import { LevelUpBanner } from './LevelUpBanner.tsx';
 import { NpcDialog } from './NpcDialog.tsx';
 import { ItemTooltip } from './ItemTooltip.tsx';
 import { OfflineModal } from './OfflineModal.tsx';
+import { LoginModal } from './LoginCalendar.tsx';
 import { AltarScreen } from './screens/AltarScreen.tsx';
 import { CardsScreen } from './screens/CardsScreen.tsx';
 import { CharacterScreen } from './screens/CharacterScreen.tsx';
@@ -99,6 +100,7 @@ function Game() {
       {Current && <Current />}
       <NpcDialog />
       <OfflineModal />
+      <LoginModal />
       <ItemTooltip />
     </>
   );

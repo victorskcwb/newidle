@@ -1,0 +1,158 @@
+{
+  "loginRewards": [
+    {
+      "reward": {
+        "fragment": 20
+      }
+    },
+    {
+      "reward": {
+        "potion_hp_small": 10
+      }
+    },
+    {
+      "reward": {
+        "essence": 6
+      }
+    },
+    {
+      "reward": {
+        "fragment": 30
+      }
+    },
+    {
+      "reward": {
+        "potion_mana_small": 10
+      }
+    },
+    {
+      "reward": {
+        "essence": 8,
+        "crystal": 1
+      }
+    },
+    {
+      "reward": {
+        "crystal": 4,
+        "refine_charm": 1
+      },
+      "big": true
+    },
+    {
+      "reward": {
+        "fragment": 20
+      }
+    },
+    {
+      "reward": {
+        "potion_hp_small": 10
+      }
+    },
+    {
+      "reward": {
+        "essence": 6
+      }
+    },
+    {
+      "reward": {
+        "fragment": 30
+      }
+    },
+    {
+      "reward": {
+        "potion_mana_small": 10
+      }
+    },
+    {
+      "reward": {
+        "essence": 8,
+        "crystal": 1
+      }
+    },
+    {
+      "reward": {
+        "core": 2,
+        "refine_charm": 1
+      },
+      "big": true
+    },
+    {
+      "reward": {
+        "fragment": 20
+      }
+    },
+    {
+      "reward": {
+        "potion_hp_small": 10
+      }
+    },
+    {
+      "reward": {
+        "essence": 6
+      }
+    },
+    {
+      "reward": {
+        "fragment": 30
+      }
+    },
+    {
+      "reward": {
+        "potion_mana_small": 10
+      }
+    },
+    {
+      "reward": {
+        "essence": 8,
+        "crystal": 1
+      }
+    },
+    {
+      "reward": {
+        "crystal": 8,
+        "core": 1,
+        "refine_charm": 1
+      },
+      "big": true
+    },
+    {
+      "reward": {
+        "fragment": 20
+      }
+    },
+    {
+      "reward": {
+        "potion_hp_small": 10
+      }
+    },
+    {
+      "reward": {
+        "essence": 6
+      }
+    },
+    {
+      "reward": {
+        "fragment": 30
+      }
+    },
+    {
+      "reward": {
+        "potion_mana_small": 10
+      }
+    },
+    {
+      "reward": {
+        "essence": 8,
+        "crystal": 1
+      }
+    },
+    {
+      "reward": {
+        "soul": 1,
+        "core": 3,
+        "refine_charm": 2
+      },
+      "big": true
+    }
+  ]
+}

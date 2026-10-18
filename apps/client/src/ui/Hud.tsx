@@ -229,7 +229,7 @@ function TopBar() {
   const logWindow = useUi((s) => s.logWindow);
   const s = sim.state;
   const hero = s.hero;
-  const claimable = claimableQuests(s);
+  const claimable = claimableQuests(s) + (sim.loginDue() ? 1 : 0);
   const size = backpackSize(hero, sim.content);
   const altarBadge =
     hero.level >= MAX_LEVEL

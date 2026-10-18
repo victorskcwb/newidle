@@ -7,6 +7,8 @@ import {
   buyConsumable,
   buyUpgrade,
   claimQuest,
+  claimLogin,
+  loginDue,
   depositAll,
   computeRates,
   createGame,
@@ -240,6 +242,16 @@ export class GameSim {
     const day = localDay();
     if (this.state.quests.day === day) return;
     refreshQuests(this.state, day);
+    this.changed(false);
+  }
+
+  /** Today's login calendar reward is waiting. */
+  loginDue(): boolean {
+    return loginDue(this.state, localDay());
+  }
+
+  claimLogin() {
+    claimLogin(this.state, this.content, localDay());
     this.changed(false);
   }
 

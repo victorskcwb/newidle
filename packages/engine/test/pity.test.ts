@@ -127,6 +127,7 @@ describe('equipment pity', () => {
     raw.version = 7;
     raw.state.version = 7;
     delete raw.state.dropPity;
+    delete raw.state.login;
     const loaded = decodeSave(JSON.stringify(raw), content);
     expect(loaded.state.dropPity).toEqual({ epic: 0, legendary: 0 });
     expect(loaded.state).toEqual(s);

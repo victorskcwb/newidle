@@ -152,7 +152,7 @@ export interface DropPity {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 8;
+  version: 9;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;
@@ -177,6 +177,8 @@ export interface GameState {
   cardPity: Record<string, number>;
   /** Equipment drops since the last epic-or-better and the last legendary (pity rule). */
   dropPity: DropPity;
+  /** Login calendar: last local day claimed and how many days were claimed in total. */
+  login: { lastDay: number; claimed: number };
   /** Daily and weekly goals. */
   quests: Quests;
 }

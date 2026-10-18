@@ -1,18 +1,9 @@
 import type { Quest } from '@abismo/engine';
 import { useState } from 'react';
 import { formatNumber, t } from '../../i18n.ts';
+import { LoginCalendar, rewardText } from '../LoginCalendar.tsx';
 import { Sheet, tryIntent } from '../Sheet.tsx';
 import { useSim } from '../useSim.ts';
-
-function rewardText(sim: ReturnType<typeof useSim>, reward: Record<string, number>) {
-  return Object.entries(reward)
-    .map(([id, qty]) => {
-      const name =
-        sim.content.materials.get(id)?.nameKey ?? sim.content.consumables.get(id)?.nameKey;
-      return `${qty} ${name ? t(name) : id}`;
-    })
-    .join(', ');
-}
 
 function QuestRow({
   quest,
@@ -59,6 +50,8 @@ export function QuestsScreen() {
   const [error, setError] = useState<string | null>(null);
   return (
     <Sheet title={t('screen.quests')} testId="quests">
+      <h3 className="pixel">{t('login.title')}</h3>
+      <LoginCalendar />
       <h3 className="pixel">{t('quests.daily')}</h3>
       <p className="muted small">{t('quests.dailyHint')}</p>
       {q.daily.map((quest, i) => (

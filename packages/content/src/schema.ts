@@ -367,6 +367,16 @@ export const resetUpgradeSchema = z.strictObject({
 });
 export type ResetUpgrade = z.infer<typeof resetUpgradeSchema>;
 
+/**
+ * One day of the login calendar (GDD 6.1). Days are counted, not streaked: the Nth day the
+ * player claims gets entry N (mod the calendar length). `big` marks the highlighted days.
+ */
+export const loginRewardSchema = z.strictObject({
+  reward: z.record(id, posInt),
+  big: z.boolean().optional(),
+});
+export type LoginReward = z.infer<typeof loginRewardSchema>;
+
 export const contentSchema = z.strictObject({
   itemBases: z.array(itemBaseSchema),
   affixes: z.array(affixSchema),
@@ -381,5 +391,6 @@ export const contentSchema = z.strictObject({
   resetUpgrades: z.array(resetUpgradeSchema),
   monsterAffixes: z.array(monsterAffixSchema),
   uniqueItems: z.array(uniqueItemSchema),
+  loginRewards: z.array(loginRewardSchema),
 });
 export type ContentFile = z.infer<typeof contentSchema>;

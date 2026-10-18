@@ -30,7 +30,13 @@ test('skills, hunt map, reset and reset shop', async ({ page }) => {
   // Jump to level 100 (debug, development builds only).
   await page.getByTestId('nav-settings').click();
   await page.getByTestId('debug-level').click();
+  // Past the first minutes, the login calendar opens once a day.
+  await page.getByTestId('login-claim').click();
+  await expect(page.getByTestId('login-modal')).toBeHidden();
   await page.getByTestId('debug-resources').click();
+  await page.getByRole('button', { name: 'Fechar' }).last().click();
+  await page.getByTestId('nav-quests').click();
+  await expect(page.getByTestId('login-claim')).toHaveText('Volte amanhã');
   await page.getByRole('button', { name: 'Fechar' }).last().click();
   await expect(page.getByTestId('hero-level')).toHaveText('Nv. 100');
 
