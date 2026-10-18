@@ -18,7 +18,15 @@ import {
   TICKS_PER_SECOND,
   TOWN_STAY_TICKS,
 } from './constants.ts';
-import { filterKeeps, generateItem, pickWeighted, rarityRank, rollSalvage } from './items.ts';
+import {
+  filterKeeps,
+  generateItem,
+  legendaryAllowed,
+  pickWeighted,
+  rarityRank,
+  rollSalvage,
+} from './items.ts';
+import { pityRarity, recordDrop } from './pity.ts';
 import { sellPrice } from './town.ts';
 import { rollCard } from './cards.ts';
 import { questLoot, questProgress } from './quests.ts';
@@ -487,18 +495,28 @@ function killMonster(
   );
   const magicFindPct = stats.magicFindPct + (m.elite ? ELITE_MAGIC_FIND_BONUS : 0);
   const bagSize = backpackSize(s.hero, content);
+  const legendaryOk = legendaryAllowed(hunt.ilvl);
   // A new hero's 5th kill always drops a magic item (first ten minutes, section 11.4).
   const firstMagic = s.lifetime.kills === FIRST_MAGIC_ITEM_KILL && !s.flags.includes('first_magic');
   if (firstMagic) s.flags.push('first_magic');
   for (let r = 0; r < rolls + (firstMagic ? 1 : 0); r++) {
     const forced = firstMagic && r === rolls;
     if (!forced && !rngChance(s.rng, dropPpm)) continue;
-    const rarity = forced ? ('magic' as const) : { magicFindPct };
+    const pity = pityRarity(s.dropPity, legendaryOk);
+    const rarity = forced ? ('magic' as const) : (pity ?? { magicFindPct });
     const item = generateItem(s.rng, content, table, hunt.ilvl, s.nextUid++, rarity);
+    recordDrop(s.dropPity, item.rarity, legendaryOk);
     s.lifetime.itemsByRarity[item.rarity]++;
     questLoot(s, item.rarity);
     const kept = filterKeeps(s.settings.lootFilter, item) && s.backpack.length < bagSize;
-    out?.push({ type: 'ItemDropped', tick: t, fromUid: m.uid, item, kept });
+    out?.push({
+      type: 'ItemDropped',
+      tick: t,
+      fromUid: m.uid,
+      item,
+      kept,
+      ...(pity && !forced ? { pity: true as const } : {}),
+    });
     if (kept) {
       s.backpack.push(item);
     } else {

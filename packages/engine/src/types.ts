@@ -142,12 +142,17 @@ export interface Lifetime {
   bossKills: number;
 }
 
+export interface DropPity {
+  epic: number;
+  legendary: number;
+}
+
 /**
  * The whole game state of one hero. Plain data plus `bigint` for the unbounded counters
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 7;
+  version: 8;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;
@@ -170,6 +175,8 @@ export interface GameState {
   flags: string[];
   /** Kills of each card's monster since its last copy (pity rule). */
   cardPity: Record<string, number>;
+  /** Equipment drops since the last epic-or-better and the last legendary (pity rule). */
+  dropPity: DropPity;
   /** Daily and weekly goals. */
   quests: Quests;
 }
@@ -200,7 +207,15 @@ export type GameEvent =
   | { type: 'MonsterAttack'; tick: number; uid: number; damage: number; miss: boolean }
   | { type: 'PotionUsed'; tick: number; consumableId: string; kind: 'hp' | 'mana'; amount: number }
   | { type: 'MonsterDied'; tick: number; uid: number; monsterId: string; xp: number; gold: number }
-  | { type: 'ItemDropped'; tick: number; fromUid: number; item: ItemInstance; kept: boolean }
+  | {
+      type: 'ItemDropped';
+      tick: number;
+      fromUid: number;
+      item: ItemInstance;
+      kept: boolean;
+      /** The rarity came from the pity rule. */
+      pity?: true;
+    }
   | { type: 'ConsumableDropped'; tick: number; fromUid: number; consumableId: string; qty: number }
   | { type: 'MaterialsGained'; tick: number; materialId: string; qty: number }
   | { type: 'CardDropped'; tick: number; fromUid: number; cardId: string; copies: number }

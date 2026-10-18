@@ -41,7 +41,7 @@ O critério é o do GDD: retenção antes de monetização, e primeiro o que nã
 
 ### A. Sem servidor, alto impacto em retenção
 
-1. **Pity em drops de equipamento épico e lendário** (3.3: "fundamental"). Hoje só as cartas têm. Resolve também a pergunta aberta das decisões, sobre o primeiro lendário variar de 0,5 a 2,4 dias conforme a semente. Exige save v8 e o mesmo tratamento binomial em duas partes que as cartas usam no offline.
+1. ✅ **Pity em drops de equipamento épico e lendário** (3.3): decisão 141.
 2. **Login diário com dias acumulados** (calendário de 7 e 28 dias, sem zerar a sequência) (6.1).
 3. **Conquistas e títulos** (6.4). Os marcos de reset da seção 8.3 já pedem títulos e molduras.
 4. **Estatísticas detalhadas** (9): abates, drops raros, tempo jogado e gráfico de XP/h. Os totais da vida inteira já existem no estado.

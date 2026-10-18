@@ -8,7 +8,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 
 export interface SaveFile {
   version: number;
@@ -80,7 +80,7 @@ const quest = z.strictObject({
 });
 
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(7),
+  version: z.literal(8),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -167,6 +167,7 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
   }),
   flags: z.array(z.string()),
   cardPity: z.record(z.string(), nonNeg),
+  dropPity: z.strictObject({ epic: nonNeg, legendary: nonNeg }),
   quests: z.strictObject({
     day: int,
     daily: z.array(quest),
@@ -244,6 +245,11 @@ export const SAVE_MIGRATIONS: Record<
       },
     };
   },
+  /** v7 → v8: equipment pity counters (start empty). */
+  7: (raw) => ({
+    ...raw,
+    state: { ...(raw.state as object), version: 8, dropPity: { epic: 0, legendary: 0 } },
+  }),
 };
 
 export function encodeSave(state: GameState, savedAt: number): string {

@@ -327,6 +327,11 @@ export class Director {
         this.scene.time.delayedCall(200, () =>
           this.fx.dropItem(x, y, e.item.rarity, e.kept, this.backpackTarget),
         );
+        if (e.pity) {
+          this.log(t('log.pity', { rarity: t(`rarity.${e.item.rarity}`) }), {
+            rarity: e.item.rarity,
+          });
+        }
         if (e.kept) {
           this.log(
             t('log.item', {

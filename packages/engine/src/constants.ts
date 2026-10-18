@@ -97,6 +97,12 @@ export const AFFIX_COUNT: Readonly<Record<Rarity, readonly [number, number]>> = 
 };
 /** Legendaries only drop in hunts of at least this item level (from the Aldeia Afogada on). */
 export const LEGENDARY_MIN_HUNT_ILVL = 45;
+/**
+ * Bad-luck protection (GDD 3.3): the Nth equipment drop without an epic-or-better (or without a
+ * legendary, counted only where legendaries drop) is guaranteed to be one. About 2.7× and 2×
+ * the expected drops, so it only cuts the unlucky tail.
+ */
+export const DROP_PITY = { epic: 300, legendary: 2000 } as const;
 /** Drop item level = hunt ilvl ± this. */
 export const ILVL_SPREAD = 2;
 /** Refine: +5% base stats per level. */

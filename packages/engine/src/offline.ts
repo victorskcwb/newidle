@@ -6,7 +6,8 @@ import {
   RARITY_ORDER,
   TICKS_PER_HOUR,
 } from './constants.ts';
-import { filterKeeps, generateItem, rarityRank } from './items.ts';
+import { filterKeeps, generateItem, legendaryAllowed, rarityRank } from './items.ts';
+import { applyBulkPity } from './pity.ts';
 import { autoSell, killXp } from './hunt.ts';
 import { cardChancePpm, pityThreshold } from './cards.ts';
 import { addXp } from './progression.ts';
@@ -237,14 +238,24 @@ export function resolveOffline(
     const qty = sumUniform(rng, n, m.salvageQty[0], m.salvageQty[1]);
     if (qty > 0) report.materials[m.id] = (report.materials[m.id] ?? 0) + qty;
   };
-  let generated = 0;
-  for (const c of kills) {
-    if (c.n === 0) continue;
+  // Counts per category first, so the pity rule can see every drop before items are made.
+  const counts = kills.map((c) => {
+    const out = emptyRarities();
+    if (c.n === 0) return out;
     const loot = categoryLoot(content, c.monsterId, c.elite, stats.magicFindPct, hunt.ilvl);
-    const table = content.lootTables.get(loot.lootTableId)!;
     for (const r of RARITY_ORDER) {
       const perRollPpm = Math.floor((loot.dropPpm * loot.rarity[r]) / PPM);
-      const count = rngBinomial(rng, c.n * loot.rolls, perRollPpm);
+      out[r] = rngBinomial(rng, c.n * loot.rolls, perRollPpm);
+    }
+    return out;
+  });
+  applyBulkPity(rng, s.dropPity, counts, legendaryAllowed(hunt.ilvl));
+  let generated = 0;
+  kills.forEach((c, ci) => {
+    if (c.n === 0) return;
+    const table = content.lootTables.get(content.monsters.get(c.monsterId)!.lootTableId)!;
+    for (const r of RARITY_ORDER) {
+      const count = counts[ci]![r];
       if (count === 0) continue;
       report.dropsByRarity[r] += count;
       s.lifetime.itemsByRarity[r] += count;
@@ -277,7 +288,7 @@ export function resolveOffline(
       const qty = sumUniform(rng, hits, e.qty[0], e.qty[1]);
       if (qty > 0) report.consumables[e.itemId] = (report.consumables[e.itemId] ?? 0) + qty;
     }
-  }
+  });
   report.items.sort((a, b) => rarityRank(b.rarity) - rarityRank(a.rarity) || a.uid - b.uid);
   const sold = autoSell(s, report.items);
   report.items = sold.kept;
