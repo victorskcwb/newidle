@@ -76,6 +76,8 @@ export const MAX_CONSECUTIVE_AUTO_RETURNS = 3;
 export const STARTING_POTIONS = 10;
 /** The 5th kill of a new hero drops a guaranteed magic item (section 11.4). */
 export const FIRST_MAGIC_ITEM_KILL = 5n;
+/** Around ten minutes in, a hero who found no rare yet gets one (GDD 5: 5–15 min). */
+export const FIRST_RARE_ITEM_KILL = 150n;
 export const DEFAULT_POTION_TARGET = 10;
 
 // --- Items ----------------------------------------------------------------------------------

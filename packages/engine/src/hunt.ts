@@ -1,4 +1,4 @@
-import type { Consumable, ContentDb, Hunt, Monster, MonsterAffix } from '@abismo/content';
+import type { Consumable, ContentDb, Hunt, Monster, MonsterAffix, Rarity } from '@abismo/content';
 import { rollHit, type AttackProfile } from './combat.ts';
 import {
   BASE_CRIT_CHANCE_PPM,
@@ -11,6 +11,7 @@ import {
   ELITE_MAGIC_FIND_BONUS,
   ELITE_REWARD_PCT,
   FIRST_MAGIC_ITEM_KILL,
+  FIRST_RARE_ITEM_KILL,
   MAX_CONSECUTIVE_AUTO_RETURNS,
   POTION_COOLDOWN_TICKS,
   PPM,
@@ -502,11 +503,19 @@ function killMonster(
   // A new hero's 5th kill always drops a magic item (first ten minutes, section 11.4).
   const firstMagic = s.lifetime.kills === FIRST_MAGIC_ITEM_KILL && !s.flags.includes('first_magic');
   if (firstMagic) s.flags.push('first_magic');
-  for (let r = 0; r < rolls + (firstMagic ? 1 : 0); r++) {
-    const forced = firstMagic && r === rolls;
+  // And around ten minutes in, a rare for a hero who has not found one yet.
+  let firstRare = false;
+  if (s.lifetime.kills === FIRST_RARE_ITEM_KILL && !s.flags.includes('first_rare')) {
+    s.flags.push('first_rare');
+    const l = s.lifetime.itemsByRarity;
+    firstRare = l.rare + l.epic + l.legendary === 0;
+  }
+  const guaranteed: Rarity | null = firstMagic ? 'magic' : firstRare ? 'rare' : null;
+  for (let r = 0; r < rolls + (guaranteed ? 1 : 0); r++) {
+    const forced = guaranteed !== null && r === rolls;
     if (!forced && !rngChance(s.rng, dropPpm)) continue;
     const pity = pityRarity(s.dropPity, legendaryOk);
-    const rarity = forced ? ('magic' as const) : (pity ?? { magicFindPct });
+    const rarity = forced ? guaranteed : (pity ?? { magicFindPct });
     const item = generateItem(s.rng, content, table, hunt.ilvl, s.nextUid++, rarity);
     recordDrop(s.dropPity, item.rarity, legendaryOk);
     s.lifetime.itemsByRarity[item.rarity]++;

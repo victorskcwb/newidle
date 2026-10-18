@@ -46,7 +46,7 @@ O critério é o do GDD: retenção antes de monetização, e primeiro o que nã
 3. ✅ **Conquistas e títulos** (6.4): decisões 144–145.
 4. ✅ **Estatísticas detalhadas** (9): decisão 145 (sem o gráfico de XP/h, que precisa de histórico).
 5. ✅ **Bestiário com marcos de abates** (3.4): decisões 143 e 145.
-6. **Primeiro item raro garantido** entre 5 e 15 min (5). Hoje o item garantido é mágico.
+6. ✅ **Primeiro item raro garantido** (5): decisão 146.
 
 ### B. Sem servidor, médio impacto
 
