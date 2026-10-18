@@ -8,6 +8,8 @@ export async function createHero(page: Page, name = 'Teste', speed = 6) {
   await expect(page.locator('[data-testid="scene"] canvas')).toBeVisible();
   // The elder's welcome (first ten minutes).
   await page.getByTestId('tip-ok').click();
+  // On phones the log window starts closed: open it from the top menu.
+  if (!(await page.getByTestId('event-log').isVisible())) await page.getByTestId('nav-log').click();
   await expect(page.getByTestId('event-log')).toContainText('Caçada: Cemitério Esquecido');
 }
 

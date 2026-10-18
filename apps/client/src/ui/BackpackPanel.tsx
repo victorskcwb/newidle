@@ -16,6 +16,8 @@ import { RARITY_COLOR, RARITY_GLYPH } from './rarity.ts';
 import { HeroSprite } from './SheetSprite.tsx';
 import { tryIntent } from './Sheet.tsx';
 import { useSim } from './useSim.ts';
+import { FloatWindow } from './FloatWindow.tsx';
+import { Icon } from './Icon.tsx';
 
 /** Icon of an empty equipment slot: the first item base of that slot, dimmed. */
 export const SLOT_ICON: Record<EquipmentSlot, string> = {
@@ -344,148 +346,140 @@ export function BackpackPanel() {
   const selected = [...source, ...equipped].find((i) => i?.uid === selectedUid);
 
   return (
-    <div className="sheet-backdrop" onClick={() => openBackpack(false)}>
-      <section
-        className="panel sheet inventory"
-        onClick={(e) => e.stopPropagation()}
-        aria-label={t('backpack.title')}
-        data-testid="backpack"
-      >
-        <header className="sheet-head">
-          <h2 className="pixel sheet-title">{t('inventory.title')}</h2>
-          <button
-            type="button"
-            className="btn btn-small btn-primary"
-            data-testid="equip-best"
-            onClick={() => {
-              const n = sim.equipBest();
-              setNote(n > 0 ? t('inventory.equippedBest', { n }) : t('inventory.alreadyBest'));
-              select(null);
-            }}
-          >
-            {t('inventory.equipBest')}
-          </button>
-          <button
-            type="button"
-            className="round-btn"
-            aria-label={t('action.close')}
-            onClick={() => openBackpack(false)}
-          >
-            ✕
-          </button>
-        </header>
-        {note && <div className="small tone-good inv-note">{note}</div>}
-        <div className="inv-layout">
-          <Paperdoll />
-          <div className="inv-main">
-            <div className="tabs" role="tablist">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={view === 'items' && tab === 'backpack'}
-                className={`tab${view === 'items' && tab === 'backpack' ? ' active' : ''}`}
-                onClick={() => {
-                  setView('items');
-                  setTab('backpack');
-                }}
-              >
-                {t('backpack.title')}{' '}
-                {t('backpack.count', {
-                  n: s.backpack.length,
-                  max: backpackSize(s.hero, sim.content),
-                })}
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={view === 'items' && tab === 'stash'}
-                className={`tab${view === 'items' && tab === 'stash' ? ' active' : ''}`}
-                onClick={() => {
-                  setView('items');
-                  setTab('stash');
-                }}
-              >
-                {t('backpack.stash')} ({s.stash.length})
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={view === 'materials'}
-                className={`tab${view === 'materials' ? ' active' : ''}`}
-                onClick={() => setView('materials')}
-                data-testid="tab-materials"
-              >
-                {t('backpack.materials')}
-              </button>
-            </div>
-            {view === 'materials' ? (
-              <Materials />
-            ) : (
-              <>
-                <div className="inv-tools">
-                  <div className="slot-filter" role="group" aria-label={t('inventory.filter')}>
-                    <button
-                      type="button"
-                      className={`filter-chip${filter === 'all' ? ' active' : ''}`}
-                      onClick={() => setFilter('all')}
-                    >
-                      {t('inventory.all')}
-                    </button>
-                    {EQUIPMENT_SLOTS.map((slot) => (
-                      <button
-                        key={slot}
-                        type="button"
-                        className={`filter-chip${filter === slot ? ' active' : ''}`}
-                        onClick={() => setFilter(slot)}
-                        title={t(`slot.${slot}`)}
-                        aria-label={t(`slot.${slot}`)}
-                      >
-                        <PixelIcon name={SLOT_ICON[slot]} size={16} />
-                      </button>
-                    ))}
-                  </div>
-                  <select
-                    className="input sort"
-                    value={sort}
-                    onChange={(e) => setSort(e.target.value as SortKey)}
-                    aria-label={t('inventory.sort')}
+    <FloatWindow
+      id="inventory"
+      title={t('inventory.title')}
+      icon={<Icon name="backpack" size={18} />}
+      initial={{ x: Math.max(8, window.innerWidth - 668), y: 64 }}
+      width={660}
+      onClose={() => openBackpack(false)}
+      testId="backpack"
+      actions={
+        <button
+          type="button"
+          className="btn btn-small btn-primary"
+          data-testid="equip-best"
+          onClick={() => {
+            const n = sim.equipBest();
+            setNote(n > 0 ? t('inventory.equippedBest', { n }) : t('inventory.alreadyBest'));
+            select(null);
+          }}
+        >
+          {t('inventory.equipBest')}
+        </button>
+      }
+    >
+      {note && <div className="small tone-good inv-note">{note}</div>}
+      <div className="inv-layout">
+        <Paperdoll />
+        <div className="inv-main">
+          <div className="tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === 'items' && tab === 'backpack'}
+              className={`tab${view === 'items' && tab === 'backpack' ? ' active' : ''}`}
+              onClick={() => {
+                setView('items');
+                setTab('backpack');
+              }}
+            >
+              {t('backpack.title')}{' '}
+              {t('backpack.count', {
+                n: s.backpack.length,
+                max: backpackSize(s.hero, sim.content),
+              })}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === 'items' && tab === 'stash'}
+              className={`tab${view === 'items' && tab === 'stash' ? ' active' : ''}`}
+              onClick={() => {
+                setView('items');
+                setTab('stash');
+              }}
+            >
+              {t('backpack.stash')} ({s.stash.length})
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === 'materials'}
+              className={`tab${view === 'materials' ? ' active' : ''}`}
+              onClick={() => setView('materials')}
+              data-testid="tab-materials"
+            >
+              {t('backpack.materials')}
+            </button>
+          </div>
+          {view === 'materials' ? (
+            <Materials />
+          ) : (
+            <>
+              <div className="inv-tools">
+                <div className="slot-filter" role="group" aria-label={t('inventory.filter')}>
+                  <button
+                    type="button"
+                    className={`filter-chip${filter === 'all' ? ' active' : ''}`}
+                    onClick={() => setFilter('all')}
                   >
-                    <option value="recent">{t('inventory.sort.recent')}</option>
-                    <option value="rarity">{t('inventory.sort.rarity')}</option>
-                    <option value="ilvl">{t('inventory.sort.ilvl')}</option>
-                  </select>
-                </div>
-                <div className="grid">
-                  {items.length === 0 && <div className="muted">{t('backpack.empty')}</div>}
-                  {items.map((item) => (
-                    <ItemCell
-                      key={item.uid}
-                      item={item}
-                      selected={item.uid === selectedUid}
-                      upgrade={upgrades.has(item.uid)}
-                      onSelect={() => select(item.uid)}
-                      onRightClick={() => {
-                        if (tryIntent(() => sim.equip(item.uid)) === null) select(null);
-                      }}
-                    />
+                    {t('inventory.all')}
+                  </button>
+                  {EQUIPMENT_SLOTS.map((slot) => (
+                    <button
+                      key={slot}
+                      type="button"
+                      className={`filter-chip${filter === slot ? ' active' : ''}`}
+                      onClick={() => setFilter(slot)}
+                      title={t(`slot.${slot}`)}
+                      aria-label={t(`slot.${slot}`)}
+                    >
+                      <PixelIcon name={SLOT_ICON[slot]} size={16} />
+                    </button>
                   ))}
                 </div>
-              </>
-            )}
-          </div>
+                <select
+                  className="input sort"
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as SortKey)}
+                  aria-label={t('inventory.sort')}
+                >
+                  <option value="recent">{t('inventory.sort.recent')}</option>
+                  <option value="rarity">{t('inventory.sort.rarity')}</option>
+                  <option value="ilvl">{t('inventory.sort.ilvl')}</option>
+                </select>
+              </div>
+              <div className="grid">
+                {items.length === 0 && <div className="muted">{t('backpack.empty')}</div>}
+                {items.map((item) => (
+                  <ItemCell
+                    key={item.uid}
+                    item={item}
+                    selected={item.uid === selectedUid}
+                    upgrade={upgrades.has(item.uid)}
+                    onSelect={() => select(item.uid)}
+                    onRightClick={() => {
+                      if (tryIntent(() => sim.equip(item.uid)) === null) select(null);
+                    }}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
-        {selected && (
-          <ItemCard
-            item={selected}
-            equipped={equipped.some((e) => e?.uid === selected.uid)}
-            onUnequip={() => {
-              const slot = sim.content.itemBases.get(selected.baseId)!.slot;
-              sim.unequip(slot);
-              select(null);
-            }}
-          />
-        )}
-      </section>
-    </div>
+      </div>
+      {selected && (
+        <ItemCard
+          item={selected}
+          equipped={equipped.some((e) => e?.uid === selected.uid)}
+          onUnequip={() => {
+            const slot = sim.content.itemBases.get(selected.baseId)!.slot;
+            sim.unequip(slot);
+            select(null);
+          }}
+        />
+      )}
+    </FloatWindow>
   );
 }

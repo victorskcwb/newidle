@@ -18,17 +18,17 @@ test('the save survives closing the game and 2 hours away are resolved offline',
   await page.getByTestId('backpack-button').click();
   await page.getByTestId('backpack').getByTestId('item-cell').nth(1).click();
   await page.getByRole('button', { name: 'Equipar', exact: true }).click();
-  await page.getByRole('button', { name: 'Fechar' }).click();
+  await page.getByRole('button', { name: 'Fechar' }).last().click();
 
   // Refine the weapon at the blacksmith (+1 always succeeds). Debug resources pay for it.
   await page.getByTestId('nav-settings').click();
   await page.getByTestId('debug-resources').click();
-  await page.getByRole('button', { name: 'Fechar' }).click();
+  await page.getByRole('button', { name: 'Fechar' }).last().click();
   await page.getByTestId('nav-smith').click();
   await expect(page.getByTestId('refine-chance')).toContainText('chance de 100%');
   await page.getByTestId('refine-button').click();
   await expect(page.getByTestId('refine-result')).toContainText('Sucesso! Agora +1.');
-  await page.getByRole('button', { name: 'Fechar' }).click();
+  await page.getByRole('button', { name: 'Fechar' }).last().click();
   const level = await page.getByTestId('hero-level').textContent();
   // Equipping saves right away; give the write a moment, then close the game.
   await page.waitForTimeout(1_000);

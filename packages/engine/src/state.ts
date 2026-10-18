@@ -31,7 +31,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
     refine: 0,
   };
   const s: GameState = {
-    version: 6,
+    version: 7,
     tick: 0,
     rng: createRng(hero.seed),
     nextUid: 2,
@@ -71,6 +71,8 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
       returnWhenOutOfPotions: true,
       autoReturnAfterDeath: true,
       lootFilter: { keepFromRarity: 'common', alwaysKeepAffixes: [] },
+      targetPriority: 'first',
+      autoSellUpTo: null,
     },
     hunt: null,
     activity: { kind: 'idle_town' },

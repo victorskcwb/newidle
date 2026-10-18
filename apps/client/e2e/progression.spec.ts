@@ -13,25 +13,25 @@ test('skills, hunt map, reset and reset shop', async ({ page }) => {
     timeout: 20_000,
   });
   await expect(page.getByTestId('hunt-pale_woods')).toContainText('Derrote O Coveiro');
-  await page.getByRole('button', { name: 'Fechar' }).click();
+  await page.getByRole('button', { name: 'Fechar' }).last().click();
 
   // Goals: three for today and one for the week.
   await page.getByTestId('nav-quests').click();
   await expect(page.getByTestId('quest-2')).toBeVisible();
   await expect(page.getByTestId('quest-weekly')).toBeVisible();
-  await page.getByRole('button', { name: 'Fechar' }).click();
+  await page.getByRole('button', { name: 'Fechar' }).last().click();
 
   // Card album: every monster has a card, none found yet.
   await page.getByTestId('nav-cards').click();
   await expect(page.getByTestId('cards')).toContainText('0 de 27 cartas');
   await expect(page.getByTestId('card-card_bone_walker')).toContainText('???');
-  await page.getByRole('button', { name: 'Fechar' }).click();
+  await page.getByRole('button', { name: 'Fechar' }).last().click();
 
   // Jump to level 100 (debug, development builds only).
   await page.getByTestId('nav-settings').click();
   await page.getByTestId('debug-level').click();
   await page.getByTestId('debug-resources').click();
-  await page.getByRole('button', { name: 'Fechar' }).click();
+  await page.getByRole('button', { name: 'Fechar' }).last().click();
   await expect(page.getByTestId('hero-level')).toHaveText('Nv. 100');
 
   // Learn the first active skill: it fills the first slot.
@@ -39,7 +39,7 @@ test('skills, hunt map, reset and reset shop', async ({ page }) => {
   await expect(page.getByTestId('skill-points')).toContainText('50 pontos');
   await page.getByRole('button', { name: 'Aprender Golpe pesado' }).click();
   await expect(page.getByTestId('slot-0')).toContainText('Golpe pesado');
-  await page.getByRole('button', { name: 'Fechar' }).click();
+  await page.getByRole('button', { name: 'Fechar' }).last().click();
 
   // Reset: back to level 1 with reset points; the shop opens.
   await page.getByTestId('nav-altar').click();

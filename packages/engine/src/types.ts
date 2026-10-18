@@ -83,7 +83,13 @@ export interface Settings {
   returnWhenOutOfPotions: boolean;
   autoReturnAfterDeath: boolean;
   lootFilter: LootFilter;
+  /** Which monster of a group the hero hits first. */
+  targetPriority: TargetPriority;
+  /** On every town visit, backpack items up to this rarity are sold (null = never). */
+  autoSellUpTo: Rarity | null;
 }
+
+export type TargetPriority = 'first' | 'weakest' | 'strongest';
 
 export interface MonsterInstance {
   uid: number;
@@ -141,7 +147,7 @@ export interface Lifetime {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 6;
+  version: 7;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;

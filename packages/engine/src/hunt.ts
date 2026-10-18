@@ -18,13 +18,21 @@ import {
   TICKS_PER_SECOND,
   TOWN_STAY_TICKS,
 } from './constants.ts';
-import { filterKeeps, generateItem, pickWeighted, rollSalvage } from './items.ts';
+import { filterKeeps, generateItem, pickWeighted, rarityRank, rollSalvage } from './items.ts';
+import { sellPrice } from './town.ts';
 import { rollCard } from './cards.ts';
 import { questLoot, questProgress } from './quests.ts';
 import { addXp } from './progression.ts';
 import { rngChance, rngInt } from './rng.ts';
 import { heroStats, type HeroStats } from './stats.ts';
-import type { GameEvent, GameState, HitResult, MonsterInstance, TownReason } from './types.ts';
+import type {
+  GameEvent,
+  GameState,
+  HitResult,
+  ItemInstance,
+  MonsterInstance,
+  TownReason,
+} from './types.ts';
 import { backpackSize } from './upgrades.ts';
 import { xpGapPct } from './xp.ts';
 
@@ -195,8 +203,32 @@ function goToTown(
   out?.push({ type: 'TownTripStarted', tick: t, reason, arriveTick });
 }
 
+/**
+ * Sells the backpack items up to the auto-sell rarity to the merchant (town visits and
+ * offline loot). Returns the gold earned.
+ */
+export function autoSell(
+  s: GameState,
+  items: ItemInstance[],
+): { kept: ItemInstance[]; gold: number } {
+  const limit = s.settings.autoSellUpTo;
+  if (limit === null) return { kept: items, gold: 0 };
+  let gold = 0;
+  const kept = items.filter((item) => {
+    if (rarityRank(item.rarity) > rarityRank(limit)) return true;
+    gold += sellPrice(item);
+    return false;
+  });
+  s.gold += BigInt(gold);
+  s.lifetime.goldEarned += BigInt(gold);
+  return { kept, gold };
+}
+
 /** Deposits the backpack, refills life and mana and buys potions up to the target. */
 function visitTown(s: GameState, content: ContentDb, stats: HeroStats, o: StepOptions) {
+  const sold = autoSell(s, s.backpack);
+  s.backpack = sold.kept;
+  if (o.counters) o.counters.gold += sold.gold;
   const deposited = s.backpack.length;
   s.stash.push(...s.backpack);
   s.backpack = [];
@@ -515,6 +547,18 @@ function killMonster(
 }
 
 /** One swing of the hero (a normal attack or a damaging skill) against the group. */
+/** The group in the order the hero hits it (the target priority setting). */
+function targetOrder(s: GameState, group: MonsterInstance[]): MonsterInstance[] {
+  const p = s.settings.targetPriority;
+  if (p === 'first') return group;
+  const dir = p === 'weakest' ? 1 : -1;
+  // Stable: ties keep the group order, so the result does not depend on the sort.
+  return group
+    .map((m, i) => ({ m, i }))
+    .sort((a, b) => dir * (a.m.hp - b.m.hp) || a.i - b.i)
+    .map((x) => x.m);
+}
+
 function heroStrike(
   s: GameState,
   content: ContentDb,
@@ -532,7 +576,7 @@ function heroStrike(
   const skillPct = Math.floor((baseSkillPct * (100 + buffDamagePct(s, content, t))) / 100);
   const hits: HitResult[] = [];
   let leech = 0;
-  for (const m of group) {
+  for (const m of targetOrder(s, group)) {
     if (hits.length >= maxTargets) break;
     if (m.hp <= 0) continue;
     const def = content.monsters.get(m.monsterId)!;

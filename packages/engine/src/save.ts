@@ -8,7 +8,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 
 export interface SaveFile {
   version: number;
@@ -80,7 +80,7 @@ const quest = z.strictObject({
 });
 
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(6),
+  version: z.literal(7),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -125,6 +125,8 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
     returnWhenOutOfPotions: z.boolean(),
     autoReturnAfterDeath: z.boolean(),
     lootFilter: z.strictObject({ keepFromRarity: rarity, alwaysKeepAffixes: z.array(id) }),
+    targetPriority: z.enum(['first', 'weakest', 'strongest']),
+    autoSellUpTo: rarity.nullable(),
   }),
   hunt: z
     .strictObject({ huntId: id, killsSinceBoss: nonNeg, consecutiveDeaths: nonNeg })
@@ -230,6 +232,18 @@ export const SAVE_MIGRATIONS: Record<
       quests: { day: -1, daily: [], week: -1, weekly: null },
     },
   }),
+  /** v6 → v7: target priority and auto-sell in town (off by default). */
+  6: (raw) => {
+    const state = raw.state as { settings: object };
+    return {
+      ...raw,
+      state: {
+        ...state,
+        version: 7,
+        settings: { ...state.settings, targetPriority: 'first', autoSellUpTo: null },
+      },
+    };
+  },
 };
 
 export function encodeSave(state: GameState, savedAt: number): string {

@@ -9,6 +9,7 @@ import type {
   GameState,
   ItemInstance,
   LootFilter,
+  TargetPriority,
 } from './types.ts';
 import { upgradeTotal } from './upgrades.ts';
 import { xpToNext } from './xp.ts';
@@ -210,4 +211,16 @@ export function equipBest(s: GameState, content: ContentDb): number[] {
     }
   }
   return equipped;
+}
+
+/** Hunt behaviour from the action bar: target priority and auto-sell in town. */
+export function setHuntBehaviour(
+  s: GameState,
+  behaviour: { targetPriority: TargetPriority; autoSellUpTo: Rarity | null },
+) {
+  if (!['first', 'weakest', 'strongest'].includes(behaviour.targetPriority)) {
+    throw new IntentError('invalid_target');
+  }
+  s.settings.targetPriority = behaviour.targetPriority;
+  s.settings.autoSellUpTo = behaviour.autoSellUpTo;
 }

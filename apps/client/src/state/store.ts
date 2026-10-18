@@ -30,7 +30,6 @@ interface UiState {
   /** HUD values at the tick the scene is showing (not the engine's latest tick). */
   presented: Snapshot | null;
   log: LogLine[];
-  logExpanded: boolean;
   backpackOpen: boolean;
   screen: Screen | null;
   tab: 'backpack' | 'stash';
@@ -49,7 +48,6 @@ interface UiState {
   simVersion: number;
   setPresented: (s: Snapshot) => void;
   pushLog: (line: Omit<LogLine, 'id'>) => void;
-  toggleLog: () => void;
   openBackpack: (open: boolean) => void;
   openScreen: (screen: Screen | null) => void;
   setTab: (tab: 'backpack' | 'stash') => void;
@@ -59,6 +57,10 @@ interface UiState {
   setZoom: (zoom: number) => void;
   showLevelUp: (level: number) => void;
   openNpc: (npc: string | null) => void;
+  /** The log window (it starts open). */
+  logWindow: boolean;
+  toggleLogWindow: () => void;
+  toggleBackpack: () => void;
   setHover: (hover: { item: ItemInstance; x: number; y: number } | null) => void;
   hideLevelUp: () => void;
   bump: () => void;
@@ -70,7 +72,6 @@ let logId = 0;
 export const useUi = create<UiState>((set) => ({
   presented: null,
   log: [],
-  logExpanded: false,
   backpackOpen: false,
   screen: null,
   tab: 'backpack',
@@ -80,12 +81,12 @@ export const useUi = create<UiState>((set) => ({
   zoom: 2,
   levelUp: null,
   npc: null,
+  logWindow: typeof window === 'undefined' || window.innerWidth > 700,
   hover: null,
   simVersion: 0,
   setPresented: (presented) => set({ presented }),
   pushLog: (line) =>
     set((s) => ({ log: [...s.log.slice(-(LOG_LIMIT - 1)), { ...line, id: ++logId }] })),
-  toggleLog: () => set((s) => ({ logExpanded: !s.logExpanded })),
   openBackpack: (backpackOpen) => set({ backpackOpen, selectedUid: null, hover: null }),
   openScreen: (screen) => set({ screen, backpackOpen: false, selectedUid: null }),
   setTab: (tab) => set({ tab, selectedUid: null }),
@@ -97,5 +98,8 @@ export const useUi = create<UiState>((set) => ({
   hideLevelUp: () => set({ levelUp: null }),
   openNpc: (npc) => set({ npc, screen: null, backpackOpen: false, hover: null }),
   setHover: (hover) => set({ hover }),
+  toggleLogWindow: () => set((s) => ({ logWindow: !s.logWindow })),
+  toggleBackpack: () =>
+    set((s) => ({ backpackOpen: !s.backpackOpen, selectedUid: null, hover: null })),
   bump: () => set((s) => ({ simVersion: s.simVersion + 1 })),
 }));

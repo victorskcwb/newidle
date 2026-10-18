@@ -31,7 +31,7 @@ function useWorldMapData() {
   return data;
 }
 
-function MonsterSprite({ monster }: { monster: Monster }) {
+export function MonsterSprite({ monster }: { monster: Monster }) {
   const manifest = useManifest();
   const atlas = manifest?.atlases[monster.sprite.atlas];
   const sprite = atlas?.sprites[monster.sprite.key];
@@ -51,7 +51,7 @@ function MonsterSprite({ monster }: { monster: Monster }) {
 }
 
 /** Everything about one hunt: monsters, drops and, when unlocked, the rates per hour. */
-function HuntInfo({
+export function HuntInfo({
   hunt,
   rates,
   locked,

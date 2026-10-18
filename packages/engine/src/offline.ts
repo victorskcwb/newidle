@@ -7,7 +7,7 @@ import {
   TICKS_PER_HOUR,
 } from './constants.ts';
 import { filterKeeps, generateItem, rarityRank } from './items.ts';
-import { killXp } from './hunt.ts';
+import { autoSell, killXp } from './hunt.ts';
 import { cardChancePpm, pityThreshold } from './cards.ts';
 import { addXp } from './progression.ts';
 import { questLoot, questProgress } from './quests.ts';
@@ -279,6 +279,9 @@ export function resolveOffline(
     }
   }
   report.items.sort((a, b) => rarityRank(b.rarity) - rarityRank(a.rarity) || a.uid - b.uid);
+  const sold = autoSell(s, report.items);
+  report.items = sold.kept;
+  report.gold += BigInt(sold.gold);
   s.stash.push(...report.items);
   for (const [id, qty] of Object.entries(report.materials)) {
     s.materials[id] = (s.materials[id] ?? 0n) + BigInt(qty);

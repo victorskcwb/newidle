@@ -27,6 +27,7 @@ import {
   salvageUpTo,
   sellItems,
   setActiveSkill,
+  setHuntBehaviour,
   setAutoAllocate,
   setLootFilter,
   setPotionSettings,
@@ -196,6 +197,12 @@ export class GameSim {
   salvage(uid: number) {
     salvageItem(this.state, this.content, uid);
     this.changed(false);
+  }
+
+  /** Action bar: target priority and auto-sell in town. */
+  setHuntBehaviour(behaviour: Parameters<typeof setHuntBehaviour>[1]) {
+    setHuntBehaviour(this.state, behaviour);
+    this.changed(true);
   }
 
   /** Town: sells items to the merchant. */
