@@ -627,6 +627,182 @@
       },
       "boss": true,
       "cardId": "card_charred_king"
+    },
+    {
+      "id": "carrion_crow",
+      "nameKey": "monster.carrion_crow",
+      "level": 14,
+      "hp": 68,
+      "damageMin": 8,
+      "damageMax": 14,
+      "attacksPerSecond": 1.05,
+      "accuracy": 185,
+      "defense": 36,
+      "evasion": 22,
+      "xp": 10,
+      "gold": [14, 44],
+      "tags": ["beast"],
+      "lootTableId": "loot_pale_woods",
+      "sprite": {
+        "atlas": "region_cinzarra",
+        "key": "carrion_crow",
+        "tint": "#4a4a58"
+      },
+      "cardId": "card_carrion_crow"
+    },
+    {
+      "id": "wailing_soul",
+      "nameKey": "monster.wailing_soul",
+      "level": 24,
+      "hp": 248,
+      "damageMin": 14,
+      "damageMax": 22,
+      "attacksPerSecond": 0.95,
+      "accuracy": 285,
+      "defense": 62,
+      "evasion": 34,
+      "xp": 11,
+      "gold": [24, 74],
+      "tags": ["undead"],
+      "lootTableId": "loot_cracked_crypt",
+      "sprite": {
+        "atlas": "region_cinzarra",
+        "key": "wailing_soul",
+        "tint": "#e8e8f0"
+      },
+      "cardId": "card_wailing_soul"
+    },
+    {
+      "id": "mire_worm",
+      "nameKey": "monster.mire_worm",
+      "level": 34,
+      "hp": 294,
+      "damageMin": 14,
+      "damageMax": 24,
+      "attacksPerSecond": 1.15,
+      "accuracy": 385,
+      "defense": 86,
+      "evasion": 47,
+      "xp": 14,
+      "gold": [34, 104],
+      "tags": ["beast"],
+      "lootTableId": "loot_murky_bog",
+      "sprite": {
+        "atlas": "region_morvel",
+        "key": "mire_worm",
+        "tint": "#8a4a2a"
+      },
+      "cardId": "card_mire_worm"
+    },
+    {
+      "id": "drowned_lament",
+      "nameKey": "monster.drowned_lament",
+      "level": 44,
+      "hp": 337,
+      "damageMin": 22,
+      "damageMax": 37,
+      "attacksPerSecond": 0.95,
+      "accuracy": 485,
+      "defense": 112,
+      "evasion": 60,
+      "xp": 16,
+      "gold": [44, 134],
+      "tags": ["undead"],
+      "lootTableId": "loot_drowned_village",
+      "sprite": {
+        "atlas": "region_morvel",
+        "key": "drowned_lament",
+        "tint": "#7ac87a"
+      },
+      "cardId": "card_drowned_lament"
+    },
+    {
+      "id": "rotting_druid",
+      "nameKey": "monster.rotting_druid",
+      "level": 54,
+      "hp": 1026,
+      "damageMin": 26,
+      "damageMax": 44,
+      "attacksPerSecond": 0.95,
+      "accuracy": 585,
+      "defense": 136,
+      "evasion": 74,
+      "xp": 20,
+      "gold": [54, 164],
+      "tags": ["undead"],
+      "lootTableId": "loot_rotting_heart",
+      "sprite": {
+        "atlas": "region_morvel",
+        "key": "rotting_druid",
+        "tint": "#5aa86a"
+      },
+      "cardId": "card_rotting_druid"
+    },
+    {
+      "id": "ash_succubus",
+      "nameKey": "monster.ash_succubus",
+      "level": 66,
+      "hp": 1121,
+      "damageMin": 29,
+      "damageMax": 48,
+      "attacksPerSecond": 1.1,
+      "accuracy": 700,
+      "defense": 165,
+      "evasion": 92,
+      "xp": 25,
+      "gold": [66, 198],
+      "tags": ["beast", "fire"],
+      "lootTableId": "loot_ash_gates",
+      "sprite": {
+        "atlas": "region_citadel",
+        "key": "ash_succubus",
+        "tint": "#4a6ac8"
+      },
+      "cardId": "card_ash_succubus"
+    },
+    {
+      "id": "ember_herald",
+      "nameKey": "monster.ember_herald",
+      "level": 79,
+      "hp": 2972,
+      "damageMin": 42,
+      "damageMax": 70,
+      "attacksPerSecond": 0.9,
+      "accuracy": 830,
+      "defense": 197,
+      "evasion": 112,
+      "xp": 33,
+      "gold": [79, 237],
+      "tags": ["construct", "fire"],
+      "lootTableId": "loot_molten_halls",
+      "sprite": {
+        "atlas": "region_citadel",
+        "key": "ember_herald",
+        "tint": "#c84a3a"
+      },
+      "cardId": "card_ember_herald"
+    },
+    {
+      "id": "cinder_worm",
+      "nameKey": "monster.cinder_worm",
+      "level": 92,
+      "hp": 3134,
+      "damageMin": 40,
+      "damageMax": 67,
+      "attacksPerSecond": 1.05,
+      "accuracy": 965,
+      "defense": 232,
+      "evasion": 136,
+      "xp": 42,
+      "gold": [92, 278],
+      "tags": ["beast"],
+      "lootTableId": "loot_burning_throne",
+      "sprite": {
+        "atlas": "region_citadel",
+        "key": "cinder_worm",
+        "tint": "#d8602a"
+      },
+      "cardId": "card_cinder_worm"
     }
   ],
   "lootTables": [

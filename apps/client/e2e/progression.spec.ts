@@ -23,7 +23,7 @@ test('skills, hunt map, reset and reset shop', async ({ page }) => {
 
   // Card album: every monster has a card, none found yet.
   await page.getByTestId('nav-cards').click();
-  await expect(page.getByTestId('cards')).toContainText('0 de 27 cartas');
+  await expect(page.getByTestId('cards')).toContainText('0 de 35 cartas');
   await expect(page.getByTestId('card-card_bone_walker')).toContainText('???');
   await page.getByRole('button', { name: 'Fechar' }).last().click();
 

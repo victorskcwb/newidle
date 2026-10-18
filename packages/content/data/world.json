@@ -82,6 +82,10 @@
         {
           "monsterId": "pale_spider",
           "weight": 45
+        },
+        {
+          "monsterId": "carrion_crow",
+          "weight": 35
         }
       ],
       "groupSize": {
@@ -114,6 +118,10 @@
         {
           "monsterId": "ghoul",
           "weight": 45
+        },
+        {
+          "monsterId": "wailing_soul",
+          "weight": 35
         }
       ],
       "groupSize": {
@@ -146,6 +154,10 @@
         {
           "monsterId": "leech_swarm",
           "weight": 45
+        },
+        {
+          "monsterId": "mire_worm",
+          "weight": 35
         }
       ],
       "groupSize": {
@@ -178,6 +190,10 @@
         {
           "monsterId": "marsh_hag",
           "weight": 45
+        },
+        {
+          "monsterId": "drowned_lament",
+          "weight": 35
         }
       ],
       "groupSize": {
@@ -210,6 +226,10 @@
         {
           "monsterId": "swamp_horror",
           "weight": 45
+        },
+        {
+          "monsterId": "rotting_druid",
+          "weight": 35
         }
       ],
       "groupSize": {
@@ -242,6 +262,10 @@
         {
           "monsterId": "ash_soldier",
           "weight": 45
+        },
+        {
+          "monsterId": "ash_succubus",
+          "weight": 35
         }
       ],
       "groupSize": {
@@ -274,6 +298,10 @@
         {
           "monsterId": "flame_cultist",
           "weight": 45
+        },
+        {
+          "monsterId": "ember_herald",
+          "weight": 35
         }
       ],
       "groupSize": {
@@ -306,6 +334,10 @@
         {
           "monsterId": "inferno_wraith",
           "weight": 45
+        },
+        {
+          "monsterId": "cinder_worm",
+          "weight": 35
         }
       ],
       "groupSize": {

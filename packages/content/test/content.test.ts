@@ -29,7 +29,7 @@ describe('bundled content', () => {
   it('is valid and complete for the first hunt', () => {
     const c = loadContent();
     expect(c.hunts.get('forgotten_cemetery')).toBeDefined();
-    expect(c.monsters.size).toBe(27);
+    expect(c.monsters.size).toBe(35);
     expect(c.itemBases.size).toBe(40);
     expect(c.affixes.size).toBe(20);
   });

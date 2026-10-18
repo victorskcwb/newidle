@@ -527,6 +527,86 @@
         "stat": "xpPct",
         "value": 5
       }
+    },
+    {
+      "id": "card_carrion_crow",
+      "nameKey": "card.carrion_crow",
+      "chancePpm": 500,
+      "maxCopies": 5,
+      "bonusPerCopy": {
+        "stat": "attackSpeedPct",
+        "value": 1
+      }
+    },
+    {
+      "id": "card_wailing_soul",
+      "nameKey": "card.wailing_soul",
+      "chancePpm": 500,
+      "maxCopies": 5,
+      "bonusPerCopy": {
+        "stat": "energy",
+        "value": 3
+      }
+    },
+    {
+      "id": "card_mire_worm",
+      "nameKey": "card.mire_worm",
+      "chancePpm": 500,
+      "maxCopies": 5,
+      "bonusPerCopy": {
+        "stat": "life",
+        "value": 40
+      }
+    },
+    {
+      "id": "card_drowned_lament",
+      "nameKey": "card.drowned_lament",
+      "chancePpm": 500,
+      "maxCopies": 5,
+      "bonusPerCopy": {
+        "stat": "magicFindPct",
+        "value": 4
+      }
+    },
+    {
+      "id": "card_rotting_druid",
+      "nameKey": "card.rotting_druid",
+      "chancePpm": 500,
+      "maxCopies": 5,
+      "bonusPerCopy": {
+        "stat": "xpPct",
+        "value": 3
+      }
+    },
+    {
+      "id": "card_ash_succubus",
+      "nameKey": "card.ash_succubus",
+      "chancePpm": 500,
+      "maxCopies": 5,
+      "bonusPerCopy": {
+        "stat": "critDamagePct",
+        "value": 5
+      }
+    },
+    {
+      "id": "card_ember_herald",
+      "nameKey": "card.ember_herald",
+      "chancePpm": 500,
+      "maxCopies": 5,
+      "bonusPerCopy": {
+        "stat": "damagePct",
+        "value": 2
+      }
+    },
+    {
+      "id": "card_cinder_worm",
+      "nameKey": "card.cinder_worm",
+      "chancePpm": 500,
+      "maxCopies": 5,
+      "bonusPerCopy": {
+        "stat": "defensePct",
+        "value": 3
+      }
     }
   ]
 }

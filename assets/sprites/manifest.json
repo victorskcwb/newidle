@@ -128,7 +128,7 @@
               "height": 38
             }
           ],
-          "weapon": 528
+          "weapon": 624
         }
       },
       "image": "sprites/creatures.png",
@@ -623,6 +623,114 @@
               }
             },
             "height": 38
+          }
+        },
+        "carrion_crow": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 140,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          },
+          "frames": {
+            "idle": [534, 535, 536],
+            "run": [535, 536],
+            "dirs": {
+              "up": {
+                "idle": [528, 529, 530],
+                "run": [529, 530]
+              },
+              "right": {
+                "idle": [531, 532, 533],
+                "run": [532, 533]
+              },
+              "down": {
+                "idle": [534, 535, 536],
+                "run": [535, 536]
+              },
+              "left": {
+                "idle": [537, 538, 539],
+                "run": [538, 539]
+              }
+            },
+            "height": 31
+          }
+        },
+        "wailing_soul": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 140,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          },
+          "frames": {
+            "idle": [546, 547, 548],
+            "run": [547, 548],
+            "dirs": {
+              "up": {
+                "idle": [540, 541, 542],
+                "run": [541, 542]
+              },
+              "right": {
+                "idle": [543, 544, 545],
+                "run": [544, 545]
+              },
+              "down": {
+                "idle": [546, 547, 548],
+                "run": [547, 548]
+              },
+              "left": {
+                "idle": [549, 550, 551],
+                "run": [550, 551]
+              }
+            },
+            "height": 30
           }
         }
       },
@@ -1119,6 +1227,168 @@
             },
             "height": 62
           }
+        },
+        "mire_worm": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          },
+          "frames": {
+            "idle": [558],
+            "run": [559, 560],
+            "dirs": {
+              "up": {
+                "idle": [552],
+                "run": [553, 554]
+              },
+              "right": {
+                "idle": [555],
+                "run": [556, 557]
+              },
+              "down": {
+                "idle": [558],
+                "run": [559, 560]
+              },
+              "left": {
+                "idle": [561],
+                "run": [562, 563]
+              }
+            },
+            "height": 31
+          }
+        },
+        "drowned_lament": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          },
+          "frames": {
+            "idle": [570, 571, 572],
+            "run": [571, 572],
+            "dirs": {
+              "up": {
+                "idle": [564, 565, 566],
+                "run": [565, 566]
+              },
+              "right": {
+                "idle": [567, 568, 569],
+                "run": [568, 569]
+              },
+              "down": {
+                "idle": [570, 571, 572],
+                "run": [571, 572]
+              },
+              "left": {
+                "idle": [573, 574, 575],
+                "run": [574, 575]
+              }
+            },
+            "height": 30
+          }
+        },
+        "rotting_druid": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          },
+          "frames": {
+            "idle": [582],
+            "run": [583, 584],
+            "dirs": {
+              "up": {
+                "idle": [576],
+                "run": [577, 578]
+              },
+              "right": {
+                "idle": [579],
+                "run": [580, 581]
+              },
+              "down": {
+                "idle": [582],
+                "run": [583, 584]
+              },
+              "left": {
+                "idle": [585],
+                "run": [586, 587]
+              }
+            },
+            "height": 51
+          }
         }
       },
       "image": "sprites/creatures.png",
@@ -1613,6 +1883,168 @@
               }
             },
             "height": 51
+          }
+        },
+        "ash_succubus": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          },
+          "frames": {
+            "idle": [594],
+            "run": [595, 596],
+            "dirs": {
+              "up": {
+                "idle": [588],
+                "run": [589, 590]
+              },
+              "right": {
+                "idle": [591],
+                "run": [592, 593]
+              },
+              "down": {
+                "idle": [594],
+                "run": [595, 596]
+              },
+              "left": {
+                "idle": [597],
+                "run": [598, 599]
+              }
+            },
+            "height": 32
+          }
+        },
+        "ember_herald": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          },
+          "frames": {
+            "idle": [606],
+            "run": [607, 608],
+            "dirs": {
+              "up": {
+                "idle": [600],
+                "run": [601, 602]
+              },
+              "right": {
+                "idle": [603],
+                "run": [604, 605]
+              },
+              "down": {
+                "idle": [606],
+                "run": [607, 608]
+              },
+              "left": {
+                "idle": [609],
+                "run": [610, 611]
+              }
+            },
+            "height": 38
+          }
+        },
+        "cinder_worm": {
+          "animations": {
+            "idle": {
+              "frames": 2,
+              "frameMs": 450,
+              "loop": true
+            },
+            "walk": {
+              "frames": 4,
+              "frameMs": 130,
+              "loop": true
+            },
+            "attack": {
+              "frames": 4,
+              "frameMs": 80,
+              "impactFrame": 2
+            },
+            "hurt": {
+              "frames": 2,
+              "frameMs": 80
+            },
+            "die": {
+              "frames": 4,
+              "frameMs": 120
+            },
+            "spawn": {
+              "frames": 4,
+              "frameMs": 120
+            }
+          },
+          "frames": {
+            "idle": [618],
+            "run": [619, 620],
+            "dirs": {
+              "up": {
+                "idle": [612],
+                "run": [613, 614]
+              },
+              "right": {
+                "idle": [615],
+                "run": [616, 617]
+              },
+              "down": {
+                "idle": [618],
+                "run": [619, 620]
+              },
+              "left": {
+                "idle": [621],
+                "run": [622, 623]
+              }
+            },
+            "height": 31
           }
         }
       },

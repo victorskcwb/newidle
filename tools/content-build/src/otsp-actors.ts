@@ -236,6 +236,14 @@ const MONSTER_LOOKS: Record<string, Look> = {
   cinder_knight: { outfit: 28, hover: true },
   inferno_wraith: { outfit: 43, hover: true },
   charred_king: { outfit: 15 },
+  carrion_crow: { outfit: 9, hover: true },
+  wailing_soul: { outfit: 5, hover: true },
+  mire_worm: { outfit: 24 },
+  drowned_lament: { outfit: 42, hover: true },
+  rotting_druid: { outfit: 33 },
+  ash_succubus: { outfit: 38 },
+  ember_herald: { outfit: 35 },
+  cinder_worm: { outfit: 31 },
 };
 
 interface DirFrames {

@@ -712,5 +712,21 @@
   "settings.gfx.lootFx": "Animação do loot",
   "settings.gfx.lootFx.hint": "Os itens pulando dos monstros e voando para a mochila. O registro continua mostrando o que caiu.",
   "settings.gfx.flashes": "Clarões na tela",
-  "settings.gfx.flashes.hint": "O brilho rápido no level up, nos chefes e na derrota."
+  "settings.gfx.flashes.hint": "O brilho rápido no level up, nos chefes e na derrota.",
+  "monster.carrion_crow": "Corvo carniceiro",
+  "card.carrion_crow": "Corvo carniceiro",
+  "monster.wailing_soul": "Alma penada",
+  "card.wailing_soul": "Alma penada",
+  "monster.mire_worm": "Verme do lodo",
+  "card.mire_worm": "Verme do lodo",
+  "monster.drowned_lament": "Lamento afogado",
+  "card.drowned_lament": "Lamento afogado",
+  "monster.rotting_druid": "Druida apodrecido",
+  "card.rotting_druid": "Druida apodrecido",
+  "monster.ash_succubus": "Súcubo de cinza",
+  "card.ash_succubus": "Súcubo de cinza",
+  "monster.ember_herald": "Arauto das brasas",
+  "card.ember_herald": "Arauto das brasas",
+  "monster.cinder_worm": "Verme de brasa",
+  "card.cinder_worm": "Verme de brasa"
 }
