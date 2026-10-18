@@ -212,6 +212,8 @@ O Victor saiu e pediu para seguir sozinho com o que eu recomendasse. Tudo abaixo
 
 135. **Predefinições de janelas** (Opções → Janelas): Padrão, Caçada, Loot e Tela limpa reposicionam e abrem ou fecham o inventário e o registro de uma vez; "Salvar como meu layout" guarda a arrumação atual no aparelho. As posições das janelas passaram para um store comum (`state/windows.ts`). Abrir uma tela não fecha mais o inventário, que agora é uma janela flutuante.
 
+136. **Balanceamento conferido depois dos monstros novos** (simulador, 2026-10-18): perfil ativo, sementes 1 a 3, primeiro nível 100 nos dias 2,8 / 3,4 / 3,4 e primeiro lendário nos dias 0,9 / 1,4 / 1,6; perfil casual (semente 1) com nível 100 no dia 3,9 e lendário no 2,9. Ciclos de reset cada vez mais curtos, até cerca de 1 dia. Tudo dentro das metas da seção 12.2; a semente 1 do perfil ativo ficou um pouco abaixo dos 3 dias, sem ajuste por enquanto.
+
 ## Perguntas para revisão
 
 - ~~**Resets cada vez mais rápidos (seção 12.2):** a meta "cada reset chega ao 100 pelo menos 10% mais rápido que o anterior, até o reset 10" não é atingida. No simulador (perfil ativo), os ciclos ficam em 3,0 → 1,9 → 1,8 → 1,6 → 1,7 → 1,8 → 1,4 dias: caem no começo e depois estabilizam. Com 10 pontos por reset (a fórmula da seção 8.1, até a masmorra do marco 3) e a Sabedoria dando +10% de XP por nível com custo linear, o bônus de XP não cresce 10% a cada ciclo. Opções: (a) pontos de reset crescerem com o número do reset (ex.: 10 + 2 × resets); (b) Sabedoria multiplicativa (×1,1 por nível); (c) aceitar até a masmorra existir. Recomendo (a), porque é uma linha de conteúdo/constante e mantém a loja simples.~~ Resolvido: decisões 68–70.
