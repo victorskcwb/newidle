@@ -1,3 +1,5 @@
+export * from './achievements.ts';
+export * from './bestiary.ts';
 export * from './cards.ts';
 export * from './combat.ts';
 export * from './constants.ts';

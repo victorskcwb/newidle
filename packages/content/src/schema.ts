@@ -377,6 +377,48 @@ export const loginRewardSchema = z.strictObject({
 });
 export type LoginReward = z.infer<typeof loginRewardSchema>;
 
+/**
+ * Bestiary tiers (GDD 3.4): kills of one monster (or of one boss) unlock a permanent damage
+ * bonus against it. Tiers are in increasing order.
+ */
+export const bestiaryTierSchema = z.strictObject({
+  kills: posInt,
+  bossKills: posInt,
+  damagePct: posInt,
+});
+export type BestiaryTier = z.infer<typeof bestiaryTierSchema>;
+
+/** What an achievement counts (GDD 6.4). Descriptions come from the kind. */
+export const ACHIEVEMENT_KINDS = [
+  'level',
+  'resets',
+  'kills',
+  'boss_kills',
+  'deaths',
+  'items',
+  'cards',
+  'card_regions',
+  'refine',
+  'bestiary',
+  'login_days',
+  'gold_earned',
+] as const;
+export type AchievementKind = (typeof ACHIEVEMENT_KINDS)[number];
+export const achievementSchema = z.strictObject({
+  id,
+  nameKey: key,
+  kind: z.enum(ACHIEVEMENT_KINDS),
+  target: posInt,
+  /** `items`: rarity of the items counted (that rarity or better). */
+  rarity: raritySchema.optional(),
+  /** `bestiary`: tier the monsters counted must have reached. */
+  tier: posInt.optional(),
+  points: posInt,
+  /** Title the hero can show once unlocked. */
+  titleKey: key.optional(),
+});
+export type Achievement = z.infer<typeof achievementSchema>;
+
 export const contentSchema = z.strictObject({
   itemBases: z.array(itemBaseSchema),
   affixes: z.array(affixSchema),
@@ -392,5 +434,7 @@ export const contentSchema = z.strictObject({
   monsterAffixes: z.array(monsterAffixSchema),
   uniqueItems: z.array(uniqueItemSchema),
   loginRewards: z.array(loginRewardSchema),
+  bestiaryTiers: z.array(bestiaryTierSchema),
+  achievements: z.array(achievementSchema),
 });
 export type ContentFile = z.infer<typeof contentSchema>;

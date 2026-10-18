@@ -1,0 +1,7 @@
+{
+  "bestiaryTiers": [
+    { "kills": 100, "bossKills": 1, "damagePct": 2 },
+    { "kills": 1000, "bossKills": 10, "damagePct": 4 },
+    { "kills": 10000, "bossKills": 100, "damagePct": 8 }
+  ]
+}

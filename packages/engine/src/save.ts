@@ -8,7 +8,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 11;
 
 export interface SaveFile {
   version: number;
@@ -80,7 +80,7 @@ const quest = z.strictObject({
 });
 
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(9),
+  version: z.literal(11),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -169,6 +169,11 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
   cardPity: z.record(z.string(), nonNeg),
   dropPity: z.strictObject({ epic: nonNeg, legendary: nonNeg }),
   login: z.strictObject({ lastDay: int, claimed: nonNeg }),
+  bestiary: z.record(z.string(), nonNeg),
+  achievements: z.strictObject({
+    unlocked: z.record(z.string(), nonNeg),
+    title: z.string().nullable(),
+  }),
   quests: z.strictObject({
     day: int,
     daily: z.array(quest),
@@ -255,6 +260,17 @@ export const SAVE_MIGRATIONS: Record<
   8: (raw) => ({
     ...raw,
     state: { ...(raw.state as object), version: 9, login: { lastDay: -1, claimed: 0 } },
+  }),
+  /** v9 → v10: bestiary (kills per monster were not kept before; it starts empty). */
+  9: (raw) => ({ ...raw, state: { ...(raw.state as object), version: 10, bestiary: {} } }),
+  /** v10 → v11: achievements (unlocked on the next check from what the save already has). */
+  10: (raw) => ({
+    ...raw,
+    state: {
+      ...(raw.state as object),
+      version: 11,
+      achievements: { unlocked: {}, title: null },
+    },
   }),
 };
 

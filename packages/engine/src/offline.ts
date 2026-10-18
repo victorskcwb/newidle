@@ -177,6 +177,7 @@ export function resolveOffline(
   let normalKills = 0;
   for (const c of kills) {
     report.kills += c.n;
+    if (c.n > 0) s.bestiary[c.monsterId] = (s.bestiary[c.monsterId] ?? 0) + c.n;
     if (content.monsters.get(c.monsterId)?.boss) report.bossKills += c.n;
     else normalKills += c.n;
   }

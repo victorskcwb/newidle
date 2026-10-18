@@ -27,6 +27,7 @@ import {
   rollSalvage,
 } from './items.ts';
 import { pityRarity, recordDrop } from './pity.ts';
+import { bestiaryDamagePct } from './bestiary.ts';
 import { sellPrice } from './town.ts';
 import { rollCard } from './cards.ts';
 import { questLoot, questProgress } from './quests.ts';
@@ -470,6 +471,8 @@ function killMonster(
   const gold = Math.floor((goldRoll * rewardPct * (100 + stats.goldPct)) / 10_000);
 
   s.lifetime.kills++;
+  // Like cards, the bestiary does not grow while measuring rates (it would change power mid-sample).
+  if (!o.freezeLevel) s.bestiary[m.monsterId] = (s.bestiary[m.monsterId] ?? 0) + 1;
   s.lifetime.goldEarned += BigInt(gold);
   s.gold += BigInt(gold);
   if (o.counters) {
@@ -598,7 +601,9 @@ function heroStrike(
     if (hits.length >= maxTargets) break;
     if (m.hp <= 0) continue;
     const def = content.monsters.get(m.monsterId)!;
-    const undead = def.tags.includes('undead') ? stats.damageVsUndeadPct : 0;
+    const undead =
+      (def.tags.includes('undead') ? stats.damageVsUndeadPct : 0) +
+      bestiaryDamagePct(s, content, m.monsterId);
     const atk: AttackProfile = {
       level: hero.level,
       accuracy: stats.accuracy,

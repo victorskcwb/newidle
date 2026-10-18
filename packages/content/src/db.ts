@@ -9,6 +9,8 @@ import {
   type ItemBase,
   type LootTable,
   type LoginReward,
+  type Achievement,
+  type BestiaryTier,
   type Material,
   type Monster,
   type Rarity,
@@ -36,6 +38,9 @@ export interface ContentDb {
   readonly uniqueItems: ReadonlyMap<string, UniqueItem>;
   /** Login calendar, in order (GDD 6.1). */
   readonly loginRewards: readonly LoginReward[];
+  /** Bestiary tiers, in increasing order (GDD 3.4). */
+  readonly bestiaryTiers: readonly BestiaryTier[];
+  readonly achievements: ReadonlyMap<string, Achievement>;
   /** Material yielded by salvaging each rarity. */
   readonly salvageMaterial: Readonly<Record<Rarity, Material>>;
 }
@@ -76,6 +81,8 @@ export function mergeContentFiles(files: readonly Partial<ContentFile>[]): Conte
     monsterAffixes: [],
     uniqueItems: [],
     loginRewards: [],
+    bestiaryTiers: [],
+    achievements: [],
   };
   for (const file of files) {
     for (const k of Object.keys(merged) as (keyof ContentFile)[]) {
@@ -112,6 +119,8 @@ export function buildContentDb(raw: unknown): ContentDb {
     monsterAffixes: indexById('monsterAffix', c.monsterAffixes, problems),
     uniqueItems: indexById('uniqueItem', c.uniqueItems, problems),
     loginRewards: c.loginRewards,
+    bestiaryTiers: c.bestiaryTiers,
+    achievements: indexById('achievement', c.achievements, problems),
   };
 
   const ref = (ok: boolean, message: string) => {
@@ -200,6 +209,22 @@ export function buildContentDb(raw: unknown): ContentDb {
       );
     }
   });
+  for (const a of c.achievements) {
+    ref(a.kind !== 'items' || !!a.rarity, `achievement ${a.id}: items needs a rarity`);
+    ref(
+      a.kind !== 'bestiary' || (!!a.tier && a.tier <= c.bestiaryTiers.length),
+      `achievement ${a.id}: bestiary needs a valid tier`,
+    );
+  }
+  c.bestiaryTiers.forEach((tier, i) => {
+    const prev = c.bestiaryTiers[i - 1];
+    if (prev) {
+      ref(
+        tier.kills > prev.kills && tier.bossKills > prev.bossKills,
+        `bestiaryTiers[${i}]: kills must grow from tier to tier`,
+      );
+    }
+  });
   for (const a of c.affixes) {
     ref(a.tiers[0]?.minIlvl === a.minIlvl, `affix ${a.id}: first tier must start at minIlvl`);
   }
@@ -229,6 +254,10 @@ export function translationKeys(db: ContentDb): string[] {
   for (const h of db.hunts.values()) keys.push(h.nameKey);
   for (const u of db.resetUpgrades.values()) keys.push(u.nameKey, u.descKey);
   for (const a of db.monsterAffixes.values()) keys.push(a.nameKey);
+  for (const a of db.achievements.values()) {
+    keys.push(a.nameKey, `achievement.kind.${a.kind}`);
+    if (a.titleKey) keys.push(a.titleKey);
+  }
   for (const u of db.uniqueItems.values()) keys.push(u.nameKey, u.descKey);
   return keys;
 }

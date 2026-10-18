@@ -1,0 +1,285 @@
+{
+  "achievements": [
+    {
+      "id": "level_10",
+      "nameKey": "achievement.level_10",
+      "kind": "level",
+      "target": 10,
+      "points": 5
+    },
+    {
+      "id": "level_25",
+      "nameKey": "achievement.level_25",
+      "kind": "level",
+      "target": 25,
+      "points": 10
+    },
+    {
+      "id": "level_50",
+      "nameKey": "achievement.level_50",
+      "kind": "level",
+      "target": 50,
+      "points": 15
+    },
+    {
+      "id": "level_100",
+      "nameKey": "achievement.level_100",
+      "kind": "level",
+      "target": 100,
+      "points": 25,
+      "titleKey": "title.level_100"
+    },
+    {
+      "id": "resets_1",
+      "nameKey": "achievement.resets_1",
+      "kind": "resets",
+      "target": 1,
+      "points": 20,
+      "titleKey": "title.resets_1"
+    },
+    {
+      "id": "resets_5",
+      "nameKey": "achievement.resets_5",
+      "kind": "resets",
+      "target": 5,
+      "points": 30
+    },
+    {
+      "id": "resets_10",
+      "nameKey": "achievement.resets_10",
+      "kind": "resets",
+      "target": 10,
+      "points": 40,
+      "titleKey": "title.resets_10"
+    },
+    {
+      "id": "resets_25",
+      "nameKey": "achievement.resets_25",
+      "kind": "resets",
+      "target": 25,
+      "points": 60,
+      "titleKey": "title.resets_25"
+    },
+    {
+      "id": "kills_1k",
+      "nameKey": "achievement.kills_1k",
+      "kind": "kills",
+      "target": 1000,
+      "points": 5
+    },
+    {
+      "id": "kills_10k",
+      "nameKey": "achievement.kills_10k",
+      "kind": "kills",
+      "target": 10000,
+      "points": 10
+    },
+    {
+      "id": "kills_100k",
+      "nameKey": "achievement.kills_100k",
+      "kind": "kills",
+      "target": 100000,
+      "points": 25,
+      "titleKey": "title.kills_100k"
+    },
+    {
+      "id": "kills_1m",
+      "nameKey": "achievement.kills_1m",
+      "kind": "kills",
+      "target": 1000000,
+      "points": 50,
+      "titleKey": "title.kills_1m"
+    },
+    {
+      "id": "bosses_1",
+      "nameKey": "achievement.bosses_1",
+      "kind": "boss_kills",
+      "target": 1,
+      "points": 5
+    },
+    {
+      "id": "bosses_25",
+      "nameKey": "achievement.bosses_25",
+      "kind": "boss_kills",
+      "target": 25,
+      "points": 15
+    },
+    {
+      "id": "bosses_250",
+      "nameKey": "achievement.bosses_250",
+      "kind": "boss_kills",
+      "target": 250,
+      "points": 30,
+      "titleKey": "title.bosses_250"
+    },
+    {
+      "id": "deaths_1",
+      "nameKey": "achievement.deaths_1",
+      "kind": "deaths",
+      "target": 1,
+      "points": 5
+    },
+    {
+      "id": "items_rare",
+      "nameKey": "achievement.items_rare",
+      "kind": "items",
+      "target": 1,
+      "points": 5,
+      "rarity": "rare"
+    },
+    {
+      "id": "items_epic",
+      "nameKey": "achievement.items_epic",
+      "kind": "items",
+      "target": 1,
+      "points": 10,
+      "rarity": "epic"
+    },
+    {
+      "id": "items_legendary",
+      "nameKey": "achievement.items_legendary",
+      "kind": "items",
+      "target": 1,
+      "points": 20,
+      "rarity": "legendary",
+      "titleKey": "title.items_legendary"
+    },
+    {
+      "id": "items_legendary_25",
+      "nameKey": "achievement.items_legendary_25",
+      "kind": "items",
+      "target": 25,
+      "points": 40,
+      "rarity": "legendary"
+    },
+    {
+      "id": "cards_1",
+      "nameKey": "achievement.cards_1",
+      "kind": "cards",
+      "target": 1,
+      "points": 5
+    },
+    {
+      "id": "cards_10",
+      "nameKey": "achievement.cards_10",
+      "kind": "cards",
+      "target": 10,
+      "points": 15
+    },
+    {
+      "id": "cards_35",
+      "nameKey": "achievement.cards_35",
+      "kind": "cards",
+      "target": 35,
+      "points": 50,
+      "titleKey": "title.cards_35"
+    },
+    {
+      "id": "regions_1",
+      "nameKey": "achievement.regions_1",
+      "kind": "card_regions",
+      "target": 1,
+      "points": 20
+    },
+    {
+      "id": "regions_3",
+      "nameKey": "achievement.regions_3",
+      "kind": "card_regions",
+      "target": 3,
+      "points": 40
+    },
+    {
+      "id": "refine_7",
+      "nameKey": "achievement.refine_7",
+      "kind": "refine",
+      "target": 7,
+      "points": 10
+    },
+    {
+      "id": "refine_10",
+      "nameKey": "achievement.refine_10",
+      "kind": "refine",
+      "target": 10,
+      "points": 20
+    },
+    {
+      "id": "refine_15",
+      "nameKey": "achievement.refine_15",
+      "kind": "refine",
+      "target": 15,
+      "points": 40,
+      "titleKey": "title.refine_15"
+    },
+    {
+      "id": "bestiary_10",
+      "nameKey": "achievement.bestiary_10",
+      "kind": "bestiary",
+      "target": 10,
+      "points": 10,
+      "tier": 1
+    },
+    {
+      "id": "bestiary_t2_10",
+      "nameKey": "achievement.bestiary_t2_10",
+      "kind": "bestiary",
+      "target": 10,
+      "points": 20,
+      "tier": 2
+    },
+    {
+      "id": "bestiary_t3_5",
+      "nameKey": "achievement.bestiary_t3_5",
+      "kind": "bestiary",
+      "target": 5,
+      "points": 30,
+      "tier": 3,
+      "titleKey": "title.bestiary_t3_5"
+    },
+    {
+      "id": "bestiary_t3_35",
+      "nameKey": "achievement.bestiary_t3_35",
+      "kind": "bestiary",
+      "target": 35,
+      "points": 60,
+      "tier": 3,
+      "titleKey": "title.bestiary_t3_35"
+    },
+    {
+      "id": "login_7",
+      "nameKey": "achievement.login_7",
+      "kind": "login_days",
+      "target": 7,
+      "points": 5
+    },
+    {
+      "id": "login_28",
+      "nameKey": "achievement.login_28",
+      "kind": "login_days",
+      "target": 28,
+      "points": 15
+    },
+    {
+      "id": "login_100",
+      "nameKey": "achievement.login_100",
+      "kind": "login_days",
+      "target": 100,
+      "points": 40,
+      "titleKey": "title.login_100"
+    },
+    {
+      "id": "gold_100k",
+      "nameKey": "achievement.gold_100k",
+      "kind": "gold_earned",
+      "target": 100000,
+      "points": 10
+    },
+    {
+      "id": "gold_10m",
+      "nameKey": "achievement.gold_10m",
+      "kind": "gold_earned",
+      "target": 10000000,
+      "points": 30,
+      "titleKey": "title.gold_10m"
+    }
+  ]
+}

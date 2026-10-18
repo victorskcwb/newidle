@@ -152,7 +152,7 @@ export interface DropPity {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 9;
+  version: 11;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;
@@ -179,6 +179,10 @@ export interface GameState {
   dropPity: DropPity;
   /** Login calendar: last local day claimed and how many days were claimed in total. */
   login: { lastDay: number; claimed: number };
+  /** Kills of each monster, kept across resets (bestiary). */
+  bestiary: Record<string, number>;
+  /** Achievements unlocked (id → tick) and the title shown next to the hero's name. */
+  achievements: { unlocked: Record<string, number>; title: string | null };
   /** Daily and weekly goals. */
   quests: Quests;
 }
