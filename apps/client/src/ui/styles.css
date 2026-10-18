@@ -2581,3 +2581,148 @@ input[type='range'] {
   font-size: 11px;
   color: var(--good);
 }
+
+/* --- Journal: achievements, bestiary, statistics ------------------------------------------- */
+.ach-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.ach {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  opacity: 0.75;
+}
+
+.ach.done {
+  opacity: 1;
+  border-color: var(--accent);
+  background: rgb(217 164 65 / 8%);
+}
+
+.ach-body {
+  flex: 1;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ach-head,
+.ach-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.beast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 6px;
+}
+
+.beast {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+}
+
+.beast.known {
+  border-color: var(--edge-light);
+}
+
+.beast-body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.beast-art {
+  flex: none;
+  display: flex;
+}
+
+.beast-unknown .mob-sprite {
+  filter: brightness(0) opacity(0.6);
+}
+
+.stat-table {
+  margin: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.stat-table div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--edge);
+}
+
+.stat-table dt {
+  color: var(--muted);
+}
+
+.stat-table dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.hero-title {
+  color: var(--info);
+  font-style: italic;
+}
+
+.ach-toast {
+  position: fixed;
+  left: 50%;
+  top: 22%;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--touch);
+  padding: 8px 18px;
+  border-radius: 14px;
+  border: 2px solid var(--accent);
+  background: linear-gradient(180deg, rgb(60 44 14 / 94%), rgb(28 20 6 / 94%));
+  color: var(--text);
+  box-shadow: 0 0 20px rgb(217 164 65 / 45%);
+  z-index: 21;
+  cursor: pointer;
+  animation: ach-in 0.35s ease-out;
+}
+
+.ach-toast > span {
+  display: grid;
+  text-align: left;
+}
+
+.ach-toast-title {
+  color: #ffe08a;
+  font-size: 14px;
+}
+
+@keyframes ach-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.9);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ach-toast {
+    animation: none;
+  }
+}

@@ -57,6 +57,8 @@ function HeroPanel() {
   const openScreen = useUi((s) => s.openScreen);
   if (!p) return null;
   const hero = sim.state.hero;
+  const title = sim.state.achievements.title;
+  const titleKey = title ? sim.content.achievements.get(title)?.titleKey : undefined;
   return (
     <section className="glass hero-panel" aria-label={hero.name}>
       <button
@@ -73,6 +75,11 @@ function HeroPanel() {
       <div className="hero-bars">
         <div className="hero-name">
           <span className="pixel">{hero.name}</span>
+          {titleKey && (
+            <span className="hero-title small" data-testid="hero-title">
+              {t(titleKey)}
+            </span>
+          )}
           <span className="muted small" data-testid="hero-level">
             {t('hud.level', { level: p.level })}
           </span>
@@ -260,6 +267,7 @@ function TopBar() {
     { screen: 'hunts', icon: 'hunts', label: t('top.hunts') },
     { screen: 'quests', icon: 'quests', label: t('top.quests'), badge: claimable || undefined },
     { screen: 'cards', icon: 'cards', label: t('screen.cards') },
+    { screen: 'journal', icon: 'journal', label: t('screen.journal') },
     { screen: 'smith', icon: 'smith', label: t('screen.smith') },
     { screen: 'altar', icon: 'altar', label: t('screen.altar'), badge: altarBadge },
     { screen: 'filter', icon: 'filter', label: t('top.filter') },

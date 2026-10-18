@@ -16,6 +16,8 @@ import { OfflineModal } from './OfflineModal.tsx';
 import { LoginModal } from './LoginCalendar.tsx';
 import { AltarScreen } from './screens/AltarScreen.tsx';
 import { CardsScreen } from './screens/CardsScreen.tsx';
+import { JournalScreen } from './screens/JournalScreen.tsx';
+import { AchievementToast } from './AchievementToast.tsx';
 import { CharacterScreen } from './screens/CharacterScreen.tsx';
 import { FilterScreen } from './screens/FilterScreen.tsx';
 import { HuntsScreen } from './screens/HuntsScreen.tsx';
@@ -31,6 +33,7 @@ const SCREENS: Record<Screen, () => React.JSX.Element> = {
   character: CharacterScreen,
   skills: SkillsScreen,
   cards: CardsScreen,
+  journal: JournalScreen,
   quests: QuestsScreen,
   hunts: HuntsScreen,
   smith: SmithScreen,
@@ -91,6 +94,7 @@ function Game() {
       />
       <TownOverlay />
       <LevelUpBanner />
+      <AchievementToast />
       <div className="hud">
         <Hud />
         <EventLog />

@@ -8,6 +8,8 @@ import {
   buyUpgrade,
   claimQuest,
   claimLogin,
+  checkAchievements,
+  setTitle,
   loginDue,
   depositAll,
   computeRates,
@@ -94,6 +96,8 @@ export class GameSim {
   state: GameState;
   rates: RateSheet | null = null;
   offlineReport: OfflineReport | null = null;
+  /** Achievements unlocked since the player last saw the notice. */
+  newAchievements: string[] = [];
   /** Increments whenever inventory, equipment or settings change (UI re-renders). */
   version = 0;
   /** Autosave checks this; turned off while a save import replaces the stored save. */
@@ -252,6 +256,17 @@ export class GameSim {
 
   claimLogin() {
     claimLogin(this.state, this.content, localDay());
+    this.changed(false);
+  }
+
+  /** Shows an unlocked achievement's title next to the hero's name (null hides it). */
+  setTitle(achievementId: string | null) {
+    setTitle(this.state, this.content, achievementId);
+    this.changed(false);
+  }
+
+  dismissAchievements() {
+    this.newAchievements = [];
     this.changed(false);
   }
 
@@ -489,6 +504,8 @@ export class GameSim {
   /** Notifies the UI; `setupChanged` also schedules a new rate sheet. */
   private changed(setupChanged: boolean) {
     this.version++;
+    const fresh = checkAchievements(this.state, this.content);
+    if (fresh.length > 0) this.newAchievements = [...this.newAchievements, ...fresh];
     if (setupChanged) this.scheduleRates();
     for (const l of this.changeListeners) l();
   }

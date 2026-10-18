@@ -40,6 +40,17 @@ test('skills, hunt map, reset and reset shop', async ({ page }) => {
   await page.getByRole('button', { name: 'Fechar' }).last().click();
   await expect(page.getByTestId('hero-level')).toHaveText('Nv. 100');
 
+  // Journal: level achievements unlocked; a title can be shown next to the name.
+  await page.getByTestId('nav-journal').click();
+  await expect(page.getByTestId('ach-level_100')).toHaveClass(/done/);
+  await page.getByTestId('ach-level_100').getByRole('button', { name: 'Usar' }).click();
+  await expect(page.getByTestId('hero-title')).toHaveText('o Centenário');
+  await page.getByTestId('journal-tab-bestiary').click();
+  await expect(page.getByTestId('beast-bone_walker')).toBeVisible();
+  await page.getByTestId('journal-tab-stats').click();
+  await expect(page.getByTestId('journal-stats')).toContainText('Monstros derrotados');
+  await page.getByRole('button', { name: 'Fechar' }).last().click();
+
   // Learn the first active skill: it fills the first slot.
   await page.getByTestId('nav-skills').click();
   await expect(page.getByTestId('skill-points')).toContainText('50 pontos');

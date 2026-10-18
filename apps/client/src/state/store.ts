@@ -18,6 +18,7 @@ export type Screen =
   | 'character'
   | 'skills'
   | 'cards'
+  | 'journal'
   | 'quests'
   | 'hunts'
   | 'smith'

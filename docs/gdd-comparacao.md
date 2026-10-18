@@ -43,9 +43,9 @@ O critério é o do GDD: retenção antes de monetização, e primeiro o que nã
 
 1. ✅ **Pity em drops de equipamento épico e lendário** (3.3): decisão 141.
 2. ✅ **Login diário com dias acumulados** (6.1): decisão 142.
-3. **Conquistas e títulos** (6.4). Os marcos de reset da seção 8.3 já pedem títulos e molduras.
-4. **Estatísticas detalhadas** (9): abates, drops raros, tempo jogado e gráfico de XP/h. Os totais da vida inteira já existem no estado.
-5. **Bestiário com marcos de abates** (10/100/1000 → bônus contra aquele monstro) (3.4). Complementa as cartas e dá um objetivo para cada monstro.
+3. ✅ **Conquistas e títulos** (6.4): decisões 144–145.
+4. ✅ **Estatísticas detalhadas** (9): decisão 145 (sem o gráfico de XP/h, que precisa de histórico).
+5. ✅ **Bestiário com marcos de abates** (3.4): decisões 143 e 145.
 6. **Primeiro item raro garantido** entre 5 e 15 min (5). Hoje o item garantido é mágico.
 
 ### B. Sem servidor, médio impacto

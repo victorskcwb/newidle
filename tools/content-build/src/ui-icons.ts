@@ -23,6 +23,8 @@ export const UI_ICONS: Record<string, string> = {
   hunt: 'lorc/crossed-swords',
   log: 'lorc/quill-ink',
   offline: 'lorc/hourglass',
+  journal: 'lorc/open-book',
+  achievement: 'lorc/trophy',
   // Resources
   gold: 'delapouite/two-coins',
   potion: 'delapouite/health-potion',
