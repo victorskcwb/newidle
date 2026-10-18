@@ -21,6 +21,9 @@ import {
   learnBlock,
   learnSkill,
   performReset,
+  professionLevel,
+  setGathering,
+  setRecipe,
   refineBlock,
   refineItem,
   resetBlock,
@@ -148,7 +151,28 @@ function shop(s: GameState) {
   }
 }
 
+/** PROFESSIONS=1: gathers herbs and crafts the best alchemy recipe the hunt can feed. */
+const PROFESSIONS = process.env.PROFESSIONS === '1';
+function professions(s: GameState) {
+  if (!PROFESSIONS) return;
+  if (s.professions.gathering !== 'herbalism') setGathering(s, content, 'herbalism');
+  const huntTier = s.hunt ? (content.hunts.get(s.hunt.huntId)?.gatherTier ?? 1) : 1;
+  const level = professionLevel(s, 'alchemy');
+  const recipes = [...content.recipes.values()].filter(
+    (r) =>
+      r.professionId === 'alchemy' &&
+      (process.env.PROF_NO_POTIONS !== '1' ||
+        (!r.id.startsWith('alch_hp') && !r.id.startsWith('alch_mana'))) &&
+      r.level <= level &&
+      Object.keys(r.inputs).every((id) => (content.resources.get(id)?.tier ?? 9) <= huntTier),
+  );
+  const best = recipes[recipes.length - 1];
+  if (process.env.PROF_NO_RECIPE !== '1' && best && s.professions.recipe !== best.id)
+    setRecipe(s, content, best.id);
+}
+
 function session(s: GameState) {
+  professions(s);
   autoEquip(s);
   // Keep the best items; salvage the rest for refine materials.
   if (s.stash.length > 60) salvageUpTo(s, content, 'rare');
@@ -231,7 +255,7 @@ for (let d = 0; d < days; d++) {
 }
 
 mkdirSync(new URL('../out/', import.meta.url), { recursive: true });
-const file = new URL(`../out/${profile}.csv`, import.meta.url);
+const file = new URL(`../out/${profile}${process.env.SIM_TAG ?? ''}.csv`, import.meta.url);
 writeFileSync(file, rows.join('\n') + '\n');
 
 // --- Summary against section 12.2 -----------------------------------------------------------
