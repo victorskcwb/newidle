@@ -694,5 +694,6 @@
   "adventures.level": "nível {level}+",
   "adventures.none": "Nenhuma caçada com esses filtros.",
   "adventures.defeated": "derrotado ✓",
-  "adventures.undefeated": "ainda não derrotado"
+  "adventures.undefeated": "ainda não derrotado",
+  "town.leaveIn": "({s} s)"
 }

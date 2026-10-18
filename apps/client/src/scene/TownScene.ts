@@ -200,9 +200,13 @@ export class TownScene extends Phaser.Scene {
       this.hero.place(this.stations.get('rest')!);
       this.hero.reset(false);
       this.cameras.main.centerOn(this.hero.x, this.hero.y);
-    } else if (view === 'leaving') {
+    }
+    if (view === 'leaving') {
+      // Off to the hunt: walk out through the gate while the departure lasts.
       useUi.getState().openNpc(null);
       this.talkTo = null;
+      this.waitMs = 0;
+      this.plan = ['gate'];
     }
   }
 

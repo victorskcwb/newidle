@@ -63,6 +63,11 @@ export const DEFAULT_MANA_POTION_THRESHOLD_PCT = 30;
 export const BACKPACK_SIZE = 40;
 /** Time spent in town depositing and buying before heading back. */
 export const TOWN_STAY_TICKS = 5 * TICKS_PER_SECOND;
+/**
+ * Setting off on the player's order takes this long (the walk out of the gate). Automatic
+ * trips back after a town visit keep the hunt's travel time, which the rates count.
+ */
+export const DEPART_SECONDS = 2;
 export const RESPAWN_TICKS = 5 * TICKS_PER_SECOND;
 /** Death costs this share of the XP earned inside the current level. */
 export const DEATH_XP_LOSS_PCT = 10;

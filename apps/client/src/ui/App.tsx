@@ -1,3 +1,4 @@
+import { TICKS_PER_SECOND } from '@abismo/engine';
 import { useEffect } from 'react';
 import type { GameSim } from '../game/sim.ts';
 import { sfx } from '../audio/sfx.ts';
@@ -41,19 +42,24 @@ const SCREENS: Record<Screen, () => React.JSX.Element> = {
 function TownOverlay() {
   const sim = useSim();
   const town = useUi((s) => s.town);
+  const tick = useUi((s) => s.presented?.tick ?? 0);
   if (!town) return null;
   const hunt = sim.state.hunt ? sim.content.hunts.get(sim.state.hunt.huntId) : undefined;
+  const a = sim.state.activity;
+  // The text follows the engine: resting, stocking up, or on the way out to the hunt.
+  const leaving = a.kind === 'to_hunt';
+  const text = leaving
+    ? t('town.leave')
+    : a.kind === 'idle_town'
+      ? t('town.idle')
+      : t('town.depositing');
+  const left = leaving ? Math.max(0, Math.ceil((a.untilTick - tick) / TICKS_PER_SECOND)) : 0;
   return (
     <div className="town-overlay" data-testid="town-overlay">
       <div className="pixel town-name">{t(`town.${hunt?.regionId ?? 'cinzarra'}`)}</div>
       <div className="muted">
-        {t(
-          town === 'depositing'
-            ? 'town.depositing'
-            : town === 'leaving'
-              ? 'town.leave'
-              : 'town.idle',
-        )}
+        {text}
+        {leaving && left > 0 && ` ${t('town.leaveIn', { s: left })}`}
       </div>
     </div>
   );

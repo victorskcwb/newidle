@@ -127,6 +127,12 @@ export class Director {
   };
 
   update(dtMs: number) {
+    // Leaving town: show the hunt map as soon as the engine has the hero there, without
+    // waiting for the first group's event to come up in the queue.
+    const k = this.sim.state.activity.kind;
+    if (this.mode === 'in_town' && (k === 'walking' || k === 'fighting')) {
+      if (useUi.getState().town === 'leaving') this.leaveTown();
+    }
     if (this.hitStop > 0) {
       this.hitStop -= dtMs;
       return;

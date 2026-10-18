@@ -1,5 +1,5 @@
 import { EQUIPMENT_SLOTS, type ContentDb, type EquipmentSlot, type Rarity } from '@abismo/content';
-import { MAX_LEVEL, TICKS_PER_SECOND } from './constants.ts';
+import { DEPART_SECONDS, MAX_LEVEL, TICKS_PER_SECOND } from './constants.ts';
 import { rarityRank, rollSalvage } from './items.ts';
 import { IntentError, addXp, autoAllocate } from './progression.ts';
 import { computeHeroStats, heroStats, inactiveReason, type HeroStats } from './stats.ts';
@@ -30,7 +30,8 @@ export function startHunt(s: GameState, content: ContentDb, huntId: string): Gam
     killsSinceBoss: sameHunt ? s.hunt!.killsSinceBoss : 0,
     consecutiveDeaths: 0,
   };
-  const arriveTick = s.tick + Math.max(1, Math.round(hunt.travelSeconds * TICKS_PER_SECOND));
+  const travel = Math.min(hunt.travelSeconds, DEPART_SECONDS);
+  const arriveTick = s.tick + Math.max(1, Math.round(travel * TICKS_PER_SECOND));
   s.activity = { kind: 'to_hunt', untilTick: arriveTick };
   return [
     { type: 'HuntStarted', tick: s.tick, huntId },
