@@ -4,6 +4,7 @@
  * edges and the export to a Tiled map (.tmj).
  */
 import {
+  BORDERS,
   LAVA,
   LAVA_FRAME_MS,
   PROPS_COLS,
@@ -89,6 +90,8 @@ export class MapGrid {
   /** Tiles kept clear of obstacles (roads, floors, spots where actors stand). */
   readonly reserved = new Set<number>();
   readonly hazard = new Set<number>();
+  /** The water tiles among the hazards (they get a sandy shore). */
+  readonly water = new Set<number>();
 
   constructor(
     readonly W: number,
@@ -143,6 +146,7 @@ export class MapGrid {
       kind === 'lava' ? LAVA[0]![(y % 2) * 2 + (x % 2)]! : WATER[0]![(y % 4) * 4 + (x % 4)]!;
     this.setGround(x, y, id, false);
     this.hazard.add(this.idx(x, y));
+    if (kind === 'water') this.water.add(this.idx(x, y));
     this.block(x, y);
     return true;
   }
@@ -160,13 +164,48 @@ export class MapGrid {
    * sides that meet take one large inner corner; a lone diagonal neighbour, a small corner.
    * On water only straight edges, so small pools stay visible.
    */
-  borderLayers(b: BorderSet | null): number[][] {
+  borderLayers(b: BorderSet | null, shore: BorderSet | null = null): number[][] {
     const layers: number[][] = [];
+    const add = (x: number, y: number, pieces: number[][]) => {
+      // Variants by position (stable between runs, different from tile to tile).
+      const v = (x * 7 + y * 13) >>> 0;
+      pieces.forEach((variants, k) => {
+        layers[k] ??= new Array<number>(this.W * this.H).fill(0);
+        layers[k]![this.idx(x, y)] = variants[v % variants.length]! + 1;
+      });
+    };
+    // A sandy shore laid over the water's edge, where it meets any land.
+    if (shore) {
+      const land = (x: number, y: number) => this.inside(x, y) && !this.water.has(this.idx(x, y));
+      for (const i of this.water) {
+        const x = i % this.W;
+        const y = Math.floor(i / this.W);
+        const n = land(x, y - 1);
+        const e = land(x + 1, y);
+        const s = land(x, y + 1);
+        const w = land(x - 1, y);
+        const pieces: number[][] = [];
+        if (n && w) pieces.push(shore.diagNW);
+        if (n && e) pieces.push(shore.diagNE);
+        if (s && w) pieces.push(shore.diagSW);
+        if (s && e) pieces.push(shore.diagSE);
+        if (n && !w && !e) pieces.push(shore.n);
+        if (s && !w && !e) pieces.push(shore.s);
+        if (w && !n && !s) pieces.push(shore.w);
+        if (e && !n && !s) pieces.push(shore.e);
+        if (!n && !w && land(x - 1, y - 1)) pieces.push(shore.cornerNW);
+        if (!n && !e && land(x + 1, y - 1)) pieces.push(shore.cornerNE);
+        if (!s && !w && land(x - 1, y + 1)) pieces.push(shore.cornerSW);
+        if (!s && !e && land(x + 1, y + 1)) pieces.push(shore.cornerSE);
+        add(x, y, pieces);
+      }
+    }
     if (!b) return layers;
     const f = (x: number, y: number) => this.inside(x, y) && this.field.has(this.idx(x, y));
     for (let y = 0; y < this.H; y++) {
       for (let x = 0; x < this.W; x++) {
-        if (f(x, y)) continue;
+        // Water keeps its shore; grass edges go on the other lower grounds.
+        if (f(x, y) || (shore && this.water.has(this.idx(x, y)))) continue;
         const n = f(x, y - 1);
         const e = f(x + 1, y);
         const s = f(x, y + 1);
@@ -185,12 +224,7 @@ export class MapGrid {
         if (!n && !e && f(x + 1, y - 1)) pieces.push(b.cornerNE);
         if (!s && !w && f(x - 1, y + 1)) pieces.push(b.cornerSW);
         if (!s && !e && f(x + 1, y + 1)) pieces.push(b.cornerSE);
-        // Variants by position (stable between runs, different from tile to tile).
-        const v = (x * 7 + y * 13) >>> 0;
-        pieces.forEach((variants, k) => {
-          layers[k] ??= new Array<number>(this.W * this.H).fill(0);
-          layers[k]![this.idx(x, y)] = variants[v % variants.length]! + 1;
-        });
+        add(x, y, pieces);
       }
     }
     return layers;
@@ -240,7 +274,9 @@ export class MapGrid {
     });
     const layers = [
       tileLayer('ground', this.ground),
-      ...this.borderLayers(border).map((data, k) => tileLayer(`border${k + 1}`, data)),
+      ...this.borderLayers(border, BORDERS.sand).map((data, k) =>
+        tileLayer(`border${k + 1}`, data),
+      ),
       tileLayer('detail', this.detail),
       tileLayer('decor', this.decor),
       tileLayer('collision', this.collision, false),

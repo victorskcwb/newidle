@@ -23,6 +23,7 @@ import {
   slots,
   TILESET_COLS,
   TILESET_ROWS,
+  WATER,
   type Drawn,
   type Sheet,
 } from './tileset.ts';
@@ -257,6 +258,24 @@ const DRAWN: Record<Drawn, (frame: number) => Sketch> = {
   lava: drawLava,
 };
 
+/**
+ * The pack's water is a bright sky blue: darken it towards a deep teal so lakes read as
+ * cold, still water in a dark world, keeping the ripple highlights.
+ */
+const waterIds = new Set(WATER.flat());
+function deepenWater(png: PNG, dx: number, dy: number) {
+  for (let y = 0; y < T; y++) {
+    for (let x = 0; x < T; x++) {
+      const i = ((dy + y) * png.width + dx + x) * 4;
+      const [r, g, b] = [png.data[i]!, png.data[i + 1]!, png.data[i + 2]!];
+      const light = (r + g + b) / 3;
+      png.data[i] = Math.round(r * 0.35 + light * 0.1);
+      png.data[i + 1] = Math.round(g * 0.62 + light * 0.18);
+      png.data[i + 2] = Math.round(b * 0.7 + light * 0.05);
+    }
+  }
+}
+
 const tiles = new PNG({ width: TILESET_COLS * T, height: TILESET_ROWS * T });
 slots.forEach((slot, id) => {
   const dx = (id % TILESET_COLS) * T;
@@ -268,6 +287,7 @@ slots.forEach((slot, id) => {
   const cols = slot.sheet === 'placeholder' ? PLACEHOLDER_COLS : 16;
   const src = sheets[slot.sheet];
   blit(src, (slot.index % cols) * T, Math.floor(slot.index / cols) * T, tiles, dx, dy, T, T);
+  if (waterIds.has(id)) deepenWater(tiles, dx, dy);
 });
 
 const P = 2 * T;

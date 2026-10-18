@@ -52,11 +52,11 @@ export function createHitFxAnimations(scene: Phaser.Scene) {
 export type NumberKind = 'damage' | 'crit' | 'heal' | 'miss' | 'taken';
 
 const NUMBER_STYLE: Record<NumberKind, { color: string; size: number }> = {
-  damage: { color: '#ffffff', size: 11 },
-  crit: { color: '#ffd84a', size: 15 },
-  heal: { color: '#6be06b', size: 11 },
-  miss: { color: '#9a9aa6', size: 10 },
-  taken: { color: '#ff7a7a', size: 11 },
+  damage: { color: '#ffffff', size: 12 },
+  crit: { color: '#ffd84a', size: 16 },
+  heal: { color: '#7cf07c', size: 12 },
+  miss: { color: '#c8c4d4', size: 11 },
+  taken: { color: '#ff8a7a', size: 12 },
 };
 
 /**
@@ -91,12 +91,13 @@ export class Effects {
     if (free) return free.setActive(true).setVisible(true);
     const t = this.scene.add
       .text(0, 0, '', {
-        fontFamily: '"Pixelify Sans", monospace',
+        fontFamily: 'system-ui, "Segoe UI", Roboto, sans-serif',
+        fontStyle: 'bold',
         fontSize: '11px',
         color: '#ffffff',
         stroke: '#000000',
         strokeThickness: 3,
-        resolution: 2,
+        resolution: 4,
       })
       .setOrigin(0.5, 1)
       .setDepth(100_001);

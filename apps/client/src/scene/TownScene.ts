@@ -222,12 +222,13 @@ export class TownScene extends Phaser.Scene {
     const img = this.add.image(0, -1, 'items', frame).setScale(1);
     const alert = this.add
       .text(10, -14, '!', {
-        fontFamily: '"Pixelify Sans", monospace',
+        fontFamily: 'system-ui, "Segoe UI", Roboto, sans-serif',
+        fontStyle: 'bold',
         fontSize: '11px',
         color: '#ffffff',
         backgroundColor: '#e0453a',
         padding: { x: 3, y: 0 },
-        resolution: 2,
+        resolution: 4,
       })
       .setOrigin(0.5)
       .setVisible(false);
@@ -347,12 +348,13 @@ export class TownScene extends Phaser.Scene {
   private say(npc: Npc, text: string) {
     const bubble = this.add
       .text(npc.actor.x, npc.actor.y - 46, text, {
-        fontFamily: '"Pixelify Sans", monospace',
-        fontSize: '8px',
+        fontFamily: 'system-ui, "Segoe UI", Roboto, sans-serif',
+        fontStyle: 'bold',
+        fontSize: '9px',
         color: '#1a1408',
         backgroundColor: '#f3e6c4',
         padding: { x: 4, y: 2 },
-        resolution: 2,
+        resolution: 4,
       })
       .setOrigin(0.5, 1)
       .setDepth(100_010);

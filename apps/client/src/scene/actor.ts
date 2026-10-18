@@ -74,12 +74,13 @@ export class Actor {
     this.body = scene.add.container(0, FEET, [this.sprite, this.weapon]);
     this.label = scene.add
       .text(0, 0, opts.name, {
-        fontFamily: '"Pixelify Sans", monospace',
-        fontSize: '8px',
+        fontFamily: 'system-ui, "Segoe UI", Roboto, sans-serif',
+        fontStyle: 'bold',
+        fontSize: '9px',
         color: opts.color,
         stroke: '#000000',
         strokeThickness: 3,
-        resolution: 2,
+        resolution: 4,
       })
       .setOrigin(0.5, 1);
     this.bar = scene.add.graphics();

@@ -358,6 +358,24 @@ export function buildHuntMap(theme: Theme, seed: number) {
   const biome = BIOMES[theme];
   const g = new MapGrid(W, H, COLLISION);
   const { solid, hazard } = shapeTerrain(biome.style, rng);
+  // Water needs room for its sandy shore: keep it only where it fills a 3×3 block.
+  const pruneWater = () => {
+    if (biome.hazard !== 'water') return;
+    const keep = new Array<boolean>(W * H).fill(false);
+    for (let y = 0; y + 2 < H; y++) {
+      for (let x = 0; x + 2 < W; x++) {
+        let full = true;
+        for (let j = 0; j < 3 && full; j++) {
+          for (let i = 0; i < 3 && full; i++) full = hazard[idx(x + i, y + j)]!;
+        }
+        if (full) {
+          for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) keep[idx(x + i, y + j)] = true;
+        }
+      }
+    }
+    for (let i = 0; i < W * H; i++) hazard[i] = hazard[i]! && keep[i]!;
+  };
+  pruneWater();
   const walls: { x: number; y: number }[] = [];
 
   // The map edge is closed, a little deeper here and there.
@@ -460,6 +478,10 @@ export function buildHuntMap(theme: Theme, seed: number) {
     }
     main = flood(idx(exit.x, exit.y));
   }
+
+  // Fords may have left thin strips of water: prune again (this only opens ground).
+  pruneWater();
+  main = flood(idx(exit.x, exit.y));
 
   // Waypoints: spread over the open area, then ordered around its centre into a loop.
   const roomy = [...main].filter((i) => {

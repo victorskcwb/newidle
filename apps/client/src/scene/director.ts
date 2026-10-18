@@ -107,7 +107,8 @@ export class Director {
       heroLook(scene, manifest, sim.state.hero.appearance.outfit),
       this.heroAnims,
       {
-        name: sim.state.hero.name,
+        // The hero's name is on the panel; over the head it only covered the monsters'.
+        name: '',
         color: NAME_COLOR.hero,
         bar: true,
       },
