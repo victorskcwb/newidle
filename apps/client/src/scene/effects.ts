@@ -400,6 +400,42 @@ export class Effects {
     this.sparks.explode(count, x, y);
   }
 
+  /**
+   * An arrow (a thin shaft) or a magic bolt (a glowing orb) flying from `from` to `to`;
+   * `onHit` runs on arrival (the damage numbers and effects show then).
+   */
+  projectile(
+    from: { x: number; y: number },
+    to: { x: number; y: number },
+    kind: 'arrow' | 'bolt',
+    onHit: () => void,
+  ) {
+    const sx = from.x;
+    const sy = from.y - 14;
+    const tx = to.x;
+    const ty = to.y - 12;
+    const dist = Math.hypot(tx - sx, ty - sy);
+    const duration = Math.max(90, Math.min(260, dist * 2.2));
+    const shot =
+      kind === 'arrow'
+        ? this.scene.add
+            .rectangle(sx, sy, 14, 2, 0xe8d8b0)
+            .setRotation(Math.atan2(ty - sy, tx - sx))
+        : this.scene.add.image(sx, sy, 'glow').setTint(0x7ad8ff).setScale(0.5);
+    shot.setDepth(100_000);
+    this.scene.tweens.add({
+      targets: shot,
+      x: tx,
+      y: ty,
+      duration,
+      onComplete: () => {
+        shot.destroy();
+        if (kind === 'bolt') this.burst(tx, ty, 0x7ad8ff, 6);
+        onHit();
+      },
+    });
+  }
+
   ring(x: number, y: number, color: number) {
     const g = this.scene.add
       .circle(x, y, 6, color, 0)

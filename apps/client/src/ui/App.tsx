@@ -87,7 +87,7 @@ function Game() {
     <>
       {/* A new map (another hunt) or new device prefs rebuild the scene from the state. */}
       <SceneView
-        key={`${hunt.mapId}|${eco}|${reducedMotion}|${gfxKey}`}
+        key={`${hunt.mapId}|${sim.state.hero.classId}|${eco}|${reducedMotion}|${gfxKey}`}
         sim={sim}
         mapId={hunt.mapId}
         regionId={hunt.regionId}

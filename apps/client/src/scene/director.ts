@@ -56,6 +56,9 @@ const key = (p: TilePoint) => `${p.tx},${p.ty}`;
  * presentation tick, which waits at fight events until the hero has walked up to the
  * monsters, speeds up to catch up, and snaps to the current state beyond 10 s of lag.
  */
+/** Tiles a ranged hero shoots from. */
+const RANGED_REACH = 3;
+
 export class Director {
   private queue: GameEvent[] = [];
   private pTick: number;
@@ -72,6 +75,9 @@ export class Director {
   private uiTimer = 0;
   private pendingSalvage: ItemInstance | null = null;
   private heroAnims: Animations;
+  /** Tiles from which the hero hits: 1 for melee, more for bows and staves. */
+  private range: number;
+  private projectile: 'arrow' | 'bolt';
   /** The active pet, trailing the hero tile by tile. */
   private pet: { id: string; actor: Actor } | null = null;
   private trail: TilePoint | null = null;
@@ -104,10 +110,14 @@ export class Director {
       }
     }
 
-    this.heroAnims = manifest.atlases.hero?.sprites.warrior?.animations ?? {};
+    const classId = sim.state.hero.classId;
+    const heroSprites = manifest.atlases.hero?.sprites;
+    this.heroAnims = (heroSprites?.[classId] ?? heroSprites?.warrior)?.animations ?? {};
+    this.range = sim.content.classes.get(classId)?.ranged ? RANGED_REACH : 1;
+    this.projectile = classId === 'sorcerer' ? 'bolt' : 'arrow';
     this.hero = new Actor(
       scene,
-      heroLook(scene, manifest, sim.state.hero.appearance.outfit),
+      heroLook(scene, manifest, sim.state.hero.appearance.outfit, classId),
       this.heroAnims,
       {
         // The hero's name is on the panel; over the head it only covered the monsters'.
@@ -244,7 +254,7 @@ export class Director {
       case 'HeroAttack': {
         const target = this.monsters.get(e.hits[0]?.uid ?? -1);
         if (!target) return true;
-        return this.mode === 'fight' && manhattan(this.hero.tile, target.actor.tile) <= 1;
+        return this.mode === 'fight' && manhattan(this.hero.tile, target.actor.tile) <= this.range;
       }
       case 'ArrivedInTown':
         return this.mode === 'in_town' || this.mode === 'dead';
@@ -294,7 +304,8 @@ export class Director {
         const skillFx = e.skillId
           ? ((skill?.kind === 'active' ? SKILL_FX[skill.effect] : undefined) ?? 'heavy')
           : null;
-        this.hero.attack(at.x, at.y, anim, () => {
+        const ranged = this.range > 1;
+        const land = () => {
           if (skillFx) {
             const onHero = skillFx === 'whirl' || skillFx === 'warcry';
             this.fx.spell(skillFx, onHero ? this.hero.x : at.x, onHero ? this.hero.y : at.y);
@@ -314,7 +325,7 @@ export class Director {
             if (v.def.boss) this.showBoss(v);
             v.actor.setHp(v.hp / v.maxHp);
             v.actor.hurt();
-            if (!skillFx) this.fx.spell('slash', v.actor.x, v.actor.y, this.hero);
+            if (!skillFx && !ranged) this.fx.spell('slash', v.actor.x, v.actor.y, this.hero);
             if (hit.crit) this.fx.spell('crit', v.actor.x, v.actor.y);
             this.fx.number(
               v.actor.x,
@@ -324,6 +335,11 @@ export class Director {
             );
           }
           if (e.leech > 0) this.fx.number(this.hero.x, this.hero.y - 8, `+${e.leech}`, 'heal');
+        };
+        this.hero.attack(at.x, at.y, anim, () => {
+          // Bows and staves: the blow lands when the arrow or bolt arrives.
+          if (ranged && first) this.fx.projectile(this.hero, at, this.projectile, land);
+          else land();
         });
         break;
       }
@@ -765,7 +781,11 @@ export class Director {
           if (!moving) this.roam();
           break;
         }
-        if (manhattan(hero.tile, target.actor.tile) <= 1 && !moving) {
+        // Ranged classes stop as soon as the target is within reach.
+        if (this.range > 1 && manhattan(hero.tile, target.actor.tile) <= this.range) {
+          hero.path = [];
+        }
+        if (manhattan(hero.tile, target.actor.tile) <= this.range && !moving) {
           this.mode = 'fight';
           hero.face(target.actor.x, target.actor.y);
           break;

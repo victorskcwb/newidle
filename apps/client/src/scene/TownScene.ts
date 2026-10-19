@@ -132,8 +132,11 @@ export class TownScene extends Phaser.Scene {
     }
     this.hero = new Actor(
       this,
-      heroLook(this, manifest, this.sim.state.hero.appearance.outfit),
-      manifest.atlases.hero?.sprites.warrior?.animations ?? {},
+      heroLook(this, manifest, this.sim.state.hero.appearance.outfit, this.sim.state.hero.classId),
+      (
+        manifest.atlases.hero?.sprites[this.sim.state.hero.classId] ??
+        manifest.atlases.hero?.sprites.warrior
+      )?.animations ?? {},
       { name: this.sim.state.hero.name, color: '#9fd3ff', bar: false },
     );
     this.hero.speed = 3;

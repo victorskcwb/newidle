@@ -208,6 +208,8 @@ export function buildActors(assets: URL) {
         sprite.weapon = weapons.weapon_knight_sword;
         continue;
       }
+      // The other classes' looks come from the OpenTibia pack (otsp-actors.ts).
+      if (name === 'hero') continue;
       if (name === 'npcs') continue;
       const look = MONSTER_LOOK[key];
       if (!look) throw new Error(`no character for sprite ${key}`);

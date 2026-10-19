@@ -66,10 +66,18 @@ export function SheetSprite({
 }
 
 /** The hero's animated look for an outfit, or nothing while the manifest loads. */
-export function HeroSprite({ outfit, scale = 3 }: { outfit: number; scale?: number }) {
+export function HeroSprite({
+  outfit,
+  scale = 3,
+  classId = 'warrior',
+}: {
+  outfit: number;
+  scale?: number;
+  classId?: string;
+}) {
   const manifest = useManifest();
   const atlas = manifest?.atlases.hero;
-  const looks = atlas?.sprites.warrior?.looks;
+  const looks = (atlas?.sprites[classId] ?? atlas?.sprites.warrior)?.looks;
   if (!atlas?.image || !atlas.frameWidth || !looks) return null;
   const set = looks[outfit % looks.length]!;
   return (

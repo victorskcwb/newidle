@@ -187,6 +187,20 @@ const paint = (head: string, body: string, legs: string, feet: string): Colors =
   hex(feet),
 ];
 
+/** The Huntress (hooded archer) and the Sorcerer (robed mage), in the same four looks. */
+const HUNTRESS_LOOKS: Look[] = [
+  { outfit: 26 },
+  { outfit: 26, colors: paint('#e0c070', '#3c6a3a', '#4a3a2a', '#3a2a1a') },
+  { outfit: 26, colors: paint('#c8ccd8', '#6a3a2a', '#3a3a48', '#2a2a30') },
+  { outfit: 26, colors: paint('#f0d080', '#2a4a6a', '#5a4a3a', '#4a3a2a') },
+];
+const SORCERER_LOOKS: Look[] = [
+  { outfit: 32 },
+  { outfit: 32, colors: paint('#e0c070', '#5a3a8a', '#3a2a5a', '#2a1a3a') },
+  { outfit: 32, colors: paint('#c8ccd8', '#8a2a2a', '#4a1a1a', '#2a1a1a') },
+  { outfit: 32, colors: paint('#f0d080', '#2a5a8a', '#1a3a5a', '#1a2a3a') },
+];
+
 /** The hero's four looks at creation. */
 const HERO_LOOKS: Look[] = [
   { outfit: 18, colors: paint('#c8ccd8', '#3f6fc8', '#5a4a3a', '#4a3a2a') },
@@ -325,6 +339,8 @@ export function buildOtspActors(assets: URL): { cells: number; looks: Record<str
 
   const looks: Record<string, unknown> = {
     hero: HERO_LOOKS.map(lookFrames),
+    huntress: HUNTRESS_LOOKS.map(lookFrames),
+    sorcerer: SORCERER_LOOKS.map(lookFrames),
     npcs: Object.fromEntries(Object.entries(NPC_LOOKS).map(([k, l]) => [k, lookFrames(l)])),
     monsters: Object.fromEntries(Object.entries(MONSTER_LOOKS).map(([k, l]) => [k, lookFrames(l)])),
   };
@@ -365,6 +381,11 @@ export function buildOtspActors(assets: URL): { cells: number; looks: Record<str
       Record<string, unknown> & { sprites: Record<string, Record<string, unknown>> }
     >;
   };
+  // One hero sprite per class, sharing the warrior's animation timings.
+  const heroAtlas = manifest.atlases.hero!;
+  for (const cls of ['huntress', 'sorcerer']) {
+    heroAtlas.sprites[cls] ??= { animations: heroAtlas.sprites.warrior!.animations };
+  }
   for (const [name, atlas] of Object.entries(manifest.atlases)) {
     atlas.image = 'sprites/creatures.png';
     atlas.frameWidth = CELL;
@@ -373,8 +394,10 @@ export function buildOtspActors(assets: URL): { cells: number; looks: Record<str
     for (const [key, sprite] of Object.entries(atlas.sprites)) {
       delete sprite.scale;
       if (name === 'hero') {
-        sprite.looks = looks.hero;
-        sprite.weapon = weapon;
+        // Only the warrior holds the drawn sword; bows and staves are part of the outfits.
+        sprite.looks = key === 'warrior' ? looks.hero : looks[key];
+        if (key === 'warrior') sprite.weapon = weapon;
+        else delete sprite.weapon;
       } else if (name === 'npcs') {
         sprite.frames = (looks.npcs as Record<string, unknown>)[key];
       } else {

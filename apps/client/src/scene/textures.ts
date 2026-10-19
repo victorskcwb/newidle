@@ -231,13 +231,23 @@ function loopsFor(scene: Phaser.Scene, sheet: string, name: string, set: FrameSe
 const sheetScale = (set: FrameSet) => (set.dirs ? 1 : 2);
 
 /** The hero's look: one of the sheet's characters (by outfit) holding a sword. */
-export function heroLook(scene: Phaser.Scene, manifest: SpriteManifest, outfit: number): LookFor {
+export function heroLook(
+  scene: Phaser.Scene,
+  manifest: SpriteManifest,
+  outfit: number,
+  classId = 'warrior',
+): LookFor {
   const atlas = manifest.atlases.hero;
-  const sprite = atlas?.sprites.warrior;
+  const sprite = atlas?.sprites[classId] ?? atlas?.sprites.warrior;
   const set = sprite?.looks?.[outfit % sprite.looks.length];
   if (atlas?.image && set) {
     const key = sheetKey(atlas.image);
-    const { loops, dirLoops } = loopsFor(scene, key, `hero${outfit % sprite!.looks!.length}`, set);
+    const { loops, dirLoops } = loopsFor(
+      scene,
+      key,
+      `hero_${classId}${outfit % sprite!.looks!.length}`,
+      set,
+    );
     const weapon =
       sprite!.weapon !== undefined ? { texture: key, frame: sprite!.weapon } : undefined;
     const scale = sheetScale(set);

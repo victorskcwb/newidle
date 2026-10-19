@@ -6,7 +6,7 @@
  *
  *   pnpm sim [profile=active|casual] [days=20] [seed=1]
  *   PROFESSIONS=alchemy|smithing|cooking also gathers and crafts; REFINE_MAX=15 refines past +9;
- *   DUNGEON=1 runs the Abyss every session; SIM_TAG=x writes <profile>x.csv.
+ *   DUNGEON=1 runs the Abyss every session; CLASS=huntress|sorcerer plays that class; SIM_TAG=x writes <profile>x.csv.
  *
  * Writes tools/simulator/out/<profile>.csv (one row per session) and prints a summary
  * against the targets of section 12.2.
@@ -113,10 +113,23 @@ const SKILL_PLAN = [
   'critical_eye',
   'undead_bane',
 ];
+/** CLASS=huntress|sorcerer: plays that class; the warrior plan maps by tree position. */
+const CLASS = process.env.CLASS ?? 'warrior';
+function forClass(warriorSkill: string): string {
+  const w = content.skills.get(warriorSkill)!;
+  const same = [...content.skills.values()].find(
+    (k) =>
+      k.classId === CLASS && k.position.row === w.position.row && k.position.col === w.position.col,
+  );
+  return same?.id ?? warriorSkill;
+}
+
 function spendSkills(s: GameState) {
   const order = [
-    ...SKILL_PLAN,
-    ...[...content.skills.keys()].flatMap((id) => Array(10).fill(id) as string[]),
+    ...SKILL_PLAN.map(forClass),
+    ...[...content.skills.values()]
+      .filter((k) => k.classId === CLASS)
+      .flatMap((k) => Array(10).fill(k.id) as string[]),
   ];
   for (const id of order) {
     if (s.hero.unspentSkillPoints <= 0) return;
@@ -223,6 +236,10 @@ function session(s: GameState) {
 // --- Run --------------------------------------------------------------------------------------
 
 const s = createGame(content, { name: 'Sim', seed: [seed, 0x9e3779b9, 7, 11] });
+if (CLASS !== 'warrior') {
+  s.hero.classId = CLASS;
+  s.hero.equipment.weapon!.baseId = content.classes.get(CLASS)!.starterWeapon;
+}
 startHunt(s, content, hunts[0]!.id);
 const rows = [
   'day,hour,level,resets,hunt,gold,kills,common,magic,rare,epic,legendary,refine,power',

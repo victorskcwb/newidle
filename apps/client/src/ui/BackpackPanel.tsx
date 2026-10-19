@@ -277,7 +277,7 @@ function Paperdoll() {
       <div className="doll-col">{DOLL_LEFT.map(slot)}</div>
       <div className="doll-hero">
         <div className="doll-figure">
-          <HeroSprite outfit={hero.appearance.outfit} scale={2.2} />
+          <HeroSprite classId={hero.classId} outfit={hero.appearance.outfit} scale={2.2} />
         </div>
         <dl className="doll-stats">
           <div>
