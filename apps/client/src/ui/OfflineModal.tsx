@@ -96,6 +96,16 @@ export function OfflineModal() {
                 ))}
               </div>
             )}
+            {Object.keys(r.pets).length > 0 && (
+              <div className="offline-items">
+                <div className="muted">{t('offline.pets')}</div>
+                {Object.entries(r.pets).map(([id, n]) => (
+                  <div key={id} className="tone-good">
+                    {t(sim.content.pets.get(id)!.nameKey)} +{n}
+                  </div>
+                ))}
+              </div>
+            )}
             {Object.keys(r.cards).length > 0 && (
               <div className="offline-items">
                 <div className="muted">{t('offline.cards')}</div>

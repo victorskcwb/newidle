@@ -73,6 +73,9 @@ export interface Hero {
   lastSkillOrder: string[];
   /** Active skill slots at the last reset, to put them back in the same order. */
   lastActiveSkills: (string | null)[];
+  /** Pets found (id → stars) and the one following the hero. */
+  pets: Record<string, number>;
+  activePet: string | null;
   /** Item collection: best rarity registered for each item base. */
   collection: Record<string, Rarity>;
   /** Meal under way: its bonus lasts `ticksLeft` more ticks of hunting. */
@@ -169,7 +172,7 @@ export interface DropPity {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 18;
+  version: 19;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;
@@ -266,6 +269,7 @@ export type GameEvent =
   | { type: 'ProfessionLevelUp'; tick: number; professionId: string; level: number }
   | { type: 'ItemCrafted'; tick: number; recipeId: string }
   | { type: 'AutoEquipped'; tick: number; uids: number[] }
+  | { type: 'PetFound'; tick: number; petId: string; stars: number }
   | { type: 'AutoReset'; tick: number; resets: number; points: number }
   | { type: 'DungeonEntered'; tick: number; floor: number }
   | { type: 'DungeonFloorCleared'; tick: number; floor: number; item: ItemInstance | null }

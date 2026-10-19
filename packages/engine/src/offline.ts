@@ -9,6 +9,7 @@ import {
 import { filterKeeps, generateItem, legendaryAllowed, rarityRank } from './items.ts';
 import { applyBulkPity } from './pity.ts';
 import { rollSetPiece } from './sets.ts';
+import { rollOfflinePets } from './pets.ts';
 import { professionLevel, tickProfessions } from './professions.ts';
 import { autoSell, killXp } from './hunt.ts';
 import { cardChancePpm, pityThreshold } from './cards.ts';
@@ -63,6 +64,8 @@ export interface OfflineReport {
   /** Profession levels gained while away: id → [before, after]. */
   professionLevels: Record<string, [number, number]>;
   mealsEaten: number;
+  /** Pets found while away: id → copies. */
+  pets: Record<string, number>;
   /** A dungeon run under way when the player left: first floor and deepest floor cleared. */
   dungeon: { from: number; to: number } | null;
 }
@@ -241,6 +244,7 @@ function emptyReport(s: GameState, elapsedTicks: number): OfflineReport {
     crafted: {},
     professionLevels: {},
     mealsEaten: 0,
+    pets: {},
     dungeon: null,
   };
 }
@@ -331,6 +335,7 @@ export function mergeReports(a: OfflineReport, b: OfflineReport): OfflineReport 
     crafted: { ...a.crafted },
     professionLevels: { ...a.professionLevels },
     mealsEaten: a.mealsEaten + b.mealsEaten,
+    pets: { ...a.pets },
     dungeon: a.dungeon ?? b.dungeon,
   };
   addRecord(out.potionsUsed, b.potionsUsed);
@@ -341,6 +346,7 @@ export function mergeReports(a: OfflineReport, b: OfflineReport): OfflineReport 
   addRecord(out.cards, b.cards);
   addRecord(out.gathered, b.gathered);
   addRecord(out.crafted, b.crafted);
+  addRecord(out.pets, b.pets);
   for (const [id, [from, to]] of Object.entries(b.professionLevels)) {
     const before = out.professionLevels[id]?.[0] ?? from;
     out.professionLevels[id] = [before, to];
@@ -495,6 +501,9 @@ function resolveStretch(
         }
       }
       salvage(r, leftover);
+    }
+    if (content.monsters.get(c.monsterId)?.boss) {
+      addRecord(report.pets, rollOfflinePets(s, content, rng, c.monsterId, c.n));
     }
     // Cards: binomial over the kills, with the pity rule from the kill where it starts.
     rollOfflineCards(s, content, c.monsterId, c.elite, c.n, report, stats.cardLuckPct);

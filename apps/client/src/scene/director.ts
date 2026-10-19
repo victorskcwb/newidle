@@ -72,6 +72,9 @@ export class Director {
   private uiTimer = 0;
   private pendingSalvage: ItemInstance | null = null;
   private heroAnims: Animations;
+  /** The active pet, trailing the hero tile by tile. */
+  private pet: { id: string; actor: Actor } | null = null;
+  private trail: TilePoint | null = null;
   private content: ContentDb;
   timeScale = 1;
   /** Brief freeze after heavy blows (hit-stop), in ms. */
@@ -160,6 +163,7 @@ export class Director {
     }
     this.pTick = Math.max(this.pTick, target);
     this.cavebot(dtMs);
+    this.followPet(dtMs);
 
     this.uiTimer += dtMs;
     if (this.uiTimer >= UI_PUBLISH_MS) {
@@ -170,6 +174,48 @@ export class Director {
         this.hero.setHp(snap.hp / snap.maxHp);
       }
     }
+  }
+
+  /**
+   * The active pet walks the hero's trail: each tile the hero leaves is the pet's next step,
+   * so it never cuts through walls. It hides with the hero and jumps back when left behind.
+   */
+  private followPet(dtMs: number) {
+    const id = this.sim.state.hero.activePet;
+    if (this.pet?.id !== id) {
+      this.pet?.actor.container.destroy();
+      this.pet = null;
+      const def = id ? this.content.pets.get(id) : undefined;
+      if (def) {
+        const look = monsterLook(this.scene, this.manifest, { sprite: def.sprite } as Monster);
+        const anims =
+          this.manifest.atlases[def.sprite.atlas]?.sprites[def.sprite.key]?.animations ?? {};
+        const actor = new Actor(this.scene, look, anims, {
+          name: '',
+          color: NAME_COLOR.normal,
+          bar: false,
+        });
+        actor.speed = this.hero.speed;
+        actor.place(this.hero.tile);
+        this.pet = { id: def.id, actor };
+        this.trail = this.hero.tile;
+      }
+    }
+    if (!this.pet) return;
+    const pet = this.pet.actor;
+    pet.container.setVisible(this.hero.container.visible);
+    const here = this.hero.tile;
+    if (this.trail && key(here) !== key(this.trail)) {
+      pet.path.push(this.trail);
+      this.trail = here;
+    }
+    // Too far behind (a teleport, a new map): back at the hero's side.
+    if (pet.path.length > 4 || manhattan(pet.tile, here) > 6) {
+      pet.path = [];
+      pet.place(here);
+      this.trail = here;
+    }
+    if (!pet.update(dtMs, this.timeScale)) pet.face(this.hero.x, this.hero.y);
   }
 
   private setTimeScale(scale: number) {
@@ -488,6 +534,18 @@ export class Director {
       case 'AutoReset':
         this.log(t('log.autoReset', { n: e.resets, points: e.points }), { tone: 'good' });
         break;
+      case 'PetFound': {
+        const pet = this.content.pets.get(e.petId)!;
+        const max = pet.maxStars;
+        this.log(
+          e.stars === 1
+            ? t('log.petNew', { pet: t(pet.nameKey) })
+            : t('log.petStar', { pet: t(pet.nameKey), n: e.stars, max }),
+          { tone: 'good' },
+        );
+        this.fx.spell('levelup', this.hero.x, this.hero.y);
+        break;
+      }
       case 'AutoEquipped':
         this.log(t('log.autoEquipped', { n: e.uids.length }), { tone: 'info' });
         break;

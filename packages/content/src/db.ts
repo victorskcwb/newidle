@@ -11,6 +11,7 @@ import {
   type LoginReward,
   type Achievement,
   type ItemSet,
+  type Pet,
   type Profession,
   type Recipe,
   type Resource,
@@ -49,6 +50,7 @@ export interface ContentDb {
   readonly resources: ReadonlyMap<string, Resource>;
   readonly recipes: ReadonlyMap<string, Recipe>;
   readonly itemSets: ReadonlyMap<string, ItemSet>;
+  readonly pets: ReadonlyMap<string, Pet>;
   /** Material yielded by salvaging each rarity. */
   readonly salvageMaterial: Readonly<Record<Rarity, Material>>;
 }
@@ -95,6 +97,7 @@ export function mergeContentFiles(files: readonly Partial<ContentFile>[]): Conte
     resources: [],
     recipes: [],
     itemSets: [],
+    pets: [],
   };
   for (const file of files) {
     for (const k of Object.keys(merged) as (keyof ContentFile)[]) {
@@ -137,6 +140,7 @@ export function buildContentDb(raw: unknown): ContentDb {
     resources: indexById('resource', c.resources, problems),
     recipes: indexById('recipe', c.recipes, problems),
     itemSets: indexById('itemSet', c.itemSets, problems),
+    pets: indexById('pet', c.pets, problems),
   };
 
   const ref = (ok: boolean, message: string) => {
@@ -225,6 +229,9 @@ export function buildContentDb(raw: unknown): ContentDb {
       );
     }
   });
+  for (const pet of c.pets) {
+    ref(db.monsters.get(pet.bossId)?.boss === true, `pet ${pet.id}: ${pet.bossId} is not a boss`);
+  }
   for (const set of c.itemSets) {
     ref(db.regions.has(set.regionId), `itemSet ${set.id}: unknown region ${set.regionId}`);
     for (const b of set.bonuses) {
@@ -301,6 +308,7 @@ export function translationKeys(db: ContentDb): string[] {
   for (const p of db.professions.values()) keys.push(p.nameKey);
   for (const r of db.resources.values()) keys.push(r.nameKey);
   for (const x of db.itemSets.values()) keys.push(x.nameKey);
+  for (const x of db.pets.values()) keys.push(x.nameKey);
   for (const u of db.uniqueItems.values()) keys.push(u.nameKey, u.descKey);
   return keys;
 }

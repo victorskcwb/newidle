@@ -1,0 +1,157 @@
+{
+  "pets": [
+    {
+      "id": "pet_grave_rat",
+      "nameKey": "pet.grave_rat",
+      "bossId": "gravekeeper",
+      "chancePpm": 20000,
+      "maxStars": 3,
+      "bonus": {
+        "stat": "goldPct",
+        "value": 3
+      },
+      "sprite": {
+        "atlas": "region_cinzarra",
+        "key": "grave_rat",
+        "tint": "#c9b8a0",
+        "scale": 0.6
+      }
+    },
+    {
+      "id": "pet_pale_spiderling",
+      "nameKey": "pet.pale_spiderling",
+      "bossId": "spider_matriarch",
+      "chancePpm": 20000,
+      "maxStars": 3,
+      "bonus": {
+        "stat": "magicFindPct",
+        "value": 4
+      },
+      "sprite": {
+        "atlas": "region_cinzarra",
+        "key": "pale_spider",
+        "tint": "#f0e8ff",
+        "scale": 0.6
+      }
+    },
+    {
+      "id": "pet_vharok_crow",
+      "nameKey": "pet.vharok_crow",
+      "bossId": "lord_vharok",
+      "chancePpm": 20000,
+      "maxStars": 3,
+      "bonus": {
+        "stat": "critChancePct",
+        "value": 1
+      },
+      "sprite": {
+        "atlas": "region_cinzarra",
+        "key": "carrion_crow",
+        "tint": "#7a3a4a",
+        "scale": 0.6
+      }
+    },
+    {
+      "id": "pet_bog_toadlet",
+      "nameKey": "pet.bog_toadlet",
+      "bossId": "mire_mother",
+      "chancePpm": 20000,
+      "maxStars": 3,
+      "bonus": {
+        "stat": "lifePct",
+        "value": 3
+      },
+      "sprite": {
+        "atlas": "region_morvel",
+        "key": "bog_toad",
+        "tint": "#9acd5a",
+        "scale": 0.6
+      }
+    },
+    {
+      "id": "pet_little_lament",
+      "nameKey": "pet.little_lament",
+      "bossId": "old_drowned",
+      "chancePpm": 20000,
+      "maxStars": 3,
+      "bonus": {
+        "stat": "xpPct",
+        "value": 2
+      },
+      "sprite": {
+        "atlas": "region_morvel",
+        "key": "drowned_lament",
+        "tint": "#a8e8d8",
+        "scale": 0.6
+      }
+    },
+    {
+      "id": "pet_sprout",
+      "nameKey": "pet.sprout",
+      "bossId": "morvel_root",
+      "chancePpm": 20000,
+      "maxStars": 3,
+      "bonus": {
+        "stat": "defensePct",
+        "value": 4
+      },
+      "sprite": {
+        "atlas": "region_morvel",
+        "key": "rotting_druid",
+        "tint": "#8ad86a",
+        "scale": 0.6
+      }
+    },
+    {
+      "id": "pet_ember_pup",
+      "nameKey": "pet.ember_pup",
+      "bossId": "ashen_captain",
+      "chancePpm": 20000,
+      "maxStars": 3,
+      "bonus": {
+        "stat": "damagePct",
+        "value": 3
+      },
+      "sprite": {
+        "atlas": "region_citadel",
+        "key": "ember_hound",
+        "tint": "#ffb070",
+        "scale": 0.6
+      }
+    },
+    {
+      "id": "pet_little_herald",
+      "nameKey": "pet.little_herald",
+      "bossId": "ember_priestess",
+      "chancePpm": 20000,
+      "maxStars": 3,
+      "bonus": {
+        "stat": "attackSpeedPct",
+        "value": 2
+      },
+      "sprite": {
+        "atlas": "region_citadel",
+        "key": "ember_herald",
+        "tint": "#ffd08a",
+        "scale": 0.6
+      }
+    },
+    {
+      "id": "pet_cinder_wisp",
+      "nameKey": "pet.cinder_wisp",
+      "bossId": "charred_king",
+      "chancePpm": 20000,
+      "maxStars": 3,
+      "bonus": {
+        "stat": "critDamagePct",
+        "value": 6
+      },
+      "sprite": {
+        "atlas": "region_citadel",
+        "key": "cinder_worm",
+        "tint": "#ffe070",
+        "scale": 0.6
+      }
+    }
+  ]
+}

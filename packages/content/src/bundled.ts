@@ -5,6 +5,7 @@ import bestiary from '../data/bestiary.json' with { type: 'json' };
 import achievements from '../data/achievements.json' with { type: 'json' };
 import professions from '../data/professions.json' with { type: 'json' };
 import sets from '../data/sets.json' with { type: 'json' };
+import pets from '../data/pets.json' with { type: 'json' };
 import items from '../data/items.json' with { type: 'json' };
 import monsters from '../data/monsters.json' with { type: 'json' };
 import resets from '../data/resets.json' with { type: 'json' };
@@ -29,6 +30,7 @@ export const CONTENT_FILES = {
   achievements,
   professions,
   sets,
+  pets,
 } as unknown as Record<string, Partial<ContentFile>>;
 
 let cached: ContentDb | undefined;

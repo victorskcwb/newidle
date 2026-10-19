@@ -25,8 +25,8 @@ import { useSim } from '../useSim.ts';
 import { MonsterSprite } from '../WorldMap.tsx';
 import { XpChart } from '../XpChart.tsx';
 
-type Tab = 'achievements' | 'bestiary' | 'collection' | 'stats';
-const TABS: Tab[] = ['achievements', 'bestiary', 'collection', 'stats'];
+type Tab = 'achievements' | 'bestiary' | 'pets' | 'collection' | 'stats';
+const TABS: Tab[] = ['achievements', 'bestiary', 'pets', 'collection', 'stats'];
 
 export function achievementText(a: Achievement): string {
   return t(`achievement.kind.${a.kind}`, {
@@ -168,6 +168,64 @@ function Bestiary() {
           </div>
         </section>
       ))}
+    </>
+  );
+}
+
+function Pets() {
+  const sim = useSim();
+  const hero = sim.state.hero;
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <>
+      <p className="muted small">{t('pets.hint')}</p>
+      {error && <p className="tone-bad">{error}</p>}
+      <div className="beast-grid">
+        {[...sim.content.pets.values()].map((pet) => {
+          const stars = hero.pets[pet.id] ?? 0;
+          const active = hero.activePet === pet.id;
+          const boss = sim.content.monsters.get(pet.bossId)!;
+          return (
+            <div
+              key={pet.id}
+              className={`beast${stars > 0 ? ' known' : ''}${active ? ' pet-active' : ''}`}
+              data-testid={`pet-${pet.id}`}
+            >
+              <span className={`beast-art${stars > 0 ? '' : ' beast-unknown'}`}>
+                <MonsterSprite monster={{ ...boss, sprite: { ...pet.sprite, scale: 1 } }} />
+              </span>
+              <div className="beast-body">
+                <div className="pixel">{stars > 0 ? t(pet.nameKey) : '???'}</div>
+                <div className="tone-xp">
+                  {'★'.repeat(stars)}
+                  <span className="muted">{'☆'.repeat(pet.maxStars - stars)}</span>
+                </div>
+                <div className="small">
+                  {t('pets.bonus', {
+                    bonus: t(`stat.${pet.bonus.stat}`, { value: pet.bonus.value }),
+                  })}
+                </div>
+                <div className="small muted">{t('pets.from', { boss: t(boss.nameKey) })}</div>
+                {stars > 0 && (
+                  <button
+                    type="button"
+                    className="btn btn-small"
+                    disabled={active}
+                    onClick={() => setError(tryIntent(() => sim.setActivePet(pet.id)))}
+                  >
+                    {active ? t('pets.active') : t('pets.activate')}
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {hero.activePet && (
+        <button type="button" className="btn wide" onClick={() => sim.setActivePet(null)}>
+          {t('pets.dismiss')}
+        </button>
+      )}
     </>
   );
 }
@@ -330,6 +388,7 @@ export function JournalScreen() {
       </div>
       {tab === 'achievements' && <Achievements />}
       {tab === 'bestiary' && <Bestiary />}
+      {tab === 'pets' && <Pets />}
       {tab === 'collection' && <Collection />}
       {tab === 'stats' && <Stats />}
     </Sheet>

@@ -59,7 +59,7 @@ O critério é o do GDD: retenção antes de monetização, e primeiro o que nã
 ### C. Sistemas grandes fora da especificação (decidir se entram)
 
 12. ✅ **Skills de coleta e produção estilo OSRS** (3.2): Mineração, Herbalismo, Pesca, Forja, Alquimia e Culinária (decisões 147–150).
-13. **Pets** (3.4, 8.2.7).
+13. ✅ **Pets** (3.4, 8.2.7): decisão 162.
 14. **4ª classe (invocador)** (3.1). A especificação prevê 3.
 
 ### D. Dependem de servidor (marco 4)

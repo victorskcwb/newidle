@@ -9,7 +9,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 18;
+export const SAVE_VERSION = 19;
 
 export interface SaveFile {
   version: number;
@@ -82,7 +82,7 @@ const quest = z.strictObject({
 });
 
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(18),
+  version: z.literal(19),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -111,6 +111,8 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
     }),
     cards: z.record(z.string(), nonNeg),
     collection: z.record(z.string(), rarity),
+    pets: z.record(z.string(), int.min(1)),
+    activePet: id.nullable(),
     skillOrder: z.array(id),
     lastSkillOrder: z.array(id),
     lastActiveSkills: z.array(id.nullable()),
@@ -316,6 +318,14 @@ export const SAVE_MIGRATIONS: Record<
       resources: {},
     },
   }),
+  /** v18 → v19: pets (none found). */
+  18: (raw) => {
+    const state = raw.state as { hero: object };
+    return {
+      ...raw,
+      state: { ...state, version: 19, hero: { ...state.hero, pets: {}, activePet: null } },
+    };
+  },
   /** v17 → v18: the skill build is remembered; two more automations (off). */
   17: (raw) => {
     const state = raw.state as {

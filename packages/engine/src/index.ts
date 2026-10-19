@@ -13,6 +13,7 @@ export * from './items.ts';
 export * from './login.ts';
 export * from './meals.ts';
 export * from './offline.ts';
+export * from './pets.ts';
 export * from './pity.ts';
 export * from './professions.ts';
 export * from './progression.ts';

@@ -50,6 +50,7 @@ import {
 } from './dungeon.ts';
 import { grantReward } from './login.ts';
 import { rollSetPiece } from './sets.ts';
+import { rollPetDrop } from './pets.ts';
 import { sellPrice } from './town.ts';
 import { rollCard } from './cards.ts';
 import { questLoot, questProgress } from './quests.ts';
@@ -663,6 +664,7 @@ function killMonster(
     if (m.boss) {
       s.lifetime.bossKills++;
       out?.push({ type: 'BossDefeated', tick: t, monsterId: m.monsterId, firstTime: false });
+      rollPetDrop(s, content, m.monsterId, (ppm) => rngChance(s.rng, ppm), t, out);
     }
     return;
   }
@@ -675,6 +677,10 @@ function killMonster(
       s.hero.resets.newBossesThisCycle++;
     }
     out?.push({ type: 'BossDefeated', tick: t, monsterId: m.monsterId, firstTime });
+    // Pets: rate sampling skips them (like cards, they would change power mid-sample).
+    if (!o.freezeLevel) {
+      rollPetDrop(s, content, m.monsterId, (ppm) => rngChance(s.rng, ppm), t, out);
+    }
     if (hunt.unlocks && !s.unlockedHunts.includes(hunt.unlocks)) {
       s.unlockedHunts.push(hunt.unlocks);
       out?.push({ type: 'HuntUnlocked', tick: t, huntId: hunt.unlocks });

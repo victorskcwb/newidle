@@ -504,6 +504,7 @@ body,
 
 .tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
 }
 
@@ -2916,4 +2917,9 @@ input[type='range'] {
 .xp-chart-tip {
   color: var(--muted);
   min-height: 1.3em;
+}
+
+.beast.pet-active {
+  border-color: var(--accent);
+  background: rgb(217 164 65 / 8%);
 }

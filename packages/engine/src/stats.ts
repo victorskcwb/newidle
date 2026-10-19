@@ -1,5 +1,6 @@
 import { collectionMods } from './collection.ts';
 import { setMods } from './sets.ts';
+import { petMods } from './pets.ts';
 import { mealMods } from './meals.ts';
 import {
   EQUIPMENT_SLOTS,
@@ -152,13 +153,14 @@ function statsKey(hero: Hero): string {
   const cards = Object.entries(hero.cards)
     .map(([id, n]) => `${id}${n}`)
     .join(',');
+  const pet = hero.activePet ? `${hero.activePet}${hero.pets[hero.activePet] ?? 0}` : '';
   const collection = Object.entries(hero.collection)
     .map(([id, r]) => `${id}${r[0]}`)
     .join(',');
   const ups = Object.entries(hero.resets.upgrades)
     .map(([id, l]) => `${id}${l}`)
     .join(',');
-  return `${hero.level}|${a.strength},${a.dexterity},${a.vitality},${a.energy}|${items}|${skills}|${ups}|${cards}|${collection}|${hero.meal?.mealId ?? ''}`;
+  return `${hero.level}|${a.strength},${a.dexterity},${a.vitality},${a.energy}|${items}|${skills}|${ups}|${cards}|${collection}|${pet}|${hero.meal?.mealId ?? ''}`;
 }
 
 /** Derived stats of the hero. Cached per hero object; the cache key covers every input. */
@@ -204,6 +206,7 @@ export function computeHeroStats(hero: Hero, content: ContentDb): HeroStats {
   // The item collection and set bonuses.
   add(collectionMods(hero));
   add(setMods(hero, content));
+  add(petMods(hero, content));
   // The meal under way.
   add(mealMods(hero, content));
   // Reset shop bonuses.

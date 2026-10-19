@@ -11,6 +11,7 @@ import {
   setGathering,
   setRecipe,
   setMeal,
+  setActivePet,
   registerItem,
   enterDungeon,
   setAutomation,
@@ -283,6 +284,11 @@ export class GameSim {
     this.changed(false);
   }
 
+  setActivePet(petId: string | null) {
+    setActivePet(this.state, petId);
+    this.changed(true);
+  }
+
   setMeal(mealId: string | null) {
     setMeal(this.state, this.content, mealId);
     this.changed(true);
@@ -467,6 +473,7 @@ export class GameSim {
           e.type === 'LevelUp' ||
           e.type === 'AutoEquipped' ||
           e.type === 'AutoReset' ||
+          e.type === 'PetFound' ||
           e.type === 'HuntStarted' ||
           e.type === 'DungeonFloorCleared' ||
           e.type === 'DungeonEnded'

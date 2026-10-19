@@ -480,6 +480,18 @@ export const itemSetSchema = z.strictObject({
 });
 export type ItemSet = z.infer<typeof itemSetSchema>;
 
+/** Pets (GDD 3.4): brought by a hunt boss, a bonus per star while active. */
+export const petSchema = z.strictObject({
+  id,
+  nameKey: key,
+  bossId: id,
+  chancePpm: ppm,
+  maxStars: posInt.max(5),
+  bonus: z.strictObject({ stat: statSchema, value: posInt }),
+  sprite: monsterSchema.shape.sprite,
+});
+export type Pet = z.infer<typeof petSchema>;
+
 export const contentSchema = z.strictObject({
   itemBases: z.array(itemBaseSchema),
   affixes: z.array(affixSchema),
@@ -501,5 +513,6 @@ export const contentSchema = z.strictObject({
   resources: z.array(resourceSchema),
   recipes: z.array(recipeSchema),
   itemSets: z.array(itemSetSchema),
+  pets: z.array(petSchema),
 });
 export type ContentFile = z.infer<typeof contentSchema>;
