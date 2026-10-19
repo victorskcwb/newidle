@@ -74,6 +74,8 @@ export const itemBaseSchema = z
   .strictObject({
     id,
     nameKey: key,
+    /** Weapons belong to one class; other classes cannot use them. */
+    classId: id.optional(),
     slot: slotSchema,
     ilvl: posInt,
     requires: attributeRequirements,
@@ -492,6 +494,18 @@ export const petSchema = z.strictObject({
 });
 export type Pet = z.infer<typeof petSchema>;
 
+/** Classes (section 5.3): the attribute that drives damage, when they open, the first weapon. */
+export const classSchema = z.strictObject({
+  id,
+  nameKey: key,
+  primary: z.enum(['strength', 'dexterity', 'energy']),
+  /** Resets done (counting the one being made) that let the hero take this class. */
+  unlockResets: nonNegInt,
+  ranged: z.boolean(),
+  starterWeapon: id,
+});
+export type HeroClass = z.infer<typeof classSchema>;
+
 export const contentSchema = z.strictObject({
   itemBases: z.array(itemBaseSchema),
   affixes: z.array(affixSchema),
@@ -514,5 +528,6 @@ export const contentSchema = z.strictObject({
   recipes: z.array(recipeSchema),
   itemSets: z.array(itemSetSchema),
   pets: z.array(petSchema),
+  classes: z.array(classSchema),
 });
 export type ContentFile = z.infer<typeof contentSchema>;

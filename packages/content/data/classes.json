@@ -1,0 +1,28 @@
+{
+  "classes": [
+    {
+      "id": "warrior",
+      "nameKey": "class.warrior",
+      "primary": "strength",
+      "unlockResets": 0,
+      "ranged": false,
+      "starterWeapon": "sword_rusty"
+    },
+    {
+      "id": "huntress",
+      "nameKey": "class.huntress",
+      "primary": "dexterity",
+      "unlockResets": 5,
+      "ranged": true,
+      "starterWeapon": "bow_short"
+    },
+    {
+      "id": "sorcerer",
+      "nameKey": "class.sorcerer",
+      "primary": "energy",
+      "unlockResets": 10,
+      "ranged": true,
+      "starterWeapon": "staff_apprentice"
+    }
+  ]
+}

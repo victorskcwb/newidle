@@ -77,6 +77,11 @@ export function requirementText(content: ContentDb, hero: Hero, item: ItemInstan
   const reason = inactiveReason(hero, item, content);
   if (!reason) return null;
   if (reason.kind === 'level') return t('item.requires', { level: reason.required });
+  if (reason.kind === 'class') {
+    return t('item.requiresClass', {
+      class: t(content.classes.get(reason.classId)?.nameKey ?? reason.classId),
+    });
+  }
   return t('item.requiresAttribute', {
     value: reason.required,
     attribute: t(`attribute.${reason.attribute}`),

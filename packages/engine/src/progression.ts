@@ -1,20 +1,32 @@
 import type { ContentDb } from '@abismo/content';
 import { ATTRIBUTE_POINTS_PER_LEVEL, MAX_LEVEL, SKILL_POINT_EVERY_LEVELS } from './constants.ts';
 import { heroStats } from './stats.ts';
+import { primaryAttribute } from './classes.ts';
 import type { Attribute, AutoAllocateProfile, GameEvent, GameState, Hero } from './types.ts';
 import { xpToNext } from './xp.ts';
 
-/** How each automatic profile spends a level's 5 points. */
-const PROFILES: Record<Exclude<AutoAllocateProfile, 'off'>, Partial<Record<Attribute, number>>> = {
-  balanced: { strength: 2, dexterity: 1, vitality: 2 },
-  strength: { strength: 3, dexterity: 1, vitality: 1 },
-  vitality: { strength: 1, vitality: 4 },
+/**
+ * How each automatic profile spends a level's 5 points; "main" is the class's attribute
+ * (Strength, Dexterity or Energy) and "side" the one that helps it (Dexterity, or Strength
+ * for the Huntress).
+ */
+const PROFILES: Record<
+  Exclude<AutoAllocateProfile, 'off'>,
+  Record<'main' | 'side' | 'vitality', number>
+> = {
+  balanced: { main: 2, side: 1, vitality: 2 },
+  strength: { main: 3, side: 1, vitality: 1 },
+  vitality: { main: 1, side: 0, vitality: 4 },
 };
 
 /** Spends unspent attribute points in whole blocks of 5 following the hero's profile. */
-export function autoAllocate(hero: Hero) {
+export function autoAllocate(hero: Hero, content: ContentDb) {
   if (hero.autoAllocate === 'off') return;
-  const profile = PROFILES[hero.autoAllocate];
+  const main = primaryAttribute(content, hero);
+  const side: Attribute = main === 'dexterity' ? 'strength' : 'dexterity';
+  const p = PROFILES[hero.autoAllocate];
+  const profile: Partial<Record<Attribute, number>> = { [main]: p.main, vitality: p.vitality };
+  if (p.side > 0) profile[side] = p.side;
   while (hero.unspentAttributePoints >= ATTRIBUTE_POINTS_PER_LEVEL) {
     for (const [attr, n] of Object.entries(profile) as [Attribute, number][]) {
       hero.allocated[attr] += n;
@@ -46,7 +58,7 @@ export function addXp(
     gained++;
     hero.unspentAttributePoints += ATTRIBUTE_POINTS_PER_LEVEL;
     if (hero.level % SKILL_POINT_EVERY_LEVELS === 0) hero.unspentSkillPoints++;
-    autoAllocate(hero);
+    autoAllocate(hero, content);
     out?.push({ type: 'LevelUp', tick: t, level: hero.level });
   }
   if (hero.level >= MAX_LEVEL) hero.xp = 0;

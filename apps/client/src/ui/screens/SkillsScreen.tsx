@@ -129,7 +129,7 @@ export function SkillsScreen() {
       )}
       {error && <p className="tone-bad">{error}</p>}
 
-      <h3 className="pixel">{t('skills.tree')}</h3>
+      <h3 className="pixel">{t(`skills.tree.${hero.classId}`)}</h3>
       <div className="tree" style={{ gridTemplateRows: `repeat(${rows}, auto)` }}>
         {tree.map((skill) => {
           const level = hero.skillLevels[skill.id] ?? 0;

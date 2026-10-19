@@ -491,7 +491,7 @@ function resolveStretch(
           leftover = count - i;
           break;
         }
-        const item = generateItem(rng, content, table, hunt.ilvl, s.nextUid++, r);
+        const item = generateItem(rng, content, table, hunt.ilvl, s.nextUid++, r, s.hero.classId);
         rollSetPiece(rng, content, item, hunt.regionId);
         if (filterKeeps(filter, item)) {
           report.items.push(item);

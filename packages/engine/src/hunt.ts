@@ -275,7 +275,7 @@ function clearFloor(
         legendaryAllowed(hunt.ilvl),
       ),
     );
-    item = generateItem(s.rng, content, table, hunt.ilvl, s.nextUid++, rarity);
+    item = generateItem(s.rng, content, table, hunt.ilvl, s.nextUid++, rarity, s.hero.classId);
     rollSetPiece(s.rng, content, item, hunt.regionId);
     s.lifetime.itemsByRarity[item.rarity]++;
     if (s.backpack.length < backpackSize(s.hero, content)) s.backpack.push(item);
@@ -615,7 +615,15 @@ function killMonster(
     if (!forced && !rngChance(s.rng, dropPpm)) continue;
     const pity = pityRarity(s.dropPity, legendaryOk);
     const rarity = forced ? guaranteed : (pity ?? { magicFindPct });
-    const item = generateItem(s.rng, content, table, hunt.ilvl, s.nextUid++, rarity);
+    const item = generateItem(
+      s.rng,
+      content,
+      table,
+      hunt.ilvl,
+      s.nextUid++,
+      rarity,
+      s.hero.classId,
+    );
     rollSetPiece(s.rng, content, item, hunt.regionId);
     recordDrop(s.dropPity, item.rarity, legendaryOk);
     s.lifetime.itemsByRarity[item.rarity]++;

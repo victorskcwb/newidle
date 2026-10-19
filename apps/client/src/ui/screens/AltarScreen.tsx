@@ -4,6 +4,7 @@ import {
   resetBlock,
   resetCost,
   resetPointsEarned,
+  classUnlocked,
   DUNGEON_FLOORS_PER_RESET_POINT,
   shopUnlocked,
   upgradeCost,
@@ -19,6 +20,7 @@ export function AltarScreen() {
   const hero = sim.state.hero;
   const [confirm, setConfirm] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [nextClass, setNextClass] = useState(hero.classId);
   const block = resetBlock(sim.state);
   const points = resetPointsEarned(hero, sim.state.dungeon.best);
 
@@ -44,6 +46,27 @@ export function AltarScreen() {
           </ul>
         </div>
       </div>
+      <label className="field">
+        <span>{t('altar.class')}</span>
+        <select
+          className="input"
+          value={nextClass}
+          data-testid="altar-class"
+          onChange={(e) => setNextClass(e.target.value)}
+        >
+          {[...sim.content.classes.values()].map((k) => {
+            const open = k.id === hero.classId || classUnlocked(sim.content, hero, k.id);
+            return (
+              <option key={k.id} value={k.id} disabled={!open}>
+                {open
+                  ? `${t(k.nameKey)} · ${t(`class.primary.${k.primary}`)}`
+                  : t('altar.classLocked', { class: t(k.nameKey), n: k.unlockResets })}
+              </option>
+            );
+          })}
+        </select>
+      </label>
+      <p className="muted small">{t('altar.classHint')}</p>
       <ul className="item-lines">
         <li className={hero.level >= MAX_LEVEL ? 'tone-good' : 'tone-bad'}>
           {t('altar.needLevel', { level: hero.level })}
@@ -74,7 +97,7 @@ export function AltarScreen() {
             className="btn btn-primary"
             onClick={() => {
               setConfirm(false);
-              setMessage(tryIntent(() => sim.reset()) ?? t('altar.done', { n: points }));
+              setMessage(tryIntent(() => sim.reset(nextClass)) ?? t('altar.done', { n: points }));
             }}
             data-testid="reset-confirm"
           >

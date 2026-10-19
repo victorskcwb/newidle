@@ -1,3 +1,4 @@
+import { checkClassChoice, classOf } from './classes.ts';
 import { DUNGEON_FLOORS_PER_RESET_POINT, endDungeonRun } from './dungeon.ts';
 import type { ContentDb } from '@abismo/content';
 import {
@@ -45,10 +46,17 @@ export function resetBlock(s: GameState): ResetBlock | null {
  * Section 8.1. Back to level 1 with no attributes or skills spent; keeps items, stash,
  * materials, hunts and statistics; earns reset points and a free skill redistribution.
  */
-export function performReset(s: GameState, content: ContentDb): { points: number } {
+export function performReset(
+  s: GameState,
+  content: ContentDb,
+  /** The class for the next cycle (section 5.3: classes change only at a reset). */
+  nextClassId?: string,
+): { points: number } {
   const block = resetBlock(s);
   if (block) throw new IntentError(`reset_${block}`);
   const hero = s.hero;
+  const switching = nextClassId !== undefined && nextClassId !== hero.classId;
+  if (switching) checkClassChoice(content, hero, nextClassId);
   const points = resetPointsEarned(hero, s.dungeon.best);
   endDungeonRun(s, s.tick, null);
   s.dungeon.best = 0;
@@ -71,12 +79,36 @@ export function performReset(s: GameState, content: ContentDb): { points: number
   hero.activeSkills = new Array<string | null>(skillSlots(hero)).fill(null);
   hero.freeRespec = true;
   s.combat.buffUntil = {};
+  if (switching) {
+    hero.classId = nextClassId;
+    // The old build belongs to the old tree; the new class starts with its own weapon.
+    hero.lastSkillOrder = [];
+    hero.lastActiveSkills = [];
+    giveStarterWeapon(s, content);
+  }
   s.activity = { kind: 'idle_town' };
   if (s.hunt) s.hunt.consecutiveDeaths = 0;
   const stats = heroStats(hero, content);
   hero.hp = stats.maxHp;
   hero.mana = stats.maxMana;
   return { points };
+}
+
+/** Equips the class's starting weapon (the old weapon goes to the chest). */
+function giveStarterWeapon(s: GameState, content: ContentDb) {
+  const k = classOf(content, s.hero);
+  const base = content.itemBases.get(k.starterWeapon);
+  if (!base) return;
+  const old = s.hero.equipment.weapon;
+  if (old) s.stash.push(old);
+  s.hero.equipment.weapon = {
+    uid: s.nextUid++,
+    baseId: base.id,
+    ilvl: base.ilvl,
+    rarity: 'common',
+    affixes: [],
+    refine: 0,
+  };
 }
 
 export function shopUnlocked(hero: Hero): boolean {

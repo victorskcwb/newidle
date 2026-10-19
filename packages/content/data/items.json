@@ -15,7 +15,8 @@
         "attacksPerSecond": 1.2
       },
       "icon": "items/sword_rusty",
-      "sprite": "hero/weapon/sword"
+      "sprite": "hero/weapon/sword",
+      "classId": "warrior"
     },
     {
       "id": "iron_blade",
@@ -32,7 +33,8 @@
         "attacksPerSecond": 1.2
       },
       "icon": "items/iron_blade",
-      "sprite": "hero/weapon/sword"
+      "sprite": "hero/weapon/sword",
+      "classId": "warrior"
     },
     {
       "id": "blackened_sword",
@@ -49,7 +51,8 @@
         "attacksPerSecond": 1.25
       },
       "icon": "items/blackened_sword",
-      "sprite": "hero/weapon/sword"
+      "sprite": "hero/weapon/sword",
+      "classId": "warrior"
     },
     {
       "id": "abyssal_blade",
@@ -66,7 +69,144 @@
         "attacksPerSecond": 1.3
       },
       "icon": "items/abyssal_blade",
-      "sprite": "hero/weapon/sword"
+      "sprite": "hero/weapon/sword",
+      "classId": "warrior"
+    },
+    {
+      "id": "bow_short",
+      "nameKey": "item.bow_short",
+      "slot": "weapon",
+      "ilvl": 1,
+      "requires": {
+        "level": 1,
+        "dexterity": 10
+      },
+      "base": {
+        "damageMin": 4,
+        "damageMax": 8,
+        "attacksPerSecond": 1.2
+      },
+      "icon": "items/bow_short",
+      "classId": "huntress"
+    },
+    {
+      "id": "bow_hunting",
+      "nameKey": "item.bow_hunting",
+      "slot": "weapon",
+      "ilvl": 20,
+      "requires": {
+        "level": 20,
+        "dexterity": 40
+      },
+      "base": {
+        "damageMin": 12,
+        "damageMax": 22,
+        "attacksPerSecond": 1.2
+      },
+      "icon": "items/bow_hunting",
+      "classId": "huntress"
+    },
+    {
+      "id": "bow_composite",
+      "nameKey": "item.bow_composite",
+      "slot": "weapon",
+      "ilvl": 45,
+      "requires": {
+        "level": 45,
+        "dexterity": 85
+      },
+      "base": {
+        "damageMin": 30,
+        "damageMax": 54,
+        "attacksPerSecond": 1.25
+      },
+      "icon": "items/bow_composite",
+      "classId": "huntress"
+    },
+    {
+      "id": "bow_abyssal",
+      "nameKey": "item.bow_abyssal",
+      "slot": "weapon",
+      "ilvl": 70,
+      "requires": {
+        "level": 70,
+        "dexterity": 130
+      },
+      "base": {
+        "damageMin": 65,
+        "damageMax": 115,
+        "attacksPerSecond": 1.3
+      },
+      "icon": "items/bow_abyssal",
+      "classId": "huntress"
+    },
+    {
+      "id": "staff_apprentice",
+      "nameKey": "item.staff_apprentice",
+      "slot": "weapon",
+      "ilvl": 1,
+      "requires": {
+        "level": 1,
+        "energy": 10
+      },
+      "base": {
+        "damageMin": 4,
+        "damageMax": 8,
+        "attacksPerSecond": 1.2
+      },
+      "icon": "items/staff_apprentice",
+      "classId": "sorcerer"
+    },
+    {
+      "id": "staff_oak",
+      "nameKey": "item.staff_oak",
+      "slot": "weapon",
+      "ilvl": 20,
+      "requires": {
+        "level": 20,
+        "energy": 40
+      },
+      "base": {
+        "damageMin": 12,
+        "damageMax": 22,
+        "attacksPerSecond": 1.2
+      },
+      "icon": "items/staff_oak",
+      "classId": "sorcerer"
+    },
+    {
+      "id": "staff_runed",
+      "nameKey": "item.staff_runed",
+      "slot": "weapon",
+      "ilvl": 45,
+      "requires": {
+        "level": 45,
+        "energy": 85
+      },
+      "base": {
+        "damageMin": 30,
+        "damageMax": 54,
+        "attacksPerSecond": 1.25
+      },
+      "icon": "items/staff_runed",
+      "classId": "sorcerer"
+    },
+    {
+      "id": "staff_abyssal",
+      "nameKey": "item.staff_abyssal",
+      "slot": "weapon",
+      "ilvl": 70,
+      "requires": {
+        "level": 70,
+        "energy": 130
+      },
+      "base": {
+        "damageMin": 65,
+        "damageMax": 115,
+        "attacksPerSecond": 1.3
+      },
+      "icon": "items/staff_abyssal",
+      "classId": "sorcerer"
     },
     {
       "id": "shield_plank",

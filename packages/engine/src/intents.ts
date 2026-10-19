@@ -155,9 +155,9 @@ export function setPotionSettings(s: GameState, settings: PotionSettings) {
   Object.assign(s.settings, settings);
 }
 
-export function setAutoAllocate(s: GameState, profile: AutoAllocateProfile) {
+export function setAutoAllocate(s: GameState, content: ContentDb, profile: AutoAllocateProfile) {
   s.hero.autoAllocate = profile;
-  autoAllocate(s.hero);
+  autoAllocate(s.hero, content);
 }
 
 /**

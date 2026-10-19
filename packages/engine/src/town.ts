@@ -92,7 +92,9 @@ export function forgeItem(
 ): ItemInstance {
   requireTown(s);
   const ilvl = forgeIlvl(s, content);
-  const bases = [...content.itemBases.values()].filter((b) => b.slot === slot && b.ilvl <= ilvl);
+  const bases = [...content.itemBases.values()].filter(
+    (b) => b.slot === slot && b.ilvl <= ilvl && (!b.classId || b.classId === s.hero.classId),
+  );
   if (bases.length === 0) throw new IntentError('cannot_forge');
   const cost = forgeCost(s, content, rarity);
   if (s.gold < BigInt(cost.gold)) throw new IntentError('not_enough_gold');

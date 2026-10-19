@@ -2,6 +2,7 @@ export * from './achievements.ts';
 export * from './automation.ts';
 export * from './bestiary.ts';
 export * from './cards.ts';
+export * from './classes.ts';
 export * from './collection.ts';
 export * from './combat.ts';
 export * from './dungeon.ts';

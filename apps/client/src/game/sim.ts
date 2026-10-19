@@ -343,7 +343,7 @@ export class GameSim {
   }
 
   setAutoAllocate(profile: AutoAllocateProfile) {
-    setAutoAllocate(this.state, profile);
+    setAutoAllocate(this.state, this.content, profile);
     this.freshSnapshot();
     this.changed(true);
   }
@@ -395,8 +395,8 @@ export class GameSim {
     this.changed(true);
   }
 
-  reset() {
-    const result = performReset(this.state, this.content);
+  reset(nextClassId?: string) {
+    const result = performReset(this.state, this.content, nextClassId);
     this.freshSnapshot();
     this.emit({ kind: 'resync' });
     this.changed(true);

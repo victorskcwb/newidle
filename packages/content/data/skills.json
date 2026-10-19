@@ -255,6 +255,518 @@
       },
       "stat": "damageVsUndeadPct",
       "perLevel": 5
+    },
+    {
+      "id": "bow_mastery",
+      "nameKey": "skill.bow_mastery",
+      "descKey": "skill.bow_mastery.desc",
+      "classId": "huntress",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [],
+      "position": {
+        "row": 0,
+        "col": 0
+      },
+      "stat": "damagePct",
+      "perLevel": 3
+    },
+    {
+      "id": "aimed_shot",
+      "nameKey": "skill.aimed_shot",
+      "descKey": "skill.aimed_shot.desc",
+      "classId": "huntress",
+      "kind": "active",
+      "maxLevel": 10,
+      "requires": [],
+      "position": {
+        "row": 0,
+        "col": 1
+      },
+      "manaCost": 6,
+      "manaCostPerLevel": 1,
+      "cooldownSeconds": 4,
+      "damagePct": 180,
+      "damagePctPerLevel": 15,
+      "maxTargets": 1,
+      "effect": "fx/heavy_strike"
+    },
+    {
+      "id": "nimbleness",
+      "nameKey": "skill.nimbleness",
+      "descKey": "skill.nimbleness.desc",
+      "classId": "huntress",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [],
+      "position": {
+        "row": 0,
+        "col": 2
+      },
+      "stat": "lifePct",
+      "perLevel": 4
+    },
+    {
+      "id": "keen_eye",
+      "nameKey": "skill.keen_eye",
+      "descKey": "skill.keen_eye.desc",
+      "classId": "huntress",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "bow_mastery",
+          "level": 2
+        }
+      ],
+      "position": {
+        "row": 1,
+        "col": 0
+      },
+      "stat": "accuracy",
+      "perLevel": 8
+    },
+    {
+      "id": "focus",
+      "nameKey": "skill.focus",
+      "descKey": "skill.focus.desc",
+      "classId": "huntress",
+      "kind": "active",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "aimed_shot",
+          "level": 1
+        }
+      ],
+      "position": {
+        "row": 1,
+        "col": 1
+      },
+      "manaCost": 15,
+      "manaCostPerLevel": 2,
+      "cooldownSeconds": 20,
+      "damagePct": 0,
+      "damagePctPerLevel": 0,
+      "maxTargets": 1,
+      "effect": "fx/war_cry",
+      "buff": {
+        "stat": "damagePct",
+        "value": 20,
+        "perLevel": 4,
+        "durationSeconds": 8
+      }
+    },
+    {
+      "id": "leather_ward",
+      "nameKey": "skill.leather_ward",
+      "descKey": "skill.leather_ward.desc",
+      "classId": "huntress",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "nimbleness",
+          "level": 2
+        }
+      ],
+      "position": {
+        "row": 1,
+        "col": 2
+      },
+      "stat": "defensePct",
+      "perLevel": 5
+    },
+    {
+      "id": "rapid_fire",
+      "nameKey": "skill.rapid_fire",
+      "descKey": "skill.rapid_fire.desc",
+      "classId": "huntress",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "keen_eye",
+          "level": 3
+        }
+      ],
+      "position": {
+        "row": 2,
+        "col": 0
+      },
+      "stat": "attackSpeedPct",
+      "perLevel": 2
+    },
+    {
+      "id": "arrow_rain",
+      "nameKey": "skill.arrow_rain",
+      "descKey": "skill.arrow_rain.desc",
+      "classId": "huntress",
+      "kind": "active",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "aimed_shot",
+          "level": 3
+        }
+      ],
+      "position": {
+        "row": 2,
+        "col": 1
+      },
+      "manaCost": 12,
+      "manaCostPerLevel": 2,
+      "cooldownSeconds": 6,
+      "damagePct": 90,
+      "damagePctPerLevel": 8,
+      "maxTargets": 4,
+      "effect": "fx/whirlwind"
+    },
+    {
+      "id": "hunters_mark",
+      "nameKey": "skill.hunters_mark",
+      "descKey": "skill.hunters_mark.desc",
+      "classId": "huntress",
+      "kind": "passive",
+      "maxLevel": 5,
+      "requires": [
+        {
+          "skillId": "leather_ward",
+          "level": 3
+        }
+      ],
+      "position": {
+        "row": 2,
+        "col": 2
+      },
+      "stat": "lifeLeechPct",
+      "perLevel": 1
+    },
+    {
+      "id": "deadly_aim",
+      "nameKey": "skill.deadly_aim",
+      "descKey": "skill.deadly_aim.desc",
+      "classId": "huntress",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "rapid_fire",
+          "level": 3
+        }
+      ],
+      "position": {
+        "row": 3,
+        "col": 0
+      },
+      "stat": "critChancePct",
+      "perLevel": 1
+    },
+    {
+      "id": "pinning_shot",
+      "nameKey": "skill.pinning_shot",
+      "descKey": "skill.pinning_shot.desc",
+      "classId": "huntress",
+      "kind": "active",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "focus",
+          "level": 3
+        },
+        {
+          "skillId": "arrow_rain",
+          "level": 1
+        }
+      ],
+      "position": {
+        "row": 3,
+        "col": 1
+      },
+      "manaCost": 10,
+      "manaCostPerLevel": 1,
+      "cooldownSeconds": 8,
+      "damagePct": 150,
+      "damagePctPerLevel": 12,
+      "maxTargets": 1,
+      "effect": "fx/charge",
+      "stunSeconds": 1.5
+    },
+    {
+      "id": "silver_arrows",
+      "nameKey": "skill.silver_arrows",
+      "descKey": "skill.silver_arrows.desc",
+      "classId": "huntress",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "hunters_mark",
+          "level": 2
+        }
+      ],
+      "position": {
+        "row": 3,
+        "col": 2
+      },
+      "stat": "damageVsUndeadPct",
+      "perLevel": 5
+    },
+    {
+      "id": "arcane_mastery",
+      "nameKey": "skill.arcane_mastery",
+      "descKey": "skill.arcane_mastery.desc",
+      "classId": "sorcerer",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [],
+      "position": {
+        "row": 0,
+        "col": 0
+      },
+      "stat": "damagePct",
+      "perLevel": 3
+    },
+    {
+      "id": "arcane_bolt",
+      "nameKey": "skill.arcane_bolt",
+      "descKey": "skill.arcane_bolt.desc",
+      "classId": "sorcerer",
+      "kind": "active",
+      "maxLevel": 10,
+      "requires": [],
+      "position": {
+        "row": 0,
+        "col": 1
+      },
+      "manaCost": 6,
+      "manaCostPerLevel": 1,
+      "cooldownSeconds": 4,
+      "damagePct": 180,
+      "damagePctPerLevel": 15,
+      "maxTargets": 1,
+      "effect": "fx/heavy_strike"
+    },
+    {
+      "id": "mana_ward",
+      "nameKey": "skill.mana_ward",
+      "descKey": "skill.mana_ward.desc",
+      "classId": "sorcerer",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [],
+      "position": {
+        "row": 0,
+        "col": 2
+      },
+      "stat": "lifePct",
+      "perLevel": 4
+    },
+    {
+      "id": "concentration",
+      "nameKey": "skill.concentration",
+      "descKey": "skill.concentration.desc",
+      "classId": "sorcerer",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "arcane_mastery",
+          "level": 2
+        }
+      ],
+      "position": {
+        "row": 1,
+        "col": 0
+      },
+      "stat": "accuracy",
+      "perLevel": 8
+    },
+    {
+      "id": "empower",
+      "nameKey": "skill.empower",
+      "descKey": "skill.empower.desc",
+      "classId": "sorcerer",
+      "kind": "active",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "arcane_bolt",
+          "level": 1
+        }
+      ],
+      "position": {
+        "row": 1,
+        "col": 1
+      },
+      "manaCost": 15,
+      "manaCostPerLevel": 2,
+      "cooldownSeconds": 20,
+      "damagePct": 0,
+      "damagePctPerLevel": 0,
+      "maxTargets": 1,
+      "effect": "fx/war_cry",
+      "buff": {
+        "stat": "damagePct",
+        "value": 20,
+        "perLevel": 4,
+        "durationSeconds": 8
+      }
+    },
+    {
+      "id": "stone_skin",
+      "nameKey": "skill.stone_skin",
+      "descKey": "skill.stone_skin.desc",
+      "classId": "sorcerer",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "mana_ward",
+          "level": 2
+        }
+      ],
+      "position": {
+        "row": 1,
+        "col": 2
+      },
+      "stat": "defensePct",
+      "perLevel": 5
+    },
+    {
+      "id": "quickcast",
+      "nameKey": "skill.quickcast",
+      "descKey": "skill.quickcast.desc",
+      "classId": "sorcerer",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "concentration",
+          "level": 3
+        }
+      ],
+      "position": {
+        "row": 2,
+        "col": 0
+      },
+      "stat": "attackSpeedPct",
+      "perLevel": 2
+    },
+    {
+      "id": "fireball",
+      "nameKey": "skill.fireball",
+      "descKey": "skill.fireball.desc",
+      "classId": "sorcerer",
+      "kind": "active",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "arcane_bolt",
+          "level": 3
+        }
+      ],
+      "position": {
+        "row": 2,
+        "col": 1
+      },
+      "manaCost": 12,
+      "manaCostPerLevel": 2,
+      "cooldownSeconds": 6,
+      "damagePct": 90,
+      "damagePctPerLevel": 8,
+      "maxTargets": 4,
+      "effect": "fx/whirlwind"
+    },
+    {
+      "id": "soul_siphon",
+      "nameKey": "skill.soul_siphon",
+      "descKey": "skill.soul_siphon.desc",
+      "classId": "sorcerer",
+      "kind": "passive",
+      "maxLevel": 5,
+      "requires": [
+        {
+          "skillId": "stone_skin",
+          "level": 3
+        }
+      ],
+      "position": {
+        "row": 2,
+        "col": 2
+      },
+      "stat": "lifeLeechPct",
+      "perLevel": 1
+    },
+    {
+      "id": "arcane_focus",
+      "nameKey": "skill.arcane_focus",
+      "descKey": "skill.arcane_focus.desc",
+      "classId": "sorcerer",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "quickcast",
+          "level": 3
+        }
+      ],
+      "position": {
+        "row": 3,
+        "col": 0
+      },
+      "stat": "critChancePct",
+      "perLevel": 1
+    },
+    {
+      "id": "frost_prison",
+      "nameKey": "skill.frost_prison",
+      "descKey": "skill.frost_prison.desc",
+      "classId": "sorcerer",
+      "kind": "active",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "empower",
+          "level": 3
+        },
+        {
+          "skillId": "fireball",
+          "level": 1
+        }
+      ],
+      "position": {
+        "row": 3,
+        "col": 1
+      },
+      "manaCost": 10,
+      "manaCostPerLevel": 1,
+      "cooldownSeconds": 8,
+      "damagePct": 150,
+      "damagePctPerLevel": 12,
+      "maxTargets": 1,
+      "effect": "fx/charge",
+      "stunSeconds": 1.5
+    },
+    {
+      "id": "holy_light",
+      "nameKey": "skill.holy_light",
+      "descKey": "skill.holy_light.desc",
+      "classId": "sorcerer",
+      "kind": "passive",
+      "maxLevel": 10,
+      "requires": [
+        {
+          "skillId": "soul_siphon",
+          "level": 2
+        }
+      ],
+      "position": {
+        "row": 3,
+        "col": 2
+      },
+      "stat": "damageVsUndeadPct",
+      "perLevel": 5
     }
   ],
   "cards": [

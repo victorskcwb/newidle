@@ -849,6 +849,14 @@
         {
           "itemBaseId": "amulet_bone",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_short",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_apprentice",
+          "weight": 14
         }
       ],
       "extras": [
@@ -904,6 +912,14 @@
         {
           "itemBaseId": "amulet_bone",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_short",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_apprentice",
+          "weight": 14
         }
       ],
       "extras": [
@@ -962,6 +978,14 @@
         {
           "itemBaseId": "amulet_bone",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_short",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_apprentice",
+          "weight": 14
         }
       ],
       "extras": [
@@ -1017,6 +1041,14 @@
         {
           "itemBaseId": "amulet_bone",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_short",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_apprentice",
+          "weight": 14
         }
       ],
       "extras": [
@@ -1115,6 +1147,22 @@
         {
           "itemBaseId": "amulet_bronze",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_short",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "staff_apprentice",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "bow_hunting",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_oak",
+          "weight": 14
         }
       ],
       "extras": [
@@ -1210,6 +1258,22 @@
         {
           "itemBaseId": "amulet_bronze",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_short",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "staff_apprentice",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "bow_hunting",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_oak",
+          "weight": 14
         }
       ],
       "extras": [
@@ -1308,6 +1372,22 @@
         {
           "itemBaseId": "amulet_bronze",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_short",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "staff_apprentice",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "bow_hunting",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_oak",
+          "weight": 14
         }
       ],
       "extras": [
@@ -1403,6 +1483,22 @@
         {
           "itemBaseId": "amulet_bronze",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_short",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "staff_apprentice",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "bow_hunting",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_oak",
+          "weight": 14
         }
       ],
       "extras": [
@@ -1501,6 +1597,22 @@
         {
           "itemBaseId": "amulet_jade",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_hunting",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "staff_oak",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "bow_composite",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_runed",
+          "weight": 14
         }
       ],
       "extras": [
@@ -1596,6 +1708,22 @@
         {
           "itemBaseId": "amulet_jade",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_hunting",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "staff_oak",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "bow_composite",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_runed",
+          "weight": 14
         }
       ],
       "extras": [
@@ -1694,6 +1822,22 @@
         {
           "itemBaseId": "amulet_jade",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_hunting",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "staff_oak",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "bow_composite",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_runed",
+          "weight": 14
         }
       ],
       "extras": [
@@ -1789,6 +1933,22 @@
         {
           "itemBaseId": "amulet_jade",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_hunting",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "staff_oak",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "bow_composite",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_runed",
+          "weight": 14
         }
       ],
       "extras": [
@@ -1887,6 +2047,22 @@
         {
           "itemBaseId": "amulet_jade",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_hunting",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "staff_oak",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "bow_composite",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_runed",
+          "weight": 14
         }
       ],
       "extras": [
@@ -1982,6 +2158,22 @@
         {
           "itemBaseId": "amulet_jade",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_hunting",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "staff_oak",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "bow_composite",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_runed",
+          "weight": 14
         }
       ],
       "extras": [
@@ -2080,6 +2272,22 @@
         {
           "itemBaseId": "amulet_ember",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_composite",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "staff_runed",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "bow_abyssal",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_abyssal",
+          "weight": 14
         }
       ],
       "extras": [
@@ -2175,6 +2383,22 @@
         {
           "itemBaseId": "amulet_ember",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_composite",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "staff_runed",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "bow_abyssal",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_abyssal",
+          "weight": 14
         }
       ],
       "extras": [
@@ -2273,6 +2497,22 @@
         {
           "itemBaseId": "amulet_ember",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_composite",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "staff_runed",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "bow_abyssal",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_abyssal",
+          "weight": 14
         }
       ],
       "extras": [
@@ -2368,6 +2608,22 @@
         {
           "itemBaseId": "amulet_ember",
           "weight": 10
+        },
+        {
+          "itemBaseId": "bow_composite",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "staff_runed",
+          "weight": 4
+        },
+        {
+          "itemBaseId": "bow_abyssal",
+          "weight": 14
+        },
+        {
+          "itemBaseId": "staff_abyssal",
+          "weight": 14
         }
       ],
       "extras": [

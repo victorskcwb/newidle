@@ -1,6 +1,7 @@
 import { collectionMods } from './collection.ts';
 import { setMods } from './sets.ts';
 import { petMods } from './pets.ts';
+import { primaryAttribute } from './classes.ts';
 import { mealMods } from './meals.ts';
 import {
   EQUIPMENT_SLOTS,
@@ -82,7 +83,8 @@ export function baseAttributes(hero: Hero, content: ContentDb): Attributes {
 
 export type InactiveReason =
   | { kind: 'level'; required: number }
-  | { kind: 'attribute'; attribute: keyof Attributes; required: number };
+  | { kind: 'attribute'; attribute: keyof Attributes; required: number }
+  | { kind: 'class'; classId: string };
 
 /**
  * Why an equipped item is not active, or null if it is. Requirements are checked against the
@@ -95,6 +97,8 @@ export function inactiveReason(
 ): InactiveReason | null {
   const base = content.itemBases.get(item.baseId);
   if (!base) throw new Error(`unknown item base ${item.baseId}`);
+  if (base.classId && base.classId !== hero.classId)
+    return { kind: 'class', classId: base.classId };
   if (hero.level < base.requires.level) return { kind: 'level', required: base.requires.level };
   const attrs = baseAttributes(hero, content);
   for (const a of ATTRIBUTES) {
@@ -233,7 +237,7 @@ export function computeHeroStats(hero: Hero, content: ContentDb): HeroStats {
   const wMin = weapon?.damageMin ?? UNARMED.damageMin;
   const wMax = weapon?.damageMax ?? UNARMED.damageMax;
   const wAps = weapon?.attacksPerSecond ?? UNARMED.attacksPerSecond;
-  const damagePct = 100 + attributes.strength + m('damagePct');
+  const damagePct = 100 + attributes[primaryAttribute(content, hero)] + m('damagePct');
   const damageMin = Math.max(1, Math.floor(((wMin + m('damageFlat')) * damagePct) / 100));
   const damageMax = Math.max(damageMin, Math.floor(((wMax + m('damageFlat')) * damagePct) / 100));
   const attacksPerSecond = (wAps * (100 + m('attackSpeedPct'))) / 100;

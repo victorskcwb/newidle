@@ -12,6 +12,7 @@ import {
   type Achievement,
   type ItemSet,
   type Pet,
+  type HeroClass,
   type Profession,
   type Recipe,
   type Resource,
@@ -51,6 +52,7 @@ export interface ContentDb {
   readonly recipes: ReadonlyMap<string, Recipe>;
   readonly itemSets: ReadonlyMap<string, ItemSet>;
   readonly pets: ReadonlyMap<string, Pet>;
+  readonly classes: ReadonlyMap<string, HeroClass>;
   /** Material yielded by salvaging each rarity. */
   readonly salvageMaterial: Readonly<Record<Rarity, Material>>;
 }
@@ -98,6 +100,7 @@ export function mergeContentFiles(files: readonly Partial<ContentFile>[]): Conte
     recipes: [],
     itemSets: [],
     pets: [],
+    classes: [],
   };
   for (const file of files) {
     for (const k of Object.keys(merged) as (keyof ContentFile)[]) {
@@ -141,6 +144,7 @@ export function buildContentDb(raw: unknown): ContentDb {
     recipes: indexById('recipe', c.recipes, problems),
     itemSets: indexById('itemSet', c.itemSets, problems),
     pets: indexById('pet', c.pets, problems),
+    classes: indexById('class', c.classes, problems),
   };
 
   const ref = (ok: boolean, message: string) => {
@@ -229,6 +233,16 @@ export function buildContentDb(raw: unknown): ContentDb {
       );
     }
   });
+  for (const k of c.classes) {
+    const w = db.itemBases.get(k.starterWeapon);
+    ref(w?.classId === k.id, `class ${k.id}: starter weapon ${k.starterWeapon} is not its own`);
+  }
+  for (const sk of c.skills) {
+    ref(c.classes.length === 0 || db.classes.has(sk.classId), `skill ${sk.id}: unknown class`);
+  }
+  for (const b of c.itemBases) {
+    if (b.classId) ref(db.classes.has(b.classId), `itemBase ${b.id}: unknown class ${b.classId}`);
+  }
   for (const pet of c.pets) {
     ref(db.monsters.get(pet.bossId)?.boss === true, `pet ${pet.id}: ${pet.bossId} is not a boss`);
   }
@@ -309,6 +323,7 @@ export function translationKeys(db: ContentDb): string[] {
   for (const r of db.resources.values()) keys.push(r.nameKey);
   for (const x of db.itemSets.values()) keys.push(x.nameKey);
   for (const x of db.pets.values()) keys.push(x.nameKey);
+  for (const x of db.classes.values()) keys.push(x.nameKey);
   for (const u of db.uniqueItems.values()) keys.push(u.nameKey, u.descKey);
   return keys;
 }

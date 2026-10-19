@@ -136,12 +136,22 @@ export function rollDropIlvl(rng: RngState, huntIlvl: number): number {
   return Math.min(MAX_LEVEL, Math.max(1, ilvl));
 }
 
-/** Item bases of a loot table that can drop at an item level (all of them if none fit). */
-export function eligibleBases(content: ContentDb, table: LootTable, ilvl: number) {
-  const fitting = table.bases.filter(
-    (b) => (content.itemBases.get(b.itemBaseId)?.ilvl ?? 0) <= ilvl,
-  );
-  return fitting.length > 0 ? fitting : table.bases;
+/**
+ * Item bases of a loot table that can drop at an item level (all of them if none fit), and
+ * only the weapons of the hero's class.
+ */
+export function eligibleBases(
+  content: ContentDb,
+  table: LootTable,
+  ilvl: number,
+  classId?: string,
+) {
+  const forClass = table.bases.filter((b) => {
+    const c = content.itemBases.get(b.itemBaseId)?.classId;
+    return !classId || !c || c === classId;
+  });
+  const fitting = forClass.filter((b) => (content.itemBases.get(b.itemBaseId)?.ilvl ?? 0) <= ilvl);
+  return fitting.length > 0 ? fitting : forClass;
 }
 
 /**
@@ -155,9 +165,11 @@ export function generateItem(
   huntIlvl: number,
   uid: number,
   rarity: Rarity | { magicFindPct: number },
+  /** The hero's class: weapons of other classes never drop. */
+  classId?: string,
 ): ItemInstance {
   const ilvl = rollDropIlvl(rng, huntIlvl);
-  const pick = pickWeighted(rng, eligibleBases(content, table, ilvl), (b) => b.weight);
+  const pick = pickWeighted(rng, eligibleBases(content, table, ilvl, classId), (b) => b.weight);
   const base = content.itemBases.get(pick.itemBaseId)!;
   const finalRarity =
     typeof rarity === 'string'

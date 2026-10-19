@@ -30,7 +30,7 @@ describe('bundled content', () => {
     const c = loadContent();
     expect(c.hunts.get('forgotten_cemetery')).toBeDefined();
     expect(c.monsters.size).toBe(35);
-    expect(c.itemBases.size).toBe(40);
+    expect(c.itemBases.size).toBe(48); // 10 slots × 4 tiers, plus bows and staves
     expect(c.affixes.size).toBe(20);
   });
 
