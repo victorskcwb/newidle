@@ -1,6 +1,10 @@
 import { AUTOMATIONS, automationUnlocked, MAX_LEVEL, type PotionSettings } from '@abismo/engine';
 import { useState } from 'react';
-import { t } from '../../i18n.ts';
+import { locale, setLocale, t } from '../../i18n.ts';
+import { LOCALES, type Locale } from '@abismo/i18n';
+
+/** Each language named in itself, so it is found whatever the current one. */
+const LANGUAGE_NAMES: Record<Locale, string> = { 'pt-BR': 'Português (Brasil)', en: 'English' };
 import { Reminders } from '../../game/notify.ts';
 import { GFX_KEYS, usePrefs } from '../../state/prefs.ts';
 import { useUi } from '../../state/store.ts';
@@ -119,6 +123,21 @@ export function SettingsScreen() {
       </button>
 
       <h3 className="pixel">{t('settings.device')}</h3>
+      <label className="field">
+        <span>{t('settings.language')}</span>
+        <select
+          className="input"
+          value={locale}
+          data-testid="language"
+          onChange={(e) => setLocale(e.target.value as Locale)}
+        >
+          {LOCALES.map((l) => (
+            <option key={l} value={l}>
+              {LANGUAGE_NAMES[l]}
+            </option>
+          ))}
+        </select>
+      </label>
       <label className="check">
         <input
           type="checkbox"

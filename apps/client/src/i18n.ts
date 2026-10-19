@@ -1,11 +1,41 @@
-import { createTranslator } from '@abismo/i18n';
+import { createTranslator, isLocale, type Locale } from '@abismo/i18n';
 
-export const t = createTranslator('pt-BR');
+const LOCALE_KEY = 'abismo.locale';
 
-const integer = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 });
-const compact = new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 1 });
+/** The player's choice on this device, else the browser's language (Portuguese or English). */
+function pickLocale(): Locale {
+  try {
+    const saved = localStorage.getItem(LOCALE_KEY);
+    if (isLocale(saved)) return saved;
+  } catch {
+    // Storage blocked: fall back to the browser language.
+  }
+  const lang = typeof navigator === 'undefined' ? 'pt-BR' : navigator.language;
+  return lang.toLowerCase().startsWith('pt') ? 'pt-BR' : 'en';
+}
 
-/** Whole numbers with pt-BR grouping; compact ("1,2 mi") from 100,000 up. */
+export const locale: Locale = pickLocale();
+/** BCP 47 tag for number and text formatting. */
+export const localeTag = locale === 'en' ? 'en-US' : 'pt-BR';
+if (typeof document !== 'undefined') document.documentElement.lang = localeTag;
+
+export const t = createTranslator(locale);
+
+/** Saves the language on this device and reloads, so every text is rebuilt in it. */
+export function setLocale(next: Locale) {
+  try {
+    localStorage.setItem(LOCALE_KEY, next);
+  } catch {
+    // Without storage the choice cannot persist; reloading would undo it.
+    return;
+  }
+  window.location.reload();
+}
+
+const integer = new Intl.NumberFormat(localeTag, { maximumFractionDigits: 0 });
+const compact = new Intl.NumberFormat(localeTag, { notation: 'compact', maximumFractionDigits: 1 });
+
+/** Whole numbers with the locale's grouping; compact ("1.2M") from 100,000 up. */
 export function formatNumber(n: number | bigint): string {
   const v = typeof n === 'bigint' ? n : Math.round(n);
   if (typeof v === 'bigint' ? v >= 100_000n : v >= 100_000) return compact.format(v);

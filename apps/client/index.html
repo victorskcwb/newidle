@@ -76,6 +76,19 @@
       </div>
     </div>
     <script>
+      // Same language rule as src/i18n.ts, before any game script loads.
+      (function () {
+        var saved = null;
+        try {
+          saved = localStorage.getItem('abismo.locale');
+        } catch (e) {}
+        var lang = saved || (navigator.language.toLowerCase().indexOf('pt') === 0 ? 'pt-BR' : 'en');
+        if (lang !== 'en') return;
+        document.documentElement.lang = 'en-US';
+        document.getElementById('boot-step').textContent = 'Loading the game…';
+        document.getElementById('boot-help').textContent =
+          'This is taking longer than usual. Check your connection and reload the page.';
+      })();
       // Safety net: if the game never takes the screen away, say so after 15 s.
       window.setTimeout(function () {
         var help = document.getElementById('boot-help');

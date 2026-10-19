@@ -18,7 +18,7 @@ import {
   objectsOf,
   type ContentDb,
 } from '@abismo/content';
-import { hasKey } from '@abismo/i18n';
+import { hasKey, LOCALES } from '@abismo/i18n';
 import { PNG } from 'pngjs';
 
 const assets = new URL('../../../assets/', import.meta.url);
@@ -43,7 +43,9 @@ function readJson(rel: string): unknown {
 
 if (content) {
   for (const key of translationKeys(content)) {
-    if (!hasKey(key)) problems.push(`i18n: missing pt-BR text for "${key}"`);
+    for (const locale of LOCALES) {
+      if (!hasKey(key, locale)) problems.push(`i18n: missing ${locale} text for "${key}"`);
+    }
   }
 
   for (const hunt of content.hunts.values()) {
@@ -76,7 +78,11 @@ if (content) {
     }
     for (const p of validateTownMap(parsed.data)) problems.push(`town ${region}: ${p}`);
     for (const n of objectsOf(parsed.data, 'npcs')) {
-      if (!hasKey(`npc.${n.name}`)) problems.push(`i18n: missing pt-BR text for "npc.${n.name}"`);
+      for (const locale of LOCALES) {
+        if (!hasKey(`npc.${n.name}`, locale)) {
+          problems.push(`i18n: missing ${locale} text for "npc.${n.name}"`);
+        }
+      }
     }
   }
 
@@ -135,5 +141,5 @@ if (problems.length > 0) {
 const c = content!;
 console.log(
   `Content OK: ${c.hunts.size} hunts, ${c.monsters.size} monsters, ${c.itemBases.size} item bases, ` +
-    `${c.affixes.size} affixes, ${c.skills.size} skills; maps, sprites and pt-BR texts complete.`,
+    `${c.affixes.size} affixes, ${c.skills.size} skills; maps, sprites and pt-BR and en texts complete.`,
 );

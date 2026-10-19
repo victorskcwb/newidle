@@ -7,7 +7,7 @@ import {
   type AutoAllocateProfile,
 } from '@abismo/engine';
 import { useState } from 'react';
-import { formatNumber, t } from '../../i18n.ts';
+import { formatNumber, localeTag, t } from '../../i18n.ts';
 import { useUi } from '../../state/store.ts';
 import { ItemCard, ItemCell } from '../BackpackPanel.tsx';
 import { Sheet, tryIntent } from '../Sheet.tsx';
@@ -36,12 +36,12 @@ export function CharacterScreen() {
     [t('stat.label.damage'), `${formatNumber(stats.damageMin)}–${formatNumber(stats.damageMax)}`],
     [
       t('stat.label.attackSpeed'),
-      (10 / stats.attackIntervalTicks).toLocaleString('pt-BR', { maximumFractionDigits: 2 }),
+      (10 / stats.attackIntervalTicks).toLocaleString(localeTag, { maximumFractionDigits: 2 }),
     ],
     [t('stat.label.accuracy'), formatNumber(stats.accuracy)],
     [t('stat.label.evasion'), formatNumber(stats.evasion)],
     [t('stat.label.defense'), formatNumber(stats.defense)],
-    [t('stat.label.crit'), `${(stats.critChancePpm / 10_000).toLocaleString('pt-BR')}%`],
+    [t('stat.label.crit'), `${(stats.critChancePpm / 10_000).toLocaleString(localeTag)}%`],
     [t('stat.label.critDamage'), `${stats.critDamagePct}%`],
     [t('stat.label.leech'), `${stats.lifeLeechPct}%`],
     [t('stat.label.xp'), `+${stats.xpPct}%`],

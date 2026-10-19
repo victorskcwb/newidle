@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { hasKey } from '@abismo/i18n';
+import { hasKey, locales } from '@abismo/i18n';
 import { describe, expect, it } from 'vitest';
 
 function sources(dir: string): string[] {
@@ -21,5 +21,16 @@ describe('i18n', () => {
       }
     }
     expect(missing).toEqual([]);
+  });
+
+  it('English has every Portuguese text, with the same placeholders', () => {
+    const params = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+    const pt = locales['pt-BR'];
+    const en = locales.en;
+    expect(Object.keys(en).sort()).toEqual(Object.keys(pt).sort());
+    const mismatched = Object.keys(pt).filter(
+      (k) => JSON.stringify(params(pt[k]!)) !== JSON.stringify(params(en[k] ?? '')),
+    );
+    expect(mismatched).toEqual([]);
   });
 });

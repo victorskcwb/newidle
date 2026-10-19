@@ -7,7 +7,7 @@ import {
   type HeroStats,
   type ItemInstance,
 } from '@abismo/engine';
-import { t } from '../i18n.ts';
+import { localeTag, t } from '../i18n.ts';
 
 export function itemName(content: ContentDb, item: ItemInstance): string {
   const base = content.itemBases.get(item.baseId);
@@ -27,7 +27,7 @@ export function itemLines(
     base.push(t('item.damage', { min: s.damageMin, max: s.damageMax }));
   }
   if (s.attacksPerSecond !== undefined) {
-    base.push(t('item.aps', { aps: s.attacksPerSecond.toLocaleString('pt-BR') }));
+    base.push(t('item.aps', { aps: s.attacksPerSecond.toLocaleString(localeTag) }));
   }
   if (s.defense !== undefined) base.push(t('item.defense', { value: s.defense }));
   const implicit = content.itemBases.get(item.baseId)?.implicit ?? {};

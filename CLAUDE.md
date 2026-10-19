@@ -15,7 +15,7 @@ Antes de cada feature nova, passe pelo checklist da seção 14 do GDD. Em dúvid
 
 ## Forma de trabalho (seção 14.1 da especificação)
 
-- Engine e testes primeiro, depois interface, por último a cena. Regras só em `packages/engine` (puro e determinístico); conteúdo só em `packages/content/data/*.json`; textos só em `packages/i18n`.
+- Engine e testes primeiro, depois interface, por último a cena. Regras só em `packages/engine` (puro e determinístico); conteúdo só em `packages/content/data/*.json`; textos só em `packages/i18n`, sempre em pt-BR e en (há teste de paridade).
 - Toda decisão que a especificação não cobre entra numerada em `docs/decisions.md`: o que, por quê e o pilar ou restrição.
 - Mudança no estado do jogo = nova versão do save, com migração e teste.
 - Depois de mexer em balanceamento, rode o simulador e registre o resultado.

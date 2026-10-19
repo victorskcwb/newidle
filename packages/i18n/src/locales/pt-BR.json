@@ -441,6 +441,7 @@
   "settings.potionTarget": "Comprar poções na vila até ter {n}",
   "settings.returnNoPotions": "Voltar à vila quando as poções acabarem",
   "settings.autoReturn": "Voltar à caçada sozinho após ser derrotado (até 3 vezes seguidas)",
+  "settings.language": "Idioma",
   "settings.device": "Este aparelho",
   "settings.eco": "Modo econômico (30 fps, sem partículas)",
   "settings.reducedMotion": "Reduzir movimento",

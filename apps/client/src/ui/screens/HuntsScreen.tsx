@@ -1,7 +1,7 @@
 import type { Hunt, Monster } from '@abismo/content';
 import type { RateSheet } from '@abismo/engine';
 import { useEffect, useMemo, useState } from 'react';
-import { formatNumber, t } from '../../i18n.ts';
+import { formatNumber, localeTag, t } from '../../i18n.ts';
 import { useUi } from '../../state/store.ts';
 import { Icon } from '../Icon.tsx';
 import { Sheet } from '../Sheet.tsx';
@@ -98,7 +98,7 @@ export function HuntsScreen() {
     });
     out.sort((a, b) =>
       sort === 'name'
-        ? t(a.nameKey).localeCompare(t(b.nameKey), 'pt-BR')
+        ? t(a.nameKey).localeCompare(t(b.nameKey), localeTag)
         : (sort === 'level' ? 1 : -1) * (a.recommendedLevel - b.recommendedLevel),
     );
     return out;
