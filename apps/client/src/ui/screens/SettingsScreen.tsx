@@ -1,4 +1,4 @@
-import { MAX_LEVEL, type PotionSettings } from '@abismo/engine';
+import { AUTOMATIONS, automationUnlocked, MAX_LEVEL, type PotionSettings } from '@abismo/engine';
 import { useState } from 'react';
 import { t } from '../../i18n.ts';
 import { Reminders } from '../../game/notify.ts';
@@ -85,6 +85,28 @@ export function SettingsScreen() {
         {t('settings.autoReturn')}
       </label>
       {error && <p className="tone-bad">{error}</p>}
+
+      <h3 className="pixel">{t('settings.automation')}</h3>
+      {AUTOMATIONS.map((id) => {
+        const unlocked = automationUnlocked(sim.state, id);
+        return (
+          <label key={id} className="check" data-testid={`auto-${id}`}>
+            <input
+              type="checkbox"
+              checked={unlocked && st.automation[id]}
+              disabled={!unlocked}
+              onChange={(e) => setError(tryIntent(() => sim.setAutomation(id, e.target.checked)))}
+            />
+            <span>
+              {t(`automation.${id}`)}
+              <span className="muted small">
+                {' '}
+                {unlocked ? t(`automation.${id}.hint`) : t(`automation.${id}.locked`)}
+              </span>
+            </span>
+          </label>
+        );
+      })}
 
       <button
         type="button"

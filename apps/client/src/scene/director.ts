@@ -461,6 +461,9 @@ export class Director {
           tone: 'good',
         });
         break;
+      case 'AutoEquipped':
+        this.log(t('log.autoEquipped', { n: e.uids.length }), { tone: 'info' });
+        break;
       case 'ProfessionLevelUp':
         this.log(
           t('log.professionLevel', {

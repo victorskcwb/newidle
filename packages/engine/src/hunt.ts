@@ -31,6 +31,7 @@ import { pityRarity, recordDrop } from './pity.ts';
 import { bestiaryDamagePct } from './bestiary.ts';
 import { tickProfessions } from './professions.ts';
 import { tickMeal } from './meals.ts';
+import { runAutomations } from './automation.ts';
 import { sellPrice } from './town.ts';
 import { rollCard } from './cards.ts';
 import { questLoot, questProgress } from './quests.ts';
@@ -299,6 +300,8 @@ function arriveInTown(
     if (o.counters && stop !== 'manual') o.counters.stoppedAtTick ??= t;
     return;
   }
+  // Automations (not while measuring rates: they would change the setup being measured).
+  if (!o.freezeLevel) runAutomations(s, content, out);
   const leaveTick = t + TOWN_STAY_TICKS;
   s.activity = { kind: 'in_town', untilTick: leaveTick, then: 'hunt' };
   out?.push({ type: 'ArrivedInTown', tick: t, deposited, potionsBought: bought, leaveTick });

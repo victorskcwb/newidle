@@ -81,6 +81,8 @@ export interface Settings {
   manaPotionThresholdPct: number;
   hpPotionId: string;
   manaPotionId: string;
+  /** Automations switched on (they also need to be unlocked). */
+  automation: { equipBest: boolean; bestHunt: boolean };
   /** Meal the hero eats when the last one ends (null: none). */
   mealId: string | null;
   /** Potions bought up to this amount on every town visit (0 = never buy). */
@@ -157,7 +159,7 @@ export interface DropPity {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 14;
+  version: 15;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;
@@ -251,6 +253,7 @@ export type GameEvent =
   | { type: 'HuntUnlocked'; tick: number; huntId: string }
   | { type: 'ProfessionLevelUp'; tick: number; professionId: string; level: number }
   | { type: 'ItemCrafted'; tick: number; recipeId: string }
+  | { type: 'AutoEquipped'; tick: number; uids: number[] }
   | { type: 'HuntStopped'; tick: number; reason: 'manual' | 'too_many_deaths' | 'no_potions' };
 
 export type GameEventType = GameEvent['type'];

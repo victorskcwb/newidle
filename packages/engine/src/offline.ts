@@ -15,6 +15,7 @@ import { addXp } from './progression.ts';
 import { questLoot, questProgress } from './quests.ts';
 import { categoryLoot, computeRates, potionHoursLeft, type RateSheet } from './rates.ts';
 import { consumeMeals, fedTicks } from './meals.ts';
+import { runAutomations } from './automation.ts';
 import { rngBinomial, rngChance, rngInt, type RngState } from './rng.ts';
 import { heroStats } from './stats.ts';
 import { offlineCapTicks } from './upgrades.ts';
@@ -178,6 +179,7 @@ export function resolveOffline(
   if (!hunting || fed === 0 || fed >= resolved) {
     const report = resolveStretch(s, content, rates, elapsedTicks, capTicks);
     report.mealsEaten = consumeMeals(s, content, report.huntingTicks);
+    if (hunting) runAutomations(s, content, null);
     return report;
   }
   const first = resolveStretch(s, content, rates, fed, fed);
@@ -186,6 +188,7 @@ export function resolveOffline(
   const stillHunting = s.hunt !== null && s.activity.kind !== 'idle_town';
   const unfed = stillHunting ? computeRates(s, content, s.hunt!.huntId) : null;
   const second = resolveStretch(s, content, unfed, elapsedTicks - fed, capTicks - fed);
+  runAutomations(s, content, null);
   return mergeReports(first, second);
 }
 

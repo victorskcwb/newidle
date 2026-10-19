@@ -9,7 +9,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 14;
+export const SAVE_VERSION = 15;
 
 export interface SaveFile {
   version: number;
@@ -81,7 +81,7 @@ const quest = z.strictObject({
 });
 
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(14),
+  version: z.literal(15),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -131,6 +131,7 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
     targetPriority: z.enum(['first', 'weakest', 'strongest']),
     autoSellUpTo: rarity.nullable(),
     mealId: id.nullable(),
+    automation: z.strictObject({ equipBest: z.boolean(), bestHunt: z.boolean() }),
   }),
   hunt: z
     .strictObject({ huntId: id, killsSinceBoss: nonNeg, consecutiveDeaths: nonNeg })
@@ -297,6 +298,18 @@ export const SAVE_MIGRATIONS: Record<
       resources: {},
     },
   }),
+  /** v14 → v15: automations (off). */
+  14: (raw) => {
+    const state = raw.state as { settings: object };
+    return {
+      ...raw,
+      state: {
+        ...state,
+        version: 15,
+        settings: { ...state.settings, automation: { equipBest: false, bestHunt: false } },
+      },
+    };
+  },
   /** v13 → v14: gold fractions carried between kills. */
   13: (raw) => ({ ...raw, state: { ...(raw.state as object), version: 14, goldRemainder: 0 } }),
   /** v12 → v13: meals (none eaten, none chosen). */
