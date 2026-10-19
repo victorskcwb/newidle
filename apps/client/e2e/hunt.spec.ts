@@ -25,6 +25,12 @@ test('the hero hunts, kills, loots and the backpack shows the items', async ({ p
   await expect(card).toContainText(/Comum|Mágico|Raro|Épico|Lendário/);
   await expect(card).toContainText('Nível do item');
 
+  // The first item of a base can go into the collection.
+  await card.getByTestId('register-item').click();
+  await page.getByTestId('nav-journal').click();
+  await page.getByTestId('journal-tab-collection').click();
+  await expect(page.getByTestId('collection-summary')).not.toContainText(/^0 de/);
+
   expect(errors).toEqual([]);
 });
 

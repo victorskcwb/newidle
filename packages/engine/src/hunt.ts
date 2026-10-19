@@ -24,6 +24,8 @@ import {
   generateItem,
   legendaryAllowed,
   pickWeighted,
+  rarityTable,
+  rollRarity,
   rarityRank,
   rollSalvage,
 } from './items.ts';
@@ -40,11 +42,13 @@ import {
   DUNGEON_KILLS_PER_FLOOR,
   endDungeonRun,
   floorBlock,
+  floorTimedOut,
   floorHunt,
   floorScalePct,
   isBossFloor,
 } from './dungeon.ts';
 import { grantReward } from './login.ts';
+import { rollSetPiece } from './sets.ts';
 import { sellPrice } from './town.ts';
 import { rollCard } from './cards.ts';
 import { questLoot, questProgress } from './quests.ts';
@@ -259,9 +263,16 @@ function clearFloor(
     const hunt = huntOf(s, content)!;
     const def = content.monsters.get(hunt.spawns[0]!.monsterId)!;
     const table = content.lootTables.get(def.lootTableId)!;
-    item = generateItem(s.rng, content, table, hunt.ilvl, s.nextUid++, {
-      magicFindPct: stats.magicFindPct + floor * DUNGEON_BOSS_MAGIC_FIND_PER_FLOOR,
-    });
+    const rarity = rollRarity(
+      s.rng,
+      rarityTable(
+        stats.magicFindPct + floor * DUNGEON_BOSS_MAGIC_FIND_PER_FLOOR,
+        'rare',
+        legendaryAllowed(hunt.ilvl),
+      ),
+    );
+    item = generateItem(s.rng, content, table, hunt.ilvl, s.nextUid++, rarity);
+    rollSetPiece(s.rng, content, item, hunt.regionId);
     s.lifetime.itemsByRarity[item.rarity]++;
     if (s.backpack.length < backpackSize(s.hero, content)) s.backpack.push(item);
     else s.stash.push(item);
@@ -270,6 +281,7 @@ function clearFloor(
   d.bestEver = Math.max(d.bestEver, floor);
   d.floor = floor + 1;
   d.killsOnFloor = 0;
+  d.floorStartTick = t;
   out?.push({ type: 'DungeonFloorCleared', tick: t, floor, item });
 }
 
@@ -397,7 +409,7 @@ function die(s: GameState, t: number, out: GameEvent[] | null, o: StepOptions) {
   s.lifetime.deaths++;
   s.hunt!.consecutiveDeaths++;
   // A defeat ends a dungeon run; the hero revives in town and goes back to the hunt.
-  endDungeonRun(s, t, out);
+  endDungeonRun(s, t, out, 'defeat');
   if (o.counters) o.counters.deaths++;
   s.activity = { kind: 'dead', untilTick: t + RESPAWN_TICKS };
   out?.push({ type: 'HeroDied', tick: t, xpLost });
@@ -600,6 +612,7 @@ function killMonster(
     const pity = pityRarity(s.dropPity, legendaryOk);
     const rarity = forced ? guaranteed : (pity ?? { magicFindPct });
     const item = generateItem(s.rng, content, table, hunt.ilvl, s.nextUid++, rarity);
+    rollSetPiece(s.rng, content, item, hunt.regionId);
     recordDrop(s.dropPity, item.rarity, legendaryOk);
     s.lifetime.itemsByRarity[item.rarity]++;
     questLoot(s, item.rarity);
@@ -854,6 +867,13 @@ export function tickOnce(
   const a = s.activity;
   const stats = heroStats(s.hero, content);
   if (t % TICKS_PER_SECOND === 0 && a.kind !== 'dead') regenerate(s, stats);
+  // Too long on one floor: the Abyss throws the hero out (back to town, then to the hunt).
+  if (a.kind !== 'dead' && floorTimedOut(s, t)) {
+    endDungeonRun(s, t, out, 'time');
+    goToTown(s, content, t, 'dungeon', out, o);
+    s.tick = t + 1;
+    return;
+  }
   // Professions do not change combat, so rate sampling skips them.
   if (!o.freezeLevel) tickProfessions(s, content, t, out);
   tickMeal(s, content, !!o.freezeLevel);

@@ -3,6 +3,7 @@ import {
   pityDropsLeft,
   backpackSize,
   heroStats,
+  improvesCollection,
   inTown,
   rarityRank,
   sellPrice,
@@ -11,7 +12,7 @@ import {
 import { useMemo, useState } from 'react';
 import { formatNumber, t } from '../i18n.ts';
 import { useUi } from '../state/store.ts';
-import { compareItem, itemLines, itemName, requirementText } from './items.ts';
+import { compareItem, itemLines, itemName, requirementText, setLines } from './items.ts';
 import { PixelIcon } from './PixelIcon.tsx';
 import { RARITY_COLOR, RARITY_GLYPH } from './rarity.ts';
 import { HeroSprite } from './SheetSprite.tsx';
@@ -105,6 +106,7 @@ export function ItemCard({
   const select = useUi((s) => s.select);
   const [error, setError] = useState<string | null>(null);
   const lines = itemLines(sim.content, item);
+  const set = setLines(sim.content, sim.state.hero, item);
   const req = requirementText(sim.content, sim.state.hero, item);
   const rows = equipped ? [] : compareItem(sim.content, sim.state.hero, item);
   const town = inTown(sim.state);
@@ -136,6 +138,16 @@ export function ItemCard({
         {lines.unique && (
           <li className="unique" data-testid="unique-effect">
             {t('item.unique')}: {lines.unique}
+          </li>
+        )}
+        {set && (
+          <li className="set-lines" data-testid="set-lines">
+            <div className="set-title">{set.title}</div>
+            {set.bonuses.map((b) => (
+              <div key={b.text} className={b.active ? 'tone-good' : 'muted'}>
+                {b.text}
+              </div>
+            ))}
           </li>
         )}
         {lines.affixes.map((l) => (
@@ -204,6 +216,21 @@ export function ItemCard({
             <PixelIcon name="gold" size={16} />{' '}
             {t('inventory.sell', { gold: formatNumber(sellPrice(item)) })}
           </button>
+          {improvesCollection(sim.state.hero, item) && (
+            <button
+              type="button"
+              className="btn"
+              title={t('item.registerHint')}
+              data-testid="register-item"
+              onClick={() => {
+                const err = tryIntent(() => sim.register(item.uid));
+                setError(err);
+                if (!err) select(null);
+              }}
+            >
+              {t('item.register')}
+            </button>
+          )}
         </div>
       )}
     </div>

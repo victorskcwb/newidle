@@ -26,6 +26,8 @@ export interface ItemInstance {
   refine: number;
   /** Unique legendary effect, if any (content uniqueItems id). */
   uniqueId?: string;
+  /** Piece of an item set, if any (content itemSets id). */
+  setId?: string;
 }
 
 /** Progress across reset cycles (section 8). */
@@ -66,6 +68,8 @@ export interface Hero {
   resets: ResetProgress;
   /** Card copies by card id (section 8.4). */
   cards: Record<string, number>;
+  /** Item collection: best rarity registered for each item base. */
+  collection: Record<string, Rarity>;
   /** Meal under way: its bonus lasts `ticksLeft` more ticks of hunting. */
   meal: { mealId: string; ticksLeft: number } | null;
 }
@@ -124,7 +128,7 @@ export type Activity =
   | { kind: 'to_hunt'; untilTick: number }
   | { kind: 'dead'; untilTick: number };
 
-export type TownReason = 'backpack_full' | 'no_potions' | 'death' | 'manual';
+export type TownReason = 'backpack_full' | 'no_potions' | 'death' | 'manual' | 'dungeon';
 
 export interface HuntProgress {
   huntId: string;
@@ -160,7 +164,7 @@ export interface DropPity {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 16;
+  version: 17;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;
@@ -259,7 +263,13 @@ export type GameEvent =
   | { type: 'AutoEquipped'; tick: number; uids: number[] }
   | { type: 'DungeonEntered'; tick: number; floor: number }
   | { type: 'DungeonFloorCleared'; tick: number; floor: number; item: ItemInstance | null }
-  | { type: 'DungeonEnded'; tick: number; floor: number; best: number }
+  | {
+      type: 'DungeonEnded';
+      tick: number;
+      floor: number;
+      best: number;
+      reason: 'defeat' | 'time' | 'left';
+    }
   | { type: 'HuntStopped'; tick: number; reason: 'manual' | 'too_many_deaths' | 'no_potions' };
 
 export type GameEventType = GameEvent['type'];

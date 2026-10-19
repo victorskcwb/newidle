@@ -1,5 +1,5 @@
 import type { ContentDb, Hunt } from '@abismo/content';
-import { MAX_LEVEL } from './constants.ts';
+import { MAX_LEVEL, TICKS_PER_SECOND } from './constants.ts';
 import { IntentError } from './progression.ts';
 import type { GameEvent, GameState } from './types.ts';
 
@@ -17,8 +17,13 @@ export const DUNGEON_UNLOCK_BOSSES = 3;
 /** Every cleared floor gives crystals; every boss floor gives cores and an item. */
 export const DUNGEON_FLOOR_REWARD: Readonly<Record<string, number>> = { crystal: 1 };
 export const DUNGEON_BOSS_CORES_PER_BLOCK = 1;
-/** Magic find of the boss floor's item, per floor (the legendary chance grows with depth). */
+/** The boss floor's item is rare or better; magic find per floor raises the odds of more. */
 export const DUNGEON_BOSS_MAGIC_FIND_PER_FLOOR = 10;
+/**
+ * A floor not cleared in this time ends the run: a hero who can neither win nor lose (healing
+ * through a boss they cannot kill) would otherwise stay there forever.
+ */
+export const DUNGEON_FLOOR_TIME_LIMIT_TICKS = 5 * 60 * TICKS_PER_SECOND;
 /** Reset points: one per this many floors of the cycle's best (section 8.1). */
 export const DUNGEON_FLOORS_PER_RESET_POINT = 5;
 
@@ -26,13 +31,15 @@ export interface Dungeon {
   active: boolean;
   floor: number;
   killsOnFloor: number;
+  /** Tick the current floor started (for its time limit). */
+  floorStartTick: number;
   /** Deepest floor cleared in this reset cycle, and ever. */
   best: number;
   bestEver: number;
 }
 
 export function newDungeon(): Dungeon {
-  return { active: false, floor: 1, killsOnFloor: 0, best: 0, bestEver: 0 };
+  return { active: false, floor: 1, killsOnFloor: 0, floorStartTick: 0, best: 0, bestEver: 0 };
 }
 
 export function dungeonUnlocked(s: GameState): boolean {
@@ -89,16 +96,26 @@ export function enterDungeon(s: GameState): GameEvent[] {
   d.active = true;
   d.floor = dungeonStartFloor(s);
   d.killsOnFloor = 0;
+  d.floorStartTick = s.tick;
   s.activity = { kind: 'to_hunt', untilTick: s.tick + 1 };
   return [{ type: 'DungeonEntered', tick: s.tick, floor: d.floor }];
 }
 
-/** Ends the run (defeat, or the player leaves). The hero goes back to town. */
-export function endDungeonRun(s: GameState, t: number, out: GameEvent[] | null) {
+/** Ends the run: a defeat, the floor's time running out, or the player leaving. */
+export function endDungeonRun(
+  s: GameState,
+  t: number,
+  out: GameEvent[] | null,
+  reason: 'defeat' | 'time' | 'left' = 'left',
+) {
   const d = s.dungeon;
   if (!d.active) return;
   d.active = false;
-  out?.push({ type: 'DungeonEnded', tick: t, floor: d.floor, best: d.best });
+  out?.push({ type: 'DungeonEnded', tick: t, floor: d.floor, best: d.best, reason });
+}
+
+export function floorTimedOut(s: GameState, t: number): boolean {
+  return s.dungeon.active && t - s.dungeon.floorStartTick >= DUNGEON_FLOOR_TIME_LIMIT_TICKS;
 }
 
 /** Reset points the dungeon adds to a reset. */

@@ -50,8 +50,8 @@ O critério é o do GDD: retenção antes de monetização, e primeiro o que nã
 
 ### B. Sem servidor, médio impacto
 
-7. **Coleção de itens** (registrar uma base ou um lendário único dá bônus pequeno) (3.4).
-8. **Sets de 2/4/6 peças** (3.3).
+7. ✅ **Coleção de itens** (3.4): decisão 156.
+8. ✅ **Sets de 2/4/6 peças** (3.3): decisão 157.
 9. ✅ **Mais automações** (4): equipar os melhores e ir para a melhor caçada (decisão 153); falta o reset automático, que precisa reaprender a build.
 10. ✅ **Inglês** (9): decisão 154.
 11. ✅ **Masmorra infinita** (3.6): o Abismo, decisão 155. Ranking global depende do servidor.

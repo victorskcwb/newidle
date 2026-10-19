@@ -10,6 +10,7 @@ import {
   type LootTable,
   type LoginReward,
   type Achievement,
+  type ItemSet,
   type Profession,
   type Recipe,
   type Resource,
@@ -47,6 +48,7 @@ export interface ContentDb {
   readonly professions: ReadonlyMap<string, Profession>;
   readonly resources: ReadonlyMap<string, Resource>;
   readonly recipes: ReadonlyMap<string, Recipe>;
+  readonly itemSets: ReadonlyMap<string, ItemSet>;
   /** Material yielded by salvaging each rarity. */
   readonly salvageMaterial: Readonly<Record<Rarity, Material>>;
 }
@@ -92,6 +94,7 @@ export function mergeContentFiles(files: readonly Partial<ContentFile>[]): Conte
     professions: [],
     resources: [],
     recipes: [],
+    itemSets: [],
   };
   for (const file of files) {
     for (const k of Object.keys(merged) as (keyof ContentFile)[]) {
@@ -133,6 +136,7 @@ export function buildContentDb(raw: unknown): ContentDb {
     professions: indexById('profession', c.professions, problems),
     resources: indexById('resource', c.resources, problems),
     recipes: indexById('recipe', c.recipes, problems),
+    itemSets: indexById('itemSet', c.itemSets, problems),
   };
 
   const ref = (ok: boolean, message: string) => {
@@ -221,6 +225,12 @@ export function buildContentDb(raw: unknown): ContentDb {
       );
     }
   });
+  for (const set of c.itemSets) {
+    ref(db.regions.has(set.regionId), `itemSet ${set.id}: unknown region ${set.regionId}`);
+    for (const b of set.bonuses) {
+      ref(b.pieces <= set.slots.length, `itemSet ${set.id}: bonus needs more pieces than slots`);
+    }
+  }
   for (const r of c.resources) {
     ref(
       db.professions.get(r.professionId)?.kind === 'gathering',
@@ -290,6 +300,7 @@ export function translationKeys(db: ContentDb): string[] {
   }
   for (const p of db.professions.values()) keys.push(p.nameKey);
   for (const r of db.resources.values()) keys.push(r.nameKey);
+  for (const x of db.itemSets.values()) keys.push(x.nameKey);
   for (const u of db.uniqueItems.values()) keys.push(u.nameKey, u.descKey);
   return keys;
 }

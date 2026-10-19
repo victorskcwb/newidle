@@ -33,7 +33,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
     refine: 0,
   };
   const s: GameState = {
-    version: 16,
+    version: 17,
     tick: 0,
     rng: createRng(hero.seed),
     nextUid: 2,
@@ -57,6 +57,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
       resets: { count: 0, points: 0, upgrades: {}, newBossesThisCycle: 0 },
       cards: {},
       meal: null,
+      collection: {},
     },
     backpack: [],
     stash: [],

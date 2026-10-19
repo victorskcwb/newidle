@@ -4,6 +4,12 @@ import {
   achievementProgress,
   bestiaryDamagePct,
   bestiaryTier,
+  COLLECTION_POINTS_PER_DAMAGE_PCT,
+  COLLECTION_POINTS_PER_MAGIC_FIND_PCT,
+  collectionMaxPoints,
+  collectionMods,
+  collectionPoints,
+  equippedSetPieces,
   regionMonsters,
   RARITY_ORDER,
   TICKS_PER_HOUR,
@@ -12,13 +18,14 @@ import {
 import { useState } from 'react';
 import { formatDuration, formatNumber, t } from '../../i18n.ts';
 import { Icon } from '../Icon.tsx';
+import { PixelIcon } from '../PixelIcon.tsx';
 import { RARITY_COLOR, RARITY_GLYPH } from '../rarity.ts';
 import { Sheet, tryIntent } from '../Sheet.tsx';
 import { useSim } from '../useSim.ts';
 import { MonsterSprite } from '../WorldMap.tsx';
 
-type Tab = 'achievements' | 'bestiary' | 'stats';
-const TABS: Tab[] = ['achievements', 'bestiary', 'stats'];
+type Tab = 'achievements' | 'bestiary' | 'collection' | 'stats';
+const TABS: Tab[] = ['achievements', 'bestiary', 'collection', 'stats'];
 
 export function achievementText(a: Achievement): string {
   return t(`achievement.kind.${a.kind}`, {
@@ -164,6 +171,73 @@ function Bestiary() {
   );
 }
 
+function Collection() {
+  const sim = useSim();
+  const hero = sim.state.hero;
+  const points = collectionPoints(hero);
+  const mods = collectionMods(hero);
+  return (
+    <>
+      <p className="muted small">
+        {t('journal.collectionHint', {
+          damage: COLLECTION_POINTS_PER_DAMAGE_PCT,
+          mf: COLLECTION_POINTS_PER_MAGIC_FIND_PCT,
+        })}
+      </p>
+      <p className="pixel" data-testid="collection-summary">
+        {t('journal.collectionSummary', {
+          points,
+          max: collectionMaxPoints(sim.content),
+          damage: mods.damagePct ?? 0,
+          mf: mods.magicFindPct ?? 0,
+        })}
+      </p>
+      <div className="coll-grid">
+        {[...sim.content.itemBases.values()].map((b) => {
+          const r = hero.collection[b.id];
+          return (
+            <span
+              key={b.id}
+              className={`coll-cell${r ? ' have' : ''}`}
+              style={r ? { borderColor: RARITY_COLOR[r] } : undefined}
+              title={`${t(b.nameKey)}${r ? ` · ${t(`rarity.${r}`)}` : ''}`}
+            >
+              <PixelIcon name={`item.${b.id}`} size={28} />
+            </span>
+          );
+        })}
+      </div>
+      <h3 className="pixel">{t('journal.sets')}</h3>
+      {[...sim.content.itemSets.values()].map((set) => {
+        const n = equippedSetPieces(hero)[set.id] ?? 0;
+        return (
+          <section key={set.id} className="set-entry">
+            <div className="pixel">
+              {t('item.set', { name: t(set.nameKey), n, max: set.slots.length })}
+            </div>
+            <div className="muted small">
+              {t('journal.setRegion', {
+                region: t(sim.content.regions.get(set.regionId)!.nameKey),
+              })}
+            </div>
+            {set.bonuses.map((b) => (
+              <div
+                key={`${b.pieces}${b.stat}`}
+                className={n >= b.pieces ? 'tone-good small' : 'small'}
+              >
+                {t('item.setBonus', {
+                  pieces: b.pieces,
+                  bonus: t(`stat.${b.stat}`, { value: b.value }),
+                })}
+              </div>
+            ))}
+          </section>
+        );
+      })}
+    </>
+  );
+}
+
 function Stats() {
   const sim = useSim();
   const s = sim.state;
@@ -254,6 +328,7 @@ export function JournalScreen() {
       </div>
       {tab === 'achievements' && <Achievements />}
       {tab === 'bestiary' && <Bestiary />}
+      {tab === 'collection' && <Collection />}
       {tab === 'stats' && <Stats />}
     </Sheet>
   );

@@ -477,7 +477,13 @@ export class Director {
         }
         break;
       case 'DungeonEnded':
-        this.log(t('log.dungeonEnded', { floor: e.floor, best: e.best }), { tone: 'bad' });
+        this.log(
+          t(e.reason === 'time' ? 'log.dungeonTimedOut' : 'log.dungeonEnded', {
+            floor: e.floor,
+            best: e.best,
+          }),
+          { tone: 'bad' },
+        );
         break;
       case 'AutoEquipped':
         this.log(t('log.autoEquipped', { n: e.uids.length }), { tone: 'info' });

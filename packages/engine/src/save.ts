@@ -9,7 +9,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 16;
+export const SAVE_VERSION = 17;
 
 export interface SaveFile {
   version: number;
@@ -39,6 +39,7 @@ const item: z.ZodType<ItemInstance> = z.strictObject({
   affixes: z.array(z.strictObject({ affixId: id, tier: nonNeg, value: int })),
   refine: int.min(0).max(15),
   uniqueId: id.optional(),
+  setId: id.optional(),
 });
 
 const monster = z.strictObject({
@@ -81,7 +82,7 @@ const quest = z.strictObject({
 });
 
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(16),
+  version: z.literal(17),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -109,6 +110,7 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
       newBossesThisCycle: nonNeg,
     }),
     cards: z.record(z.string(), nonNeg),
+    collection: z.record(z.string(), rarity),
     meal: z.strictObject({ mealId: id, ticksLeft: nonNeg }).nullable(),
   }),
   backpack: z.array(item),
@@ -194,6 +196,7 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
     active: z.boolean(),
     floor: int.min(1),
     killsOnFloor: nonNeg,
+    floorStartTick: nonNeg,
     best: nonNeg,
     bestEver: nonNeg,
   }),
@@ -305,6 +308,20 @@ export const SAVE_MIGRATIONS: Record<
       resources: {},
     },
   }),
+  /** v16 → v17: item collection (empty). */
+  16: (raw) => {
+    const state = raw.state as { hero: object };
+    const dungeon = (raw.state as { dungeon: object }).dungeon;
+    return {
+      ...raw,
+      state: {
+        ...state,
+        version: 17,
+        hero: { ...state.hero, collection: {} },
+        dungeon: { ...dungeon, floorStartTick: 0 },
+      },
+    };
+  },
   /** v15 → v16: the endless dungeon (never entered). */
   15: (raw) => ({
     ...raw,

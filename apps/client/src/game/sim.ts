@@ -11,6 +11,7 @@ import {
   setGathering,
   setRecipe,
   setMeal,
+  registerItem,
   enterDungeon,
   setAutomation,
   type AutomationId,
@@ -209,6 +210,13 @@ export class GameSim {
     this.freshSnapshot();
     this.changed(true);
     return n;
+  }
+
+  /** Gives an item up to the collection. */
+  register(uid: number) {
+    registerItem(this.state, uid);
+    this.freshSnapshot();
+    this.changed(true);
   }
 
   salvage(uid: number) {

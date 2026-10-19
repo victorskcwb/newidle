@@ -466,6 +466,20 @@ export const recipeSchema = z.strictObject({
 });
 export type Recipe = z.infer<typeof recipeSchema>;
 
+/**
+ * Item sets (GDD 3.3): a rare or better item of a set slot that drops in the set's region may
+ * be a piece of it; equipped pieces of the same set unlock bonuses at 2, 4 and 6.
+ */
+export const itemSetSchema = z.strictObject({
+  id,
+  nameKey: key,
+  regionId: id,
+  slots: z.array(slotSchema).min(2),
+  chancePpm: ppm,
+  bonuses: z.array(z.strictObject({ pieces: posInt, stat: statSchema, value: posInt })).min(1),
+});
+export type ItemSet = z.infer<typeof itemSetSchema>;
+
 export const contentSchema = z.strictObject({
   itemBases: z.array(itemBaseSchema),
   affixes: z.array(affixSchema),
@@ -486,5 +500,6 @@ export const contentSchema = z.strictObject({
   professions: z.array(professionSchema),
   resources: z.array(resourceSchema),
   recipes: z.array(recipeSchema),
+  itemSets: z.array(itemSetSchema),
 });
 export type ContentFile = z.infer<typeof contentSchema>;

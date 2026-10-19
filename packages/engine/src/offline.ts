@@ -8,6 +8,7 @@ import {
 } from './constants.ts';
 import { filterKeeps, generateItem, legendaryAllowed, rarityRank } from './items.ts';
 import { applyBulkPity } from './pity.ts';
+import { rollSetPiece } from './sets.ts';
 import { professionLevel, tickProfessions } from './professions.ts';
 import { autoSell, killXp } from './hunt.ts';
 import { cardChancePpm, pityThreshold } from './cards.ts';
@@ -485,6 +486,7 @@ function resolveStretch(
           break;
         }
         const item = generateItem(rng, content, table, hunt.ilvl, s.nextUid++, r);
+        rollSetPiece(rng, content, item, hunt.regionId);
         if (filterKeeps(filter, item)) {
           report.items.push(item);
           generated++;

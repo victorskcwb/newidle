@@ -1,6 +1,7 @@
 import type { ContentDb, Stat } from '@abismo/content';
 import {
   computeHeroStats,
+  equippedSetPieces,
   inactiveReason,
   itemStats,
   type Hero,
@@ -38,6 +39,27 @@ export function itemLines(
     return affix ? t(affix.textKey, { value: a.value }) : a.affixId;
   });
   return { base, affixes, unique: uniqueText(content, item) };
+}
+
+/** Set name with the pieces equipped, and each bonus (active or not), for a set piece. */
+export function setLines(
+  content: ContentDb,
+  hero: Hero,
+  item: ItemInstance,
+): { title: string; bonuses: { text: string; active: boolean }[] } | null {
+  const set = item.setId ? content.itemSets.get(item.setId) : undefined;
+  if (!set) return null;
+  const n = equippedSetPieces(hero)[set.id] ?? 0;
+  return {
+    title: t('item.set', { name: t(set.nameKey), n, max: set.slots.length }),
+    bonuses: set.bonuses.map((b) => ({
+      text: t('item.setBonus', {
+        pieces: b.pieces,
+        bonus: t(`stat.${b.stat}`, { value: b.value }),
+      }),
+      active: n >= b.pieces,
+    })),
+  };
 }
 
 /** The unique legendary effect of an item, as text (null for regular items). */

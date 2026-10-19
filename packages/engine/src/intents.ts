@@ -1,3 +1,4 @@
+import { improvesCollection } from './collection.ts';
 import { endDungeonRun } from './dungeon.ts';
 import { EQUIPMENT_SLOTS, type ContentDb, type EquipmentSlot, type Rarity } from '@abismo/content';
 import { MAX_LEVEL, TELEPORT_TICKS, TICKS_PER_SECOND } from './constants.ts';
@@ -25,7 +26,7 @@ export function startHunt(s: GameState, content: ContentDb, huntId: string): Gam
   const hunt = content.hunts.get(huntId);
   if (!hunt) throw new IntentError('unknown_hunt');
   if (!s.unlockedHunts.includes(huntId)) throw new IntentError('hunt_locked');
-  endDungeonRun(s, s.tick, null);
+  endDungeonRun(s, s.tick, null, 'left');
   const sameHunt = s.hunt?.huntId === huntId;
   s.hunt = {
     huntId,
@@ -44,7 +45,7 @@ export function startHunt(s: GameState, content: ContentDb, huntId: string): Gam
 export function returnToTown(s: GameState, _content: ContentDb): GameEvent[] {
   const ended: GameEvent[] = [];
   if (s.dungeon.active) {
-    endDungeonRun(s, s.tick, ended);
+    endDungeonRun(s, s.tick, ended, 'left');
     // The hero is in the middle of a floor: teleport back to town from wherever they are.
     const arriveTick = s.tick + TELEPORT_TICKS;
     s.activity = { kind: 'to_town', untilTick: arriveTick, reason: 'manual' };
@@ -100,6 +101,15 @@ export function salvageItem(s: GameState, content: ContentDb, uid: number) {
   const { materialId, qty } = rollSalvage(s.rng, content, item.rarity);
   s.materials[materialId] = (s.materials[materialId] ?? 0n) + BigInt(qty);
   return { materialId, qty };
+}
+
+/** Gives up an item to record its base in the collection (only when it raises the entry). */
+export function registerItem(s: GameState, uid: number) {
+  const found = [...s.backpack, ...s.stash].find((i) => i.uid === uid);
+  if (!found) throw new IntentError('item_not_found');
+  if (!improvesCollection(s.hero, found)) throw new IntentError('collection_has_better');
+  const { item } = takeItem(s, uid);
+  s.hero.collection[item.baseId] = item.rarity;
 }
 
 function clampVitals(s: GameState, content: ContentDb) {

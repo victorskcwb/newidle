@@ -3,6 +3,7 @@ import {
   computeRates,
   debugSetLevel,
   decodeSave,
+  DUNGEON_FLOOR_TIME_LIMIT_TICKS,
   dungeonStartFloor,
   encodeSave,
   enterDungeon,
@@ -63,8 +64,8 @@ describe('dungeon', () => {
     expect(s.dungeon.best).toBeGreaterThanOrEqual(10);
     expect(s.materials.crystal ?? 0n).toBeGreaterThanOrEqual(10n);
     expect(s.materials.core ?? 0n).toBeGreaterThanOrEqual(1n);
-    // The assigned hunt's boss counter did not move.
-    expect(s.hunt!.killsSinceBoss).toBe(0);
+    // While in the dungeon, the assigned hunt's boss counter does not move.
+    if (s.dungeon.active) expect(s.hunt!.killsSinceBoss).toBe(0);
   });
 
   it('a defeat ends the run and the hero goes back to the hunt', () => {
@@ -75,6 +76,28 @@ describe('dungeon', () => {
     expect(s.dungeon.active).toBe(false);
     stepQuiet(s, content, 600);
     expect(huntOf(s, content)?.id).toBe(HUNT);
+  });
+
+  it('a floor not cleared in time ends the run', () => {
+    const s = veteran(60);
+    enterDungeon(s);
+    stepQuiet(s, content, 50);
+    // Pretend the floor started long ago.
+    s.dungeon.floorStartTick = s.tick - DUNGEON_FLOOR_TIME_LIMIT_TICKS;
+    stepQuiet(s, content, 1);
+    expect(s.dungeon.active).toBe(false);
+    expect(s.activity.kind).toBe('to_town');
+  });
+
+  it('a boss floor gives a rare or better item', () => {
+    const s = veteran(60, 5);
+    s.dungeon.bestEver = 9;
+    enterDungeon(s); // starts at floor 1
+    s.dungeon.floor = 10;
+    const before = new Set([...s.backpack, ...s.stash].map((i) => i.uid));
+    for (let i = 0; i < 20 && s.dungeon.best < 10; i++) stepQuiet(s, content, 600);
+    const loot = [...s.backpack, ...s.stash].filter((i) => !before.has(i.uid));
+    expect(loot.some((i) => ['rare', 'epic', 'legendary'].includes(i.rarity))).toBe(true);
   });
 
   it('leaving by hand ends the run too', () => {

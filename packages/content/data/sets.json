@@ -1,0 +1,81 @@
+{
+  "itemSets": [
+    {
+      "id": "set_cinzarra_vigil",
+      "nameKey": "set.cinzarra_vigil",
+      "regionId": "cinzarra",
+      "slots": ["weapon", "helm", "chest", "gloves", "pants", "boots"],
+      "chancePpm": 40000,
+      "bonuses": [
+        {
+          "pieces": 2,
+          "stat": "lifePct",
+          "value": 10
+        },
+        {
+          "pieces": 4,
+          "stat": "damagePct",
+          "value": 10
+        },
+        {
+          "pieces": 6,
+          "stat": "defensePct",
+          "value": 15
+        },
+        {
+          "pieces": 6,
+          "stat": "lifeLeechPct",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "set_morvel_mire",
+      "nameKey": "set.morvel_mire",
+      "regionId": "morvel_swamp",
+      "slots": ["weapon", "helm", "chest", "gloves", "pants", "boots"],
+      "chancePpm": 40000,
+      "bonuses": [
+        {
+          "pieces": 2,
+          "stat": "magicFindPct",
+          "value": 15
+        },
+        {
+          "pieces": 4,
+          "stat": "attackSpeedPct",
+          "value": 10
+        },
+        {
+          "pieces": 6,
+          "stat": "critDamagePct",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "id": "set_eternal_ember",
+      "nameKey": "set.eternal_ember",
+      "regionId": "burned_citadel",
+      "slots": ["weapon", "helm", "chest", "gloves", "pants", "boots"],
+      "chancePpm": 40000,
+      "bonuses": [
+        {
+          "pieces": 2,
+          "stat": "damagePct",
+          "value": 10
+        },
+        {
+          "pieces": 4,
+          "stat": "critChancePct",
+          "value": 5
+        },
+        {
+          "pieces": 6,
+          "stat": "damagePct",
+          "value": 25
+        }
+      ]
+    }
+  ]
+}
