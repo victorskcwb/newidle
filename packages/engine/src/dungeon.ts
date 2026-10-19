@@ -12,6 +12,10 @@ import type { GameEvent, GameState } from './types.ts';
 export const DUNGEON_FLOORS_PER_BLOCK = 10;
 export const DUNGEON_KILLS_PER_FLOOR = 10;
 export const DUNGEON_GROWTH_PCT = 8;
+/** Past the last hunt's block, each floor multiplies life and damage by this (compound). */
+export const DUNGEON_DEEP_GROWTH_PERMILLE = 1_050;
+/** Cores from a boss floor: one per block, up to this many. */
+export const DUNGEON_BOSS_CORES_MAX = 2;
 /** Bosses defeated (ever) that open the dungeon: the first region's three. */
 export const DUNGEON_UNLOCK_BOSSES = 3;
 /** Every cleared floor gives crystals; every boss floor gives cores and an item. */
@@ -66,9 +70,17 @@ export function floorBlock(content: ContentDb, floor: number): { hunt: Hunt; ste
   return { hunt, step: floor - blockStart };
 }
 
-/** Life and damage of the floor's monsters, in % of their base. */
+/**
+ * Life and damage of the floor's monsters, in % of their base: +8% a floor inside a block;
+ * past the last block, +5% a floor compounded, so the descent has a bottom for every hero.
+ */
 export function floorScalePct(content: ContentDb, floor: number): number {
-  return 100 + DUNGEON_GROWTH_PCT * floorBlock(content, floor).step;
+  const lastBlockEnd = content.hunts.size * DUNGEON_FLOORS_PER_BLOCK;
+  if (floor <= lastBlockEnd) return 100 + DUNGEON_GROWTH_PCT * floorBlock(content, floor).step;
+  let pct = 100 + DUNGEON_GROWTH_PCT * (DUNGEON_FLOORS_PER_BLOCK - 1);
+  for (let f = lastBlockEnd; f < floor; f++)
+    pct = Math.floor((pct * DUNGEON_DEEP_GROWTH_PERMILLE) / 1000);
+  return pct;
 }
 
 /**

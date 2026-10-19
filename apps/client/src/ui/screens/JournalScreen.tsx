@@ -23,6 +23,7 @@ import { RARITY_COLOR, RARITY_GLYPH } from '../rarity.ts';
 import { Sheet, tryIntent } from '../Sheet.tsx';
 import { useSim } from '../useSim.ts';
 import { MonsterSprite } from '../WorldMap.tsx';
+import { XpChart } from '../XpChart.tsx';
 
 type Tab = 'achievements' | 'bestiary' | 'collection' | 'stats';
 const TABS: Tab[] = ['achievements', 'bestiary', 'collection', 'stats'];
@@ -263,6 +264,7 @@ function Stats() {
   ];
   return (
     <>
+      <XpChart />
       <dl className="stat-table" data-testid="journal-stats">
         {rows.map(([k, v]) => (
           <div key={k}>

@@ -60,6 +60,7 @@ import {
   type RolledAffix,
 } from '@abismo/engine';
 import { RatesClient } from './ratesClient.ts';
+import { recordHistory } from './history.ts';
 
 /** Days since 1970-01-01 in the player's local time zone (goals reset at local midnight). */
 export function localDay(now = new Date()): number {
@@ -146,7 +147,11 @@ export class GameSim {
   start() {
     this.resetClock();
     this.refreshQuests();
-    this.questTimer = setInterval(() => this.refreshQuests(), 60_000);
+    recordHistory(this.state);
+    this.questTimer = setInterval(() => {
+      this.refreshQuests();
+      recordHistory(this.state);
+    }, 60_000);
     this.timer = setInterval(() => this.pump(), 50);
     document.addEventListener('visibilitychange', this.onVisibility);
   }

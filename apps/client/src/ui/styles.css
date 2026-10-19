@@ -2858,3 +2858,62 @@ input[type='range'] {
   color: #6be0a8;
   font-weight: 700;
 }
+
+/* --- XP per hour chart: one series, recessive axis --------------------------------------- */
+.xp-chart {
+  margin: 0 0 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.xp-chart figcaption {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.xp-chart-hero {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.xp-chart svg {
+  width: 100%;
+  height: auto;
+  touch-action: none;
+}
+
+.xp-chart-line {
+  fill: none;
+  stroke: var(--xp);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.xp-chart-base {
+  stroke: var(--edge);
+  stroke-width: 1;
+}
+
+.xp-chart-cross {
+  stroke: var(--edge-light);
+  stroke-width: 1;
+}
+
+.xp-chart-dot {
+  fill: var(--xp);
+  stroke: var(--panel-solid);
+  stroke-width: 2;
+}
+
+.xp-chart-axis {
+  fill: var(--muted);
+  font-size: 10px;
+}
+
+.xp-chart-tip {
+  color: var(--muted);
+  min-height: 1.3em;
+}

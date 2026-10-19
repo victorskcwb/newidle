@@ -35,6 +35,7 @@ import { tickProfessions } from './professions.ts';
 import { tickMeal } from './meals.ts';
 import { runAutomations } from './automation.ts';
 import {
+  DUNGEON_BOSS_CORES_MAX,
   DUNGEON_BOSS_CORES_PER_BLOCK,
   DUNGEON_BOSS_MAGIC_FIND_PER_FLOOR,
   DUNGEON_FLOOR_REWARD,
@@ -259,7 +260,9 @@ function clearFloor(
   let item: ItemInstance | null = null;
   if (isBossFloor(floor)) {
     const block = floor / DUNGEON_FLOORS_PER_BLOCK;
-    grantReward(s, content, { core: block * DUNGEON_BOSS_CORES_PER_BLOCK });
+    grantReward(s, content, {
+      core: Math.min(DUNGEON_BOSS_CORES_MAX, block * DUNGEON_BOSS_CORES_PER_BLOCK),
+    });
     const hunt = huntOf(s, content)!;
     const def = content.monsters.get(hunt.spawns[0]!.monsterId)!;
     const table = content.lootTables.get(def.lootTableId)!;

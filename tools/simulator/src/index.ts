@@ -6,7 +6,7 @@
  *
  *   pnpm sim [profile=active|casual] [days=20] [seed=1]
  *   PROFESSIONS=alchemy|smithing|cooking also gathers and crafts; REFINE_MAX=15 refines past +9;
- *   SIM_TAG=x writes <profile>x.csv.
+ *   DUNGEON=1 runs the Abyss every session; SIM_TAG=x writes <profile>x.csv.
  *
  * Writes tools/simulator/out/<profile>.csv (one row per session) and prints a summary
  * against the targets of section 12.2.
@@ -23,6 +23,8 @@ import {
   learnBlock,
   learnSkill,
   performReset,
+  dungeonUnlocked,
+  enterDungeon,
   professionLevel,
   setGathering,
   setMeal,
@@ -197,6 +199,9 @@ function professions(s: GameState) {
   }
 }
 
+/** DUNGEON=1: starts an Abyss run every session once it is open (the run ends by itself). */
+const DUNGEON = process.env.DUNGEON === '1';
+
 function session(s: GameState) {
   professions(s);
   autoEquip(s);
@@ -209,8 +214,10 @@ function session(s: GameState) {
     spendSkills(s);
   }
   shop(s);
+  if (s.dungeon.active) return;
   const hunt = bestHunt(s);
   if (s.hunt?.huntId !== hunt.id || s.activity.kind === 'idle_town') startHunt(s, content, hunt.id);
+  if (DUNGEON && dungeonUnlocked(s)) enterDungeon(s);
 }
 
 // --- Run --------------------------------------------------------------------------------------
@@ -294,6 +301,7 @@ console.log(`final: level ${s.hero.level}, resets ${s.hero.resets.count}, hunt $
 console.log(
   `first level 100 (first reset): ${reached100 === null ? 'not reached' : `day ${reached100.toFixed(1)}`}  [target 3–5 for active]`,
 );
+if (DUNGEON) console.log(`abyss: deepest floor ${s.dungeon.bestEver}`);
 console.log(
   `first legendary: ${firstLegendaryDay === null ? 'none' : `day ${firstLegendaryDay.toFixed(1)}`}  [target 1–3]`,
 );

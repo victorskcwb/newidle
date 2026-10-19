@@ -43,7 +43,10 @@ describe('dungeon', () => {
     expect(floorScalePct(content, 11)).toBe(100);
     // Past the last hunt the floors keep growing.
     expect(floorBlock(content, 95).hunt.id).toBe('burning_throne');
-    expect(floorScalePct(content, 95)).toBe(100 + 8 * 14);
+    expect(floorScalePct(content, 90)).toBe(172);
+    // Past the last block, +5% a floor compounded.
+    expect(floorScalePct(content, 91)).toBe(180);
+    expect(floorScalePct(content, 110)).toBe(442);
   });
 
   it('opens after the first region and starts from the last tenth floor', () => {
