@@ -68,6 +68,11 @@ export interface Hero {
   resets: ResetProgress;
   /** Card copies by card id (section 8.4). */
   cards: Record<string, number>;
+  /** Skills in the order they were learned this cycle (the build), and last cycle's. */
+  skillOrder: string[];
+  lastSkillOrder: string[];
+  /** Active skill slots at the last reset, to put them back in the same order. */
+  lastActiveSkills: (string | null)[];
   /** Item collection: best rarity registered for each item base. */
   collection: Record<string, Rarity>;
   /** Meal under way: its bonus lasts `ticksLeft` more ticks of hunting. */
@@ -87,7 +92,7 @@ export interface Settings {
   hpPotionId: string;
   manaPotionId: string;
   /** Automations switched on (they also need to be unlocked). */
-  automation: { equipBest: boolean; bestHunt: boolean };
+  automation: { equipBest: boolean; bestHunt: boolean; autoSkills: boolean; autoReset: boolean };
   /** Meal the hero eats when the last one ends (null: none). */
   mealId: string | null;
   /** Potions bought up to this amount on every town visit (0 = never buy). */
@@ -164,7 +169,7 @@ export interface DropPity {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 17;
+  version: 18;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;
@@ -261,6 +266,7 @@ export type GameEvent =
   | { type: 'ProfessionLevelUp'; tick: number; professionId: string; level: number }
   | { type: 'ItemCrafted'; tick: number; recipeId: string }
   | { type: 'AutoEquipped'; tick: number; uids: number[] }
+  | { type: 'AutoReset'; tick: number; resets: number; points: number }
   | { type: 'DungeonEntered'; tick: number; floor: number }
   | { type: 'DungeonFloorCleared'; tick: number; floor: number; item: ItemInstance | null }
   | {

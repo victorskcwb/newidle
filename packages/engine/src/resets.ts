@@ -60,6 +60,12 @@ export function performReset(s: GameState, content: ContentDb): { points: number
   hero.xp = 0;
   hero.allocated = { strength: 0, dexterity: 0, vitality: 0, energy: 0 };
   hero.unspentAttributePoints = 0;
+  // The build of the cycle becomes the plan the next one can follow.
+  if (hero.skillOrder.length > 0) {
+    hero.lastSkillOrder = hero.skillOrder;
+    hero.lastActiveSkills = [...hero.activeSkills];
+  }
+  hero.skillOrder = [];
   hero.skillLevels = {};
   hero.unspentSkillPoints = upgradeTotal(hero, content, 'startingSkillPoints');
   hero.activeSkills = new Array<string | null>(skillSlots(hero)).fill(null);

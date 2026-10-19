@@ -8,6 +8,9 @@ import {
   IntentError,
   resolveOffline,
   setAutomation,
+  followSkillPlan,
+  learnSkill,
+  performReset,
   stepQuiet,
   TICKS_PER_HOUR,
   type ItemInstance,
@@ -38,7 +41,7 @@ describe('automations', () => {
     expect(automationUnlocked(s, 'bestHunt')).toBe(false);
     s.defeatedBosses = ['a', 'b', 'c'];
     setAutomation(s, 'bestHunt', true);
-    expect(s.settings.automation).toEqual({ equipBest: true, bestHunt: true });
+    expect(s.settings.automation).toMatchObject({ equipBest: true, bestHunt: true });
   });
 
   it('auto-equip puts on a better item at the next town visit', () => {
@@ -89,5 +92,41 @@ describe('automations', () => {
     raw.state.version = 14;
     delete raw.state.settings.automation;
     expect(decodeSave(JSON.stringify(raw), content).state).toEqual(s);
+  });
+});
+
+describe('auto-reset and the remembered build', () => {
+  it('the next cycle follows the last build and its slot order', () => {
+    const s = newGame();
+    s.hero.unspentSkillPoints = 5;
+    learnSkill(s, content, 'heavy_strike');
+    learnSkill(s, content, 'sword_mastery');
+    learnSkill(s, content, 'heavy_strike');
+    expect(s.hero.skillOrder).toEqual(['heavy_strike', 'sword_mastery', 'heavy_strike']);
+    s.hero.level = 100;
+    s.gold = 10_000_000n;
+    performReset(s, content);
+    expect(s.hero.lastSkillOrder).toEqual(['heavy_strike', 'sword_mastery', 'heavy_strike']);
+    expect(s.hero.skillLevels).toEqual({});
+    s.hero.unspentSkillPoints = 2;
+    expect(followSkillPlan(s, content)).toBe(2);
+    expect(s.hero.skillLevels).toEqual({ heavy_strike: 1, sword_mastery: 1 });
+    expect(s.hero.activeSkills[0]).toBe('heavy_strike');
+  });
+
+  it('auto-reset resets at level 100 and goes back to a hunt the new level allows', () => {
+    const s = hunting(8);
+    s.hero.resets.count = 3;
+    s.unlockedHunts = [...content.hunts.keys()];
+    setAutomation(s, 'autoReset', true);
+    setAutomation(s, 'autoSkills', true);
+    s.hero.lastSkillOrder = ['heavy_strike'];
+    s.hero.level = 100;
+    s.gold = 100_000_000n;
+    s.hunt!.huntId = 'burning_throne';
+    resolveOffline(s, content, computeRates(s, content, 'burning_throne'), 10);
+    expect(s.hero.resets.count).toBe(4);
+    expect(s.hero.level).toBe(1);
+    expect(s.hunt?.huntId).toBe(HUNT);
   });
 });

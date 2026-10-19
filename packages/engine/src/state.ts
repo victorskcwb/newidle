@@ -33,7 +33,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
     refine: 0,
   };
   const s: GameState = {
-    version: 17,
+    version: 18,
     tick: 0,
     rng: createRng(hero.seed),
     nextUid: 2,
@@ -58,6 +58,9 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
       cards: {},
       meal: null,
       collection: {},
+      skillOrder: [],
+      lastSkillOrder: [],
+      lastActiveSkills: [],
     },
     backpack: [],
     stash: [],
@@ -79,7 +82,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
       targetPriority: 'first',
       autoSellUpTo: null,
       mealId: null,
-      automation: { equipBest: false, bestHunt: false },
+      automation: { equipBest: false, bestHunt: false, autoSkills: false, autoReset: false },
     },
     hunt: null,
     activity: { kind: 'idle_town' },

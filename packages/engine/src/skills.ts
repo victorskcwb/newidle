@@ -37,11 +37,41 @@ export function learnSkill(s: GameState, content: ContentDb, skillId: string) {
   const before = hero.skillLevels[skillId] ?? 0;
   hero.skillLevels[skillId] = before + 1;
   hero.unspentSkillPoints--;
+  hero.skillOrder.push(skillId);
   if (skill.kind === 'active' && before === 0 && !hero.activeSkills.includes(skillId)) {
     normalizeSlots(hero);
     const free = hero.activeSkills.indexOf(null);
     if (free >= 0) hero.activeSkills[free] = skillId;
   }
+}
+
+/**
+ * Spends skill points following last cycle's build, in the order it was learned, then puts
+ * the active skills back in last cycle's slots. Returns how many points were spent.
+ */
+export function followSkillPlan(s: GameState, content: ContentDb): number {
+  const hero = s.hero;
+  const seen: Record<string, number> = {};
+  let spent = 0;
+  for (const id of hero.lastSkillOrder) {
+    if (hero.unspentSkillPoints <= 0) break;
+    seen[id] = (seen[id] ?? 0) + 1;
+    if ((hero.skillLevels[id] ?? 0) >= seen[id]!) continue;
+    const skill = content.skills.get(id);
+    if (!skill || learnBlock(hero, skill)) break; // keep the order: never skip ahead
+    learnSkill(s, content, id);
+    spent++;
+  }
+  if (spent > 0 && hero.lastActiveSkills.length > 0) {
+    normalizeSlots(hero);
+    const wanted = hero.lastActiveSkills.filter(
+      (id): id is string => !!id && (hero.skillLevels[id] ?? 0) > 0,
+    );
+    const others = hero.activeSkills.filter((id): id is string => !!id && !wanted.includes(id));
+    const order = [...wanted, ...others].slice(0, hero.activeSkills.length);
+    hero.activeSkills = hero.activeSkills.map((_, i) => order[i] ?? null);
+  }
+  return spent;
 }
 
 /** Makes the slot list exactly as long as the hero's slot count. */
@@ -94,6 +124,7 @@ export function respecSkills(s: GameState) {
   let points = 0;
   for (const level of Object.values(hero.skillLevels)) points += level;
   hero.skillLevels = {};
+  hero.skillOrder = [];
   hero.unspentSkillPoints += points;
   hero.activeSkills = hero.activeSkills.map(() => null);
   normalizeSlots(hero);

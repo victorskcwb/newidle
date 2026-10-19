@@ -461,6 +461,7 @@ export class GameSim {
         if (
           e.type === 'LevelUp' ||
           e.type === 'AutoEquipped' ||
+          e.type === 'AutoReset' ||
           e.type === 'HuntStarted' ||
           e.type === 'DungeonFloorCleared' ||
           e.type === 'DungeonEnded'

@@ -485,6 +485,9 @@ export class Director {
           { tone: 'bad' },
         );
         break;
+      case 'AutoReset':
+        this.log(t('log.autoReset', { n: e.resets, points: e.points }), { tone: 'good' });
+        break;
       case 'AutoEquipped':
         this.log(t('log.autoEquipped', { n: e.uids.length }), { tone: 'info' });
         break;

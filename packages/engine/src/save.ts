@@ -9,7 +9,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 17;
+export const SAVE_VERSION = 18;
 
 export interface SaveFile {
   version: number;
@@ -82,7 +82,7 @@ const quest = z.strictObject({
 });
 
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(17),
+  version: z.literal(18),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -111,6 +111,9 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
     }),
     cards: z.record(z.string(), nonNeg),
     collection: z.record(z.string(), rarity),
+    skillOrder: z.array(id),
+    lastSkillOrder: z.array(id),
+    lastActiveSkills: z.array(id.nullable()),
     meal: z.strictObject({ mealId: id, ticksLeft: nonNeg }).nullable(),
   }),
   backpack: z.array(item),
@@ -133,7 +136,12 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
     targetPriority: z.enum(['first', 'weakest', 'strongest']),
     autoSellUpTo: rarity.nullable(),
     mealId: id.nullable(),
-    automation: z.strictObject({ equipBest: z.boolean(), bestHunt: z.boolean() }),
+    automation: z.strictObject({
+      equipBest: z.boolean(),
+      bestHunt: z.boolean(),
+      autoSkills: z.boolean(),
+      autoReset: z.boolean(),
+    }),
   }),
   hunt: z
     .strictObject({ huntId: id, killsSinceBoss: nonNeg, consecutiveDeaths: nonNeg })
@@ -308,6 +316,25 @@ export const SAVE_MIGRATIONS: Record<
       resources: {},
     },
   }),
+  /** v17 → v18: the skill build is remembered; two more automations (off). */
+  17: (raw) => {
+    const state = raw.state as {
+      hero: object;
+      settings: { automation: object };
+    };
+    return {
+      ...raw,
+      state: {
+        ...state,
+        version: 18,
+        hero: { ...state.hero, skillOrder: [], lastSkillOrder: [], lastActiveSkills: [] },
+        settings: {
+          ...state.settings,
+          automation: { ...state.settings.automation, autoSkills: false, autoReset: false },
+        },
+      },
+    };
+  },
   /** v16 → v17: item collection (empty). */
   16: (raw) => {
     const state = raw.state as { hero: object };
