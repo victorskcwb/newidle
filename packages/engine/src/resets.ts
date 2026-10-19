@@ -1,3 +1,4 @@
+import { DUNGEON_FLOORS_PER_RESET_POINT, endDungeonRun } from './dungeon.ts';
 import type { ContentDb } from '@abismo/content';
 import {
   MAX_LEVEL,
@@ -20,14 +21,15 @@ export function resetCost(hero: Hero): bigint {
 
 /**
  * Reset points the current cycle is worth: 10 + 2 × resets already done + bosses defeated
- * for the first time × 2. The growing term makes every cycle faster than the last
- * (section 12.2). The infinite dungeon adds floor(max floor ÷ 5) in milestone 3.
+ * for the first time × 2, plus floor(deepest dungeon floor of the cycle ÷ 5). The growing
+ * term makes every cycle faster than the last (section 12.2).
  */
-export function resetPointsEarned(hero: Hero): number {
+export function resetPointsEarned(hero: Hero, dungeonBest = 0): number {
   return (
     RESET_BASE_POINTS +
     hero.resets.count * RESET_POINTS_PER_PAST_RESET +
-    hero.resets.newBossesThisCycle * RESET_POINTS_PER_NEW_BOSS
+    hero.resets.newBossesThisCycle * RESET_POINTS_PER_NEW_BOSS +
+    Math.floor(dungeonBest / DUNGEON_FLOORS_PER_RESET_POINT)
   );
 }
 
@@ -47,7 +49,9 @@ export function performReset(s: GameState, content: ContentDb): { points: number
   const block = resetBlock(s);
   if (block) throw new IntentError(`reset_${block}`);
   const hero = s.hero;
-  const points = resetPointsEarned(hero);
+  const points = resetPointsEarned(hero, s.dungeon.best);
+  endDungeonRun(s, s.tick, null);
+  s.dungeon.best = 0;
   s.gold -= resetCost(hero);
   hero.resets.count++;
   hero.resets.points += points;

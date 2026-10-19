@@ -32,6 +32,19 @@ import { bestiaryDamagePct } from './bestiary.ts';
 import { tickProfessions } from './professions.ts';
 import { tickMeal } from './meals.ts';
 import { runAutomations } from './automation.ts';
+import {
+  DUNGEON_BOSS_CORES_PER_BLOCK,
+  DUNGEON_BOSS_MAGIC_FIND_PER_FLOOR,
+  DUNGEON_FLOOR_REWARD,
+  DUNGEON_FLOORS_PER_BLOCK,
+  DUNGEON_KILLS_PER_FLOOR,
+  endDungeonRun,
+  floorBlock,
+  floorHunt,
+  floorScalePct,
+  isBossFloor,
+} from './dungeon.ts';
+import { grantReward } from './login.ts';
 import { sellPrice } from './town.ts';
 import { rollCard } from './cards.ts';
 import { questLoot, questProgress } from './quests.ts';
@@ -99,7 +112,17 @@ export function categoryKey(monsterId: string, elite: boolean): string {
   return `${monsterId}|${elite ? 1 : 0}`;
 }
 
+const floorHunts = new WeakMap<ContentDb, Map<number, Hunt>>();
+
+/** The hunt the hero is in: the assigned one, or the dungeon floor during a run. */
 export function huntOf(state: GameState, content: ContentDb): Hunt | null {
+  if (state.dungeon.active) {
+    let cache = floorHunts.get(content);
+    if (!cache) floorHunts.set(content, (cache = new Map()));
+    let hunt = cache.get(state.dungeon.floor);
+    if (!hunt) cache.set(state.dungeon.floor, (hunt = floorHunt(content, state.dungeon.floor)));
+    return hunt;
+  }
   return state.hunt ? (content.hunts.get(state.hunt.huntId) ?? null) : null;
 }
 
@@ -112,11 +135,13 @@ function monsterInstance(
   m: Monster,
   elite: boolean,
   affixes: readonly MonsterAffix[] = [],
+  /** Dungeon floors scale life and damage (in %). */
+  scalePct = 100,
 ): MonsterInstance {
   const sum = (k: 'lifePct' | 'damagePct' | 'attackSpeedPct') =>
     affixes.reduce((n, a) => n + (a[k] ?? 0), 0);
-  const lifePct = ((elite ? ELITE_LIFE_PCT : 100) * (100 + sum('lifePct'))) / 100;
-  const dmgPct = ((elite ? ELITE_DAMAGE_PCT : 100) * (100 + sum('damagePct'))) / 100;
+  const lifePct = ((elite ? ELITE_LIFE_PCT : 100) * (100 + sum('lifePct')) * scalePct) / 10_000;
+  const dmgPct = ((elite ? ELITE_DAMAGE_PCT : 100) * (100 + sum('damagePct')) * scalePct) / 10_000;
   const aps = (m.attacksPerSecond * (100 + sum('attackSpeedPct'))) / 100;
   const hp = Math.floor((m.hp * lifePct) / 100);
   return {
@@ -169,7 +194,16 @@ function startWalking(
   const hunt = huntOf(s, content)!;
   const group: MonsterInstance[] = [];
   const progress = s.hunt!;
-  if (hunt.boss && progress.killsSinceBoss >= hunt.boss.everyKills) {
+  const d = s.dungeon;
+  const scale = d.active ? floorScalePct(content, d.floor) : 100;
+  const floorBoss =
+    d.active && isBossFloor(d.floor) ? floorBlock(content, d.floor).hunt.boss : null;
+  if (floorBoss) {
+    // The tenth floor of a block is its hunt's boss, alone.
+    group.push(
+      monsterInstance(s.nextUid++, content.monsters.get(floorBoss.monsterId)!, false, [], scale),
+    );
+  } else if (!d.active && hunt.boss && progress.killsSinceBoss >= hunt.boss.everyKills) {
     group.push(monsterInstance(s.nextUid++, content.monsters.get(hunt.boss.monsterId)!, false));
     if (o.counters) o.counters.bossEncounters++;
   } else {
@@ -180,7 +214,13 @@ function startWalking(
       const m = content.monsters.get(pick.monsterId)!;
       const isElite = elite && i === 0;
       group.push(
-        monsterInstance(s.nextUid++, m, isElite, isElite ? rollEliteAffixes(s, content) : []),
+        monsterInstance(
+          s.nextUid++,
+          m,
+          isElite,
+          isElite ? rollEliteAffixes(s, content) : [],
+          scale,
+        ),
       );
     }
   }
@@ -199,6 +239,38 @@ function startWalking(
       affixes: m.affixes,
     })),
   });
+}
+
+/** Floor cleared: rewards, records, next floor. */
+function clearFloor(
+  s: GameState,
+  content: ContentDb,
+  stats: HeroStats,
+  t: number,
+  out: GameEvent[] | null,
+) {
+  const d = s.dungeon;
+  const floor = d.floor;
+  grantReward(s, content, DUNGEON_FLOOR_REWARD);
+  let item: ItemInstance | null = null;
+  if (isBossFloor(floor)) {
+    const block = floor / DUNGEON_FLOORS_PER_BLOCK;
+    grantReward(s, content, { core: block * DUNGEON_BOSS_CORES_PER_BLOCK });
+    const hunt = huntOf(s, content)!;
+    const def = content.monsters.get(hunt.spawns[0]!.monsterId)!;
+    const table = content.lootTables.get(def.lootTableId)!;
+    item = generateItem(s.rng, content, table, hunt.ilvl, s.nextUid++, {
+      magicFindPct: stats.magicFindPct + floor * DUNGEON_BOSS_MAGIC_FIND_PER_FLOOR,
+    });
+    s.lifetime.itemsByRarity[item.rarity]++;
+    if (s.backpack.length < backpackSize(s.hero, content)) s.backpack.push(item);
+    else s.stash.push(item);
+  }
+  d.best = Math.max(d.best, floor);
+  d.bestEver = Math.max(d.bestEver, floor);
+  d.floor = floor + 1;
+  d.killsOnFloor = 0;
+  out?.push({ type: 'DungeonFloorCleared', tick: t, floor, item });
 }
 
 function goToTown(
@@ -324,6 +396,8 @@ function die(s: GameState, t: number, out: GameEvent[] | null, o: StepOptions) {
   s.hero.hp = 0;
   s.lifetime.deaths++;
   s.hunt!.consecutiveDeaths++;
+  // A defeat ends a dungeon run; the hero revives in town and goes back to the hunt.
+  endDungeonRun(s, t, out);
   if (o.counters) o.counters.deaths++;
   s.activity = { kind: 'dead', untilTick: t + RESPAWN_TICKS };
   out?.push({ type: 'HeroDied', tick: t, xpLost });
@@ -567,6 +641,15 @@ function killMonster(
   }
 
   const progress = s.hunt!;
+  if (s.dungeon.active) {
+    // Dungeon kills count for the floor, not for the assigned hunt's boss.
+    s.dungeon.killsOnFloor++;
+    if (m.boss) {
+      s.lifetime.bossKills++;
+      out?.push({ type: 'BossDefeated', tick: t, monsterId: m.monsterId, firstTime: false });
+    }
+    return;
+  }
   if (m.boss) {
     progress.killsSinceBoss = 0;
     s.lifetime.bossKills++;
@@ -734,6 +817,14 @@ function fight(
 
   if (group.every((m) => m.hp <= 0)) {
     s.hunt!.consecutiveDeaths = 0;
+    if (s.dungeon.active) {
+      // No trips to town in the dungeon: a full backpack salvages on pickup.
+      if (group.some((m) => m.boss) || s.dungeon.killsOnFloor >= DUNGEON_KILLS_PER_FLOOR) {
+        clearFloor(s, content, stats, t, out);
+      }
+      startWalking(s, content, t, out, o);
+      return;
+    }
     if (o.counters) o.counters.groups[groupKind(group)]++;
     const noPotions = (s.consumables[s.settings.hpPotionId] ?? 0) === 0;
     if (s.backpack.length >= backpackSize(hero, content))

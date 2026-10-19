@@ -1,3 +1,4 @@
+import { endDungeonRun } from './dungeon.ts';
 import { EQUIPMENT_SLOTS, type ContentDb, type EquipmentSlot, type Rarity } from '@abismo/content';
 import { MAX_LEVEL, TELEPORT_TICKS, TICKS_PER_SECOND } from './constants.ts';
 import { rarityRank, rollSalvage } from './items.ts';
@@ -24,6 +25,7 @@ export function startHunt(s: GameState, content: ContentDb, huntId: string): Gam
   const hunt = content.hunts.get(huntId);
   if (!hunt) throw new IntentError('unknown_hunt');
   if (!s.unlockedHunts.includes(huntId)) throw new IntentError('hunt_locked');
+  endDungeonRun(s, s.tick, null);
   const sameHunt = s.hunt?.huntId === huntId;
   s.hunt = {
     huntId,
@@ -40,6 +42,14 @@ export function startHunt(s: GameState, content: ContentDb, huntId: string): Gam
 
 /** Teleports back to town and stays there. */
 export function returnToTown(s: GameState, _content: ContentDb): GameEvent[] {
+  const ended: GameEvent[] = [];
+  if (s.dungeon.active) {
+    endDungeonRun(s, s.tick, ended);
+    // The hero is in the middle of a floor: teleport back to town from wherever they are.
+    const arriveTick = s.tick + TELEPORT_TICKS;
+    s.activity = { kind: 'to_town', untilTick: arriveTick, reason: 'manual' };
+    return [...ended, { type: 'TownTripStarted', tick: s.tick, reason: 'manual', arriveTick }];
+  }
   const a = s.activity;
   if (a.kind === 'idle_town' || a.kind === 'dead') return [];
   if (a.kind === 'to_town') {

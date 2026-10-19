@@ -73,6 +73,7 @@ export function newCounters(): SimCounters {
 /** Puts a copy of the hero at the start of a hunt (no travel), ready to sample it. */
 export function prepareSample(state: GameState, content: ContentDb, huntId: string): GameState {
   const s = cloneState(state);
+  s.dungeon.active = false;
   // Fed when there is a meal to eat, so the sheet measures the setup the hero will hunt with.
   eatIfHungry(s, content);
   const stats = heroStats(s.hero, content);

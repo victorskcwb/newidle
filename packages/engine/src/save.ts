@@ -9,7 +9,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 15;
+export const SAVE_VERSION = 16;
 
 export interface SaveFile {
   version: number;
@@ -81,7 +81,7 @@ const quest = z.strictObject({
 });
 
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(15),
+  version: z.literal(16),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -190,6 +190,13 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
     craftTicks: nonNeg,
   }),
   resources: z.record(z.string(), nonNeg),
+  dungeon: z.strictObject({
+    active: z.boolean(),
+    floor: int.min(1),
+    killsOnFloor: nonNeg,
+    best: nonNeg,
+    bestEver: nonNeg,
+  }),
   quests: z.strictObject({
     day: int,
     daily: z.array(quest),
@@ -296,6 +303,15 @@ export const SAVE_MIGRATIONS: Record<
       version: 12,
       professions: { skills: {}, gathering: null, gatherTicks: 0, recipe: null, craftTicks: 0 },
       resources: {},
+    },
+  }),
+  /** v15 → v16: the endless dungeon (never entered). */
+  15: (raw) => ({
+    ...raw,
+    state: {
+      ...(raw.state as object),
+      version: 16,
+      dungeon: { active: false, floor: 1, killsOnFloor: 0, best: 0, bestEver: 0 },
     },
   }),
   /** v14 → v15: automations (off). */

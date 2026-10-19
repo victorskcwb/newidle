@@ -413,6 +413,7 @@ export const ACHIEVEMENT_KINDS = [
   'gold_earned',
   'profession',
   'profession_total',
+  'dungeon_floor',
 ] as const;
 export type AchievementKind = (typeof ACHIEVEMENT_KINDS)[number];
 export const achievementSchema = z.strictObject({

@@ -3,6 +3,7 @@ export * from './automation.ts';
 export * from './bestiary.ts';
 export * from './cards.ts';
 export * from './combat.ts';
+export * from './dungeon.ts';
 export * from './constants.ts';
 export * from './hash.ts';
 export * from './hunt.ts';

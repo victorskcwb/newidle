@@ -1,3 +1,4 @@
+import { newDungeon } from './dungeon.ts';
 import { newProfessions } from './professions.ts';
 import type { ContentDb } from '@abismo/content';
 import {
@@ -32,7 +33,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
     refine: 0,
   };
   const s: GameState = {
-    version: 15,
+    version: 16,
     tick: 0,
     rng: createRng(hero.seed),
     nextUid: 2,
@@ -104,6 +105,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
     achievements: { unlocked: {}, title: null },
     professions: newProfessions(),
     resources: {},
+    dungeon: newDungeon(),
     quests: { day: -1, daily: [], week: -1, weekly: null },
   };
   const stats = heroStats(s.hero, content);

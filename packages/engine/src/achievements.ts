@@ -56,6 +56,8 @@ export function achievementProgress(s: GameState, content: ContentDb, a: Achieve
       return Number(s.lifetime.goldEarned);
     case 'profession':
       return Math.max(1, ...[...content.professions.keys()].map((id) => professionLevel(s, id)));
+    case 'dungeon_floor':
+      return s.dungeon.bestEver;
     case 'profession_total':
       return [...content.professions.keys()].reduce((n, id) => n + professionLevel(s, id), 0);
   }

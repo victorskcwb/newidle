@@ -318,6 +318,28 @@
       "target": 594,
       "points": 100,
       "titleKey": "title.prof_total_594"
+    },
+    {
+      "id": "abyss_10",
+      "nameKey": "achievement.abyss_10",
+      "kind": "dungeon_floor",
+      "target": 10,
+      "points": 10
+    },
+    {
+      "id": "abyss_50",
+      "nameKey": "achievement.abyss_50",
+      "kind": "dungeon_floor",
+      "target": 50,
+      "points": 30
+    },
+    {
+      "id": "abyss_100",
+      "nameKey": "achievement.abyss_100",
+      "kind": "dungeon_floor",
+      "target": 100,
+      "points": 60,
+      "titleKey": "title.abyss_100"
     }
   ]
 }

@@ -2,6 +2,7 @@ import type { EquipmentSlot, Rarity } from '@abismo/content';
 import type { Quests } from './quests.ts';
 import type { RngState } from './rng.ts';
 import type { Professions } from './professions.ts';
+import type { Dungeon } from './dungeon.ts';
 
 export type Attribute = 'strength' | 'dexterity' | 'vitality' | 'energy';
 export const ATTRIBUTES: readonly Attribute[] = ['strength', 'dexterity', 'vitality', 'energy'];
@@ -159,7 +160,7 @@ export interface DropPity {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 15;
+  version: 16;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;
@@ -196,6 +197,8 @@ export interface GameState {
   professions: Professions;
   /** Gathered resources (ores, herbs). */
   resources: Record<string, number>;
+  /** The endless dungeon: the run under way and the deepest floors. */
+  dungeon: Dungeon;
   /** Daily and weekly goals. */
   quests: Quests;
 }
@@ -254,6 +257,9 @@ export type GameEvent =
   | { type: 'ProfessionLevelUp'; tick: number; professionId: string; level: number }
   | { type: 'ItemCrafted'; tick: number; recipeId: string }
   | { type: 'AutoEquipped'; tick: number; uids: number[] }
+  | { type: 'DungeonEntered'; tick: number; floor: number }
+  | { type: 'DungeonFloorCleared'; tick: number; floor: number; item: ItemInstance | null }
+  | { type: 'DungeonEnded'; tick: number; floor: number; best: number }
   | { type: 'HuntStopped'; tick: number; reason: 'manual' | 'too_many_deaths' | 'no_potions' };
 
 export type GameEventType = GameEvent['type'];

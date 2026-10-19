@@ -16,6 +16,7 @@ import { questLoot, questProgress } from './quests.ts';
 import { categoryLoot, computeRates, potionHoursLeft, type RateSheet } from './rates.ts';
 import { consumeMeals, fedTicks } from './meals.ts';
 import { runAutomations } from './automation.ts';
+import { stepQuiet } from './hunt.ts';
 import { rngBinomial, rngChance, rngInt, type RngState } from './rng.ts';
 import { heroStats } from './stats.ts';
 import { offlineCapTicks } from './upgrades.ts';
@@ -61,6 +62,8 @@ export interface OfflineReport {
   /** Profession levels gained while away: id → [before, after]. */
   professionLevels: Record<string, [number, number]>;
   mealsEaten: number;
+  /** A dungeon run under way when the player left: first floor and deepest floor cleared. */
+  dungeon: { from: number; to: number } | null;
 }
 
 /** floor(x) plus one with probability frac(x): unbiased rounding of an expected count. */
@@ -174,6 +177,21 @@ export function resolveOffline(
   capTicks = offlineCapTicks(s.hero, content),
 ): OfflineReport {
   const resolved = Math.max(0, Math.min(elapsedTicks, capTicks));
+  if (s.dungeon.active && resolved > 0) {
+    // A dungeon run cannot be summed up by a rate sheet (every floor is harder): it is played
+    // out tick by tick until the defeat, then the rest of the time goes to the hunt.
+    const run = resolveDungeonRun(s, content, resolved);
+    if (run.resolvedTicks >= elapsedTicks) return run;
+    const rest = s.hunt ? computeRates(s, content, s.hunt.huntId) : null;
+    const after = resolveOffline(
+      s,
+      content,
+      rest,
+      elapsedTicks - run.resolvedTicks,
+      capTicks - run.resolvedTicks,
+    );
+    return mergeReports(run, after);
+  }
   const fed = fedTicks(s, content);
   const hunting = s.hunt !== null && s.activity.kind !== 'idle_town' && rates !== null;
   if (!hunting || fed === 0 || fed >= resolved) {
@@ -190,6 +208,91 @@ export function resolveOffline(
   const second = resolveStretch(s, content, unfed, elapsedTicks - fed, capTicks - fed);
   runAutomations(s, content, null);
   return mergeReports(first, second);
+}
+
+/** A report with nothing in it yet, for `elapsedTicks` of time away. */
+function emptyReport(s: GameState, elapsedTicks: number): OfflineReport {
+  return {
+    elapsedTicks,
+    resolvedTicks: elapsedTicks,
+    huntingTicks: 0,
+    stoppedBy: null,
+    huntId: s.hunt?.huntId ?? null,
+    levelBefore: s.hero.level,
+    levelAfter: s.hero.level,
+    xp: 0,
+    xpLost: 0,
+    gold: 0n,
+    goldSpent: 0n,
+    kills: 0,
+    deaths: 0,
+    bossKills: 0,
+    potionsUsed: {},
+    potionsBought: {},
+    dropsByRarity: emptyRarities(),
+    items: [],
+    materials: {},
+    consumables: {},
+    newBosses: [],
+    cards: {},
+    unlockedHunts: [],
+    gathered: {},
+    crafted: {},
+    professionLevels: {},
+    mealsEaten: 0,
+    dungeon: null,
+  };
+}
+
+/** Ticks played at a time while replaying a dungeon run offline. */
+const DUNGEON_REPLAY_CHUNK = 600;
+
+/** Plays the dungeon run out (up to `maxTicks`) and reports what changed. */
+function resolveDungeonRun(s: GameState, content: ContentDb, maxTicks: number): OfflineReport {
+  const from = s.dungeon.floor;
+  const before = {
+    level: s.hero.level,
+    lifetime: structuredClone(s.lifetime),
+    materials: { ...s.materials },
+    uids: new Set([...s.backpack, ...s.stash].map((i) => i.uid)),
+    professions: Object.fromEntries(
+      [...content.professions.keys()].map((id) => [id, professionLevel(s, id)]),
+    ),
+  };
+  let ticks = 0;
+  while (s.dungeon.active && ticks < maxTicks) {
+    const n = Math.min(DUNGEON_REPLAY_CHUNK, maxTicks - ticks);
+    stepQuiet(s, content, n);
+    ticks += n;
+  }
+  const l = s.lifetime;
+  const report: OfflineReport = {
+    ...emptyReport(s, ticks),
+    huntingTicks: ticks,
+    levelBefore: before.level,
+    levelAfter: s.hero.level,
+    xp: Number(l.xpEarned - before.lifetime.xpEarned),
+    gold: l.goldEarned - before.lifetime.goldEarned,
+    kills: Number(l.kills - before.lifetime.kills),
+    deaths: l.deaths - before.lifetime.deaths,
+    bossKills: l.bossKills - before.lifetime.bossKills,
+    items: [...s.backpack, ...s.stash]
+      .filter((i) => !before.uids.has(i.uid))
+      .sort((x, y) => rarityRank(y.rarity) - rarityRank(x.rarity) || x.uid - y.uid),
+    dungeon: { from, to: s.dungeon.best },
+  };
+  for (const r of RARITY_ORDER) {
+    report.dropsByRarity[r] = l.itemsByRarity[r] - before.lifetime.itemsByRarity[r];
+  }
+  for (const [id, qty] of Object.entries(s.materials)) {
+    const n = Number(qty - (before.materials[id] ?? 0n));
+    if (n > 0) report.materials[id] = n;
+  }
+  for (const [id, lv] of Object.entries(before.professions)) {
+    const after = professionLevel(s, id);
+    if (after > lv) report.professionLevels[id] = [lv, after];
+  }
+  return report;
 }
 
 function addRecord(a: Record<string, number>, b: Record<string, number>) {
@@ -227,6 +330,7 @@ export function mergeReports(a: OfflineReport, b: OfflineReport): OfflineReport 
     crafted: { ...a.crafted },
     professionLevels: { ...a.professionLevels },
     mealsEaten: a.mealsEaten + b.mealsEaten,
+    dungeon: a.dungeon ?? b.dungeon,
   };
   addRecord(out.potionsUsed, b.potionsUsed);
   addRecord(out.potionsBought, b.potionsBought);
@@ -252,35 +356,7 @@ function resolveStretch(
 ): OfflineReport {
   const rng = s.rng;
   const resolvedTicks = Math.max(0, Math.min(elapsedTicks, capTicks));
-  const report: OfflineReport = {
-    elapsedTicks,
-    resolvedTicks,
-    huntingTicks: 0,
-    stoppedBy: null,
-    huntId: s.hunt?.huntId ?? null,
-    levelBefore: s.hero.level,
-    levelAfter: s.hero.level,
-    xp: 0,
-    xpLost: 0,
-    gold: 0n,
-    goldSpent: 0n,
-    kills: 0,
-    deaths: 0,
-    bossKills: 0,
-    potionsUsed: {},
-    potionsBought: {},
-    dropsByRarity: emptyRarities(),
-    items: [],
-    materials: {},
-    consumables: {},
-    newBosses: [],
-    cards: {},
-    unlockedHunts: [],
-    gathered: {},
-    crafted: {},
-    professionLevels: {},
-    mealsEaten: 0,
-  };
+  const report: OfflineReport = { ...emptyReport(s, elapsedTicks), resolvedTicks };
   const hunting = s.hunt !== null && s.activity.kind !== 'idle_town' && rates !== null;
   if (!hunting || rates.huntId !== s.hunt!.huntId) {
     // Production keeps going in town.
