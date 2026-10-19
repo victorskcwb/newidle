@@ -5,7 +5,7 @@ import { createHero } from './helpers.ts';
 test('a dungeon run', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await createHero(page, 'Abissal', 1);
+  await createHero(page, 'Abissal');
 
   // A strong hero who has beaten Cinzarra's bosses (debug level, then an edited save).
   await page.getByTestId('nav-settings').click();
