@@ -31,6 +31,11 @@ export function OfflineModal() {
           <p>{t('offline.nothing')}</p>
         ) : (
           <>
+            {r.dungeon && (
+              <p className="tone-info" data-testid="offline-dungeon">
+                {t('offline.dungeon', { from: r.dungeon.from, to: r.dungeon.to })}
+              </p>
+            )}
             <ul className="offline-stats">
               {r.levelAfter > r.levelBefore && (
                 <li className="tone-good pixel">

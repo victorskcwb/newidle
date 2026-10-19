@@ -4,6 +4,7 @@ import {
   resetBlock,
   resetCost,
   resetPointsEarned,
+  DUNGEON_FLOORS_PER_RESET_POINT,
   shopUnlocked,
   upgradeCost,
 } from '@abismo/engine';
@@ -19,7 +20,7 @@ export function AltarScreen() {
   const [confirm, setConfirm] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const block = resetBlock(sim.state);
-  const points = resetPointsEarned(hero);
+  const points = resetPointsEarned(hero, sim.state.dungeon.best);
 
   return (
     <Sheet title={t('screen.altar')} testId="altar">
@@ -57,6 +58,14 @@ export function AltarScreen() {
             bosses: hero.resets.newBossesThisCycle,
           })}
         </li>
+        {sim.state.dungeon.best > 0 && (
+          <li className="tone-info small">
+            {t('altar.dungeon', {
+              floor: sim.state.dungeon.best,
+              n: Math.floor(sim.state.dungeon.best / DUNGEON_FLOORS_PER_RESET_POINT),
+            })}
+          </li>
+        )}
       </ul>
       {confirm ? (
         <div className="row">

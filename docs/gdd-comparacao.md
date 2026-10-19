@@ -54,7 +54,7 @@ O critério é o do GDD: retenção antes de monetização, e primeiro o que nã
 8. **Sets de 2/4/6 peças** (3.3).
 9. ✅ **Mais automações** (4): equipar os melhores e ir para a melhor caçada (decisão 153); falta o reset automático, que precisa reaprender a build.
 10. ✅ **Inglês** (9): decisão 154.
-11. **Masmorra infinita** (3.6). Já planejada no marco 3, com ranking pessoal.
+11. ✅ **Masmorra infinita** (3.6): o Abismo, decisão 155. Ranking global depende do servidor.
 
 ### C. Sistemas grandes fora da especificação (decidir se entram)
 

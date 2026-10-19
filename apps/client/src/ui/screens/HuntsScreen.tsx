@@ -1,3 +1,4 @@
+import { DungeonPanel } from '../DungeonPanel.tsx';
 import type { Hunt, Monster } from '@abismo/content';
 import type { RateSheet } from '@abismo/engine';
 import { useEffect, useMemo, useState } from 'react';
@@ -24,7 +25,7 @@ function stars(monster: Monster, heroLevel: number) {
   return '★'.repeat(n) + '☆'.repeat(5 - n);
 }
 
-type Tab = 'hunts' | 'bosses' | 'map';
+type Tab = 'hunts' | 'bosses' | 'abyss' | 'map';
 type Sort = 'level' | 'levelDesc' | 'name';
 
 /**
@@ -36,7 +37,7 @@ export function HuntsScreen() {
   const sim = useSim();
   const openScreen = useUi((s) => s.openScreen);
   const [rates, setRates] = useState<Record<string, RateSheet>>({});
-  const [tab, setTab] = useState<Tab>('hunts');
+  const [tab, setTab] = useState<Tab>(sim.state.dungeon.active ? 'abyss' : 'hunts');
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<Sort>('level');
   const [myLevel, setMyLevel] = useState(false);
@@ -108,6 +109,7 @@ export function HuntsScreen() {
   const tabs: [Tab, string, string][] = [
     ['hunts', 'hunts', t('adventures.hunts')],
     ['bosses', 'skull', t('adventures.bosses')],
+    ['abyss', 'resets', t('adventures.abyss')],
     ['map', 'hunts', t('adventures.map')],
   ];
 
@@ -131,6 +133,7 @@ export function HuntsScreen() {
       </div>
 
       {tab === 'map' && <WorldMap rates={rates} />}
+      {tab === 'abyss' && <DungeonPanel />}
 
       {tab === 'hunts' && (
         <>

@@ -461,6 +461,24 @@ export class Director {
           tone: 'good',
         });
         break;
+      case 'DungeonEntered':
+        this.log(t('log.dungeonEntered', { floor: e.floor }), { tone: 'info' });
+        break;
+      case 'DungeonFloorCleared':
+        this.log(t('log.dungeonFloor', { floor: e.floor }), { tone: 'good' });
+        if (e.item) {
+          this.log(
+            t('log.dungeonItem', {
+              item: itemName(this.content, e.item),
+              rarity: t(`rarity.${e.item.rarity}`),
+            }),
+            { rarity: e.item.rarity },
+          );
+        }
+        break;
+      case 'DungeonEnded':
+        this.log(t('log.dungeonEnded', { floor: e.floor, best: e.best }), { tone: 'bad' });
+        break;
       case 'AutoEquipped':
         this.log(t('log.autoEquipped', { n: e.uids.length }), { tone: 'info' });
         break;

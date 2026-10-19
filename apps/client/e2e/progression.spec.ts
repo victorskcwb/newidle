@@ -13,6 +13,9 @@ test('skills, hunt map, reset and reset shop', async ({ page }) => {
     timeout: 20_000,
   });
   await expect(page.getByTestId('hunt-pale_woods')).toContainText('Derrote O Coveiro');
+  // The Abyss opens after the first region's bosses.
+  await page.getByTestId('adv-tab-abyss').click();
+  await expect(page.getByTestId('dungeon')).toContainText('Libera ao derrotar 3 chefes');
   await page.getByRole('button', { name: 'Fechar' }).last().click();
 
   // Goals: three for today and one for the week.

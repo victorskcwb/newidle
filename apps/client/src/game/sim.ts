@@ -11,6 +11,7 @@ import {
   setGathering,
   setRecipe,
   setMeal,
+  enterDungeon,
   setAutomation,
   type AutomationId,
   checkAchievements,
@@ -183,6 +184,11 @@ export class GameSim {
 
   startHunt(huntId: string) {
     this.emit({ kind: 'events', events: startHunt(this.state, this.content, huntId) });
+    this.changed(true);
+  }
+
+  enterDungeon() {
+    this.emit({ kind: 'events', events: enterDungeon(this.state) });
     this.changed(true);
   }
 
@@ -444,7 +450,13 @@ export class GameSim {
       for (const e of step(this.state, this.content, 1)) {
         events.push(e);
         // A new level, or an automation that changed gear or hunt: new rates too.
-        if (e.type === 'LevelUp' || e.type === 'AutoEquipped' || e.type === 'HuntStarted') {
+        if (
+          e.type === 'LevelUp' ||
+          e.type === 'AutoEquipped' ||
+          e.type === 'HuntStarted' ||
+          e.type === 'DungeonFloorCleared' ||
+          e.type === 'DungeonEnded'
+        ) {
           levelUp = true;
         }
         if (

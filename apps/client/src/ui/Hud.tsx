@@ -6,6 +6,7 @@ import {
   potionHoursLeft,
   shopUnlocked,
   type TargetPriority,
+  DUNGEON_KILLS_PER_FLOOR,
 } from '@abismo/engine';
 import type { Rarity } from '@abismo/content';
 import { formatDuration, formatNumber, t } from '../i18n.ts';
@@ -135,17 +136,35 @@ function HuntPanel() {
   return (
     <section className="hunt-panel">
       <div className="glass hunt-card">
-        {hunt && (
+        {s.dungeon.active ? (
           <button
             type="button"
             className="link pixel hunt-name"
             onClick={() => openScreen('hunts')}
-            data-testid="hunt-name"
+            data-testid="dungeon-floor"
           >
-            <Icon name="hunts" size={16} />
-            <span>{t(hunt.nameKey)}</span>
-            <span aria-hidden>▾</span>
+            <Icon name="resets" size={16} />
+            <span>
+              {t('dungeon.hud', {
+                floor: s.dungeon.floor,
+                kills: Math.min(s.dungeon.killsOnFloor, DUNGEON_KILLS_PER_FLOOR),
+                need: DUNGEON_KILLS_PER_FLOOR,
+              })}
+            </span>
           </button>
+        ) : (
+          hunt && (
+            <button
+              type="button"
+              className="link pixel hunt-name"
+              onClick={() => openScreen('hunts')}
+              data-testid="hunt-name"
+            >
+              <Icon name="hunts" size={16} />
+              <span>{t(hunt.nameKey)}</span>
+              <span aria-hidden>▾</span>
+            </button>
+          )
         )}
         <div className="muted activity">{t(`activity.${p?.activity ?? s.activity.kind}`)}</div>
         <div className="rates" data-testid="rates">

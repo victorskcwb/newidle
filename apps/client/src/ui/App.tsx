@@ -1,3 +1,4 @@
+import { huntOf } from '@abismo/engine';
 import { TICKS_PER_SECOND } from '@abismo/engine';
 import { useEffect } from 'react';
 import type { GameSim } from '../game/sim.ts';
@@ -80,8 +81,7 @@ function Game() {
   const reducedMotion = usePrefs((s) => s.reducedMotion);
   const gfxKey = usePrefs((s) => `${s.gfx.atmosphere}${s.gfx.names}`);
   const hunt =
-    (sim.state.hunt && sim.content.hunts.get(sim.state.hunt.huntId)) ??
-    [...sim.content.hunts.values()].find((h) => h.startUnlocked)!;
+    huntOf(sim.state, sim.content) ?? [...sim.content.hunts.values()].find((h) => h.startUnlocked)!;
   const Current = screen ? SCREENS[screen] : null;
   return (
     <>
