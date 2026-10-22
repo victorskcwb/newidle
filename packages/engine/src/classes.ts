@@ -10,6 +10,7 @@ const FALLBACK: HeroClass = {
   primary: 'strength',
   unlockResets: 0,
   ranged: false,
+  element: 'physical',
   starterWeapon: 'sword_rusty',
 };
 

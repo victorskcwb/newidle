@@ -289,7 +289,7 @@
       "damagePct": 180,
       "damagePctPerLevel": 15,
       "maxTargets": 1,
-      "effect": "fx/heavy_strike"
+      "effect": "fx/aimed_shot"
     },
     {
       "id": "nimbleness",
@@ -349,7 +349,7 @@
       "damagePct": 0,
       "damagePctPerLevel": 0,
       "maxTargets": 1,
-      "effect": "fx/war_cry",
+      "effect": "fx/focus",
       "buff": {
         "stat": "damagePct",
         "value": 20,
@@ -420,7 +420,7 @@
       "damagePct": 90,
       "damagePctPerLevel": 8,
       "maxTargets": 4,
-      "effect": "fx/whirlwind"
+      "effect": "fx/arrow_rain"
     },
     {
       "id": "hunters_mark",
@@ -489,7 +489,7 @@
       "damagePct": 150,
       "damagePctPerLevel": 12,
       "maxTargets": 1,
-      "effect": "fx/charge",
+      "effect": "fx/pinning_shot",
       "stunSeconds": 1.5
     },
     {
@@ -545,7 +545,8 @@
       "damagePct": 180,
       "damagePctPerLevel": 15,
       "maxTargets": 1,
-      "effect": "fx/heavy_strike"
+      "effect": "fx/arcane_bolt",
+      "element": "arcane"
     },
     {
       "id": "mana_ward",
@@ -605,7 +606,7 @@
       "damagePct": 0,
       "damagePctPerLevel": 0,
       "maxTargets": 1,
-      "effect": "fx/war_cry",
+      "effect": "fx/empower",
       "buff": {
         "stat": "damagePct",
         "value": 20,
@@ -676,7 +677,8 @@
       "damagePct": 90,
       "damagePctPerLevel": 8,
       "maxTargets": 4,
-      "effect": "fx/whirlwind"
+      "effect": "fx/fireball",
+      "element": "fire"
     },
     {
       "id": "soul_siphon",
@@ -745,8 +747,9 @@
       "damagePct": 150,
       "damagePctPerLevel": 12,
       "maxTargets": 1,
-      "effect": "fx/charge",
-      "stunSeconds": 1.5
+      "effect": "fx/frost_prison",
+      "stunSeconds": 1.5,
+      "element": "ice"
     },
     {
       "id": "holy_light",

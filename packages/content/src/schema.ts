@@ -25,6 +25,14 @@ export const EQUIPMENT_SLOTS = [
 export const slotSchema = z.enum(EQUIPMENT_SLOTS);
 export type EquipmentSlot = z.infer<typeof slotSchema>;
 
+/**
+ * Damage elements. Presentation only (colours of the damage numbers, effects): the engine
+ * has no resistances, so every element hits the same.
+ */
+export const ELEMENTS = ['physical', 'fire', 'ice', 'arcane', 'poison', 'dark'] as const;
+export const elementSchema = z.enum(ELEMENTS);
+export type Element = z.infer<typeof elementSchema>;
+
 export const RARITIES = ['common', 'magic', 'rare', 'epic', 'legendary'] as const;
 export const raritySchema = z.enum(RARITIES);
 export type Rarity = z.infer<typeof raritySchema>;
@@ -145,6 +153,13 @@ export const monsterSchema = z.strictObject({
   xp: nonNegInt,
   gold: range,
   tags: z.array(id),
+  /**
+   * How the attack looks: melee lunges, ranged shoots arrows, magic casts bolts (the engine
+   * treats them all alike). Absent = melee, physical.
+   */
+  attack: z
+    .strictObject({ style: z.enum(['melee', 'ranged', 'magic']), element: elementSchema })
+    .optional(),
   boss: z.boolean().optional(),
   cardId: id.optional(),
   lootTableId: id,
@@ -245,6 +260,8 @@ export const skillSchema = z.discriminatedUnion('kind', [
     /** Seconds the first target cannot attack after being hit. */
     stunSeconds: z.number().positive().max(10).optional(),
     effect: z.string().min(1),
+    /** Colour of the skill's damage numbers; absent = the class's basic attack. */
+    element: elementSchema.optional(),
   }),
   z.strictObject({
     ...skillCommon,
@@ -502,6 +519,8 @@ export const classSchema = z.strictObject({
   /** Resets done (counting the one being made) that let the hero take this class. */
   unlockResets: nonNegInt,
   ranged: z.boolean(),
+  /** Element of the basic attack (colour of its damage numbers). */
+  element: elementSchema,
   starterWeapon: id,
 });
 export type HeroClass = z.infer<typeof classSchema>;

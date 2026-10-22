@@ -14,6 +14,10 @@
       "xp": 18,
       "gold": [2, 6],
       "tags": ["undead"],
+      "attack": {
+        "style": "melee",
+        "element": "physical"
+      },
       "lootTableId": "loot_cemetery",
       "sprite": {
         "atlas": "region_cinzarra",
@@ -37,6 +41,10 @@
       "xp": 10,
       "gold": [1, 3],
       "tags": ["beast"],
+      "attack": {
+        "style": "melee",
+        "element": "physical"
+      },
       "lootTableId": "loot_cemetery",
       "sprite": {
         "atlas": "region_cinzarra",
@@ -60,6 +68,10 @@
       "xp": 400,
       "gold": [80, 150],
       "tags": ["undead"],
+      "attack": {
+        "style": "melee",
+        "element": "dark"
+      },
       "boss": true,
       "lootTableId": "loot_gravekeeper",
       "sprite": {
@@ -85,6 +97,10 @@
       "xp": 9,
       "gold": [13, 39],
       "tags": ["beast"],
+      "attack": {
+        "style": "melee",
+        "element": "physical"
+      },
       "lootTableId": "loot_pale_woods",
       "sprite": {
         "atlas": "region_cinzarra",
@@ -107,6 +123,10 @@
       "xp": 10,
       "gold": [16, 48],
       "tags": ["beast"],
+      "attack": {
+        "style": "melee",
+        "element": "poison"
+      },
       "lootTableId": "loot_pale_woods",
       "sprite": {
         "atlas": "region_cinzarra",
@@ -130,6 +150,10 @@
       "xp": 200,
       "gold": [475, 1425],
       "tags": ["boss"],
+      "attack": {
+        "style": "melee",
+        "element": "poison"
+      },
       "lootTableId": "loot_spider_matriarch",
       "sprite": {
         "atlas": "region_cinzarra",
@@ -148,13 +172,17 @@
       "hp": 211,
       "damageMin": 12,
       "damageMax": 20,
-      "attacksPerSecond": 1.0,
+      "attacksPerSecond": 1,
       "accuracy": 270,
       "defense": 58,
       "evasion": 32,
       "xp": 11,
       "gold": [23, 69],
       "tags": ["undead"],
+      "attack": {
+        "style": "ranged",
+        "element": "physical"
+      },
       "lootTableId": "loot_cracked_crypt",
       "sprite": {
         "atlas": "region_cinzarra",
@@ -177,6 +205,10 @@
       "xp": 11,
       "gold": [26, 78],
       "tags": ["undead"],
+      "attack": {
+        "style": "melee",
+        "element": "poison"
+      },
       "lootTableId": "loot_cracked_crypt",
       "sprite": {
         "atlas": "region_cinzarra",
@@ -199,6 +231,10 @@
       "xp": 372,
       "gold": [1200, 3600],
       "tags": ["boss"],
+      "attack": {
+        "style": "melee",
+        "element": "dark"
+      },
       "lootTableId": "loot_lord_vharok",
       "sprite": {
         "atlas": "region_cinzarra",
@@ -217,13 +253,17 @@
       "hp": 256,
       "damageMin": 16,
       "damageMax": 27,
-      "attacksPerSecond": 1.0,
+      "attacksPerSecond": 1,
       "accuracy": 370,
       "defense": 82,
       "evasion": 45,
       "xp": 13,
       "gold": [33, 99],
       "tags": ["beast"],
+      "attack": {
+        "style": "melee",
+        "element": "poison"
+      },
       "lootTableId": "loot_murky_bog",
       "sprite": {
         "atlas": "region_morvel",
@@ -246,6 +286,10 @@
       "xp": 14,
       "gold": [36, 108],
       "tags": ["beast"],
+      "attack": {
+        "style": "melee",
+        "element": "physical"
+      },
       "lootTableId": "loot_murky_bog",
       "sprite": {
         "atlas": "region_morvel",
@@ -269,6 +313,10 @@
       "xp": 303,
       "gold": [1000, 3000],
       "tags": ["boss"],
+      "attack": {
+        "style": "melee",
+        "element": "poison"
+      },
       "lootTableId": "loot_mire_mother",
       "sprite": {
         "atlas": "region_morvel",
@@ -294,6 +342,10 @@
       "xp": 16,
       "gold": [43, 129],
       "tags": ["undead"],
+      "attack": {
+        "style": "melee",
+        "element": "physical"
+      },
       "lootTableId": "loot_drowned_village",
       "sprite": {
         "atlas": "region_morvel",
@@ -309,13 +361,17 @@
       "hp": 342,
       "damageMin": 22,
       "damageMax": 36,
-      "attacksPerSecond": 1.0,
+      "attacksPerSecond": 1,
       "accuracy": 500,
       "defense": 115,
       "evasion": 62,
       "xp": 17,
       "gold": [46, 138],
       "tags": ["human"],
+      "attack": {
+        "style": "magic",
+        "element": "poison"
+      },
       "lootTableId": "loot_drowned_village",
       "sprite": {
         "atlas": "region_morvel",
@@ -338,6 +394,10 @@
       "xp": 369,
       "gold": [1250, 3750],
       "tags": ["boss"],
+      "attack": {
+        "style": "melee",
+        "element": "ice"
+      },
       "lootTableId": "loot_old_drowned",
       "sprite": {
         "atlas": "region_morvel",
@@ -363,6 +423,10 @@
       "xp": 19,
       "gold": [53, 159],
       "tags": ["undead"],
+      "attack": {
+        "style": "melee",
+        "element": "poison"
+      },
       "lootTableId": "loot_rotting_heart",
       "sprite": {
         "atlas": "region_morvel",
@@ -378,13 +442,17 @@
       "hp": 1110,
       "damageMin": 26,
       "damageMax": 43,
-      "attacksPerSecond": 1.0,
+      "attacksPerSecond": 1,
       "accuracy": 600,
       "defense": 140,
       "evasion": 76,
       "xp": 20,
       "gold": [56, 168],
       "tags": ["beast"],
+      "attack": {
+        "style": "melee",
+        "element": "physical"
+      },
       "lootTableId": "loot_rotting_heart",
       "sprite": {
         "atlas": "region_morvel",
@@ -408,13 +476,17 @@
       "xp": 674,
       "gold": [2400, 7200],
       "tags": ["boss"],
+      "attack": {
+        "style": "melee",
+        "element": "poison"
+      },
       "lootTableId": "loot_morvel_root",
       "sprite": {
         "atlas": "region_morvel",
         "key": "morvel_root",
         "tint": "#4a3a2a",
         "spawnAnim": "rise",
-        "scale": 2.0
+        "scale": 2
       },
       "boss": true,
       "cardId": "card_morvel_root"
@@ -433,6 +505,10 @@
       "xp": 24,
       "gold": [64, 192],
       "tags": ["beast", "fire"],
+      "attack": {
+        "style": "melee",
+        "element": "fire"
+      },
       "lootTableId": "loot_ash_gates",
       "sprite": {
         "atlas": "region_citadel",
@@ -455,6 +531,10 @@
       "xp": 26,
       "gold": [68, 204],
       "tags": ["undead"],
+      "attack": {
+        "style": "melee",
+        "element": "physical"
+      },
       "lootTableId": "loot_ash_gates",
       "sprite": {
         "atlas": "region_citadel",
@@ -477,6 +557,10 @@
       "xp": 582,
       "gold": [1825, 5475],
       "tags": ["boss"],
+      "attack": {
+        "style": "melee",
+        "element": "fire"
+      },
       "lootTableId": "loot_ashen_captain",
       "sprite": {
         "atlas": "region_citadel",
@@ -502,6 +586,10 @@
       "xp": 32,
       "gold": [77, 231],
       "tags": ["construct", "fire"],
+      "attack": {
+        "style": "melee",
+        "element": "fire"
+      },
       "lootTableId": "loot_molten_halls",
       "sprite": {
         "atlas": "region_citadel",
@@ -525,6 +613,10 @@
       "xp": 34,
       "gold": [81, 243],
       "tags": ["human", "fire"],
+      "attack": {
+        "style": "magic",
+        "element": "fire"
+      },
       "lootTableId": "loot_molten_halls",
       "sprite": {
         "atlas": "region_citadel",
@@ -547,6 +639,10 @@
       "xp": 752,
       "gold": [2150, 6450],
       "tags": ["boss"],
+      "attack": {
+        "style": "magic",
+        "element": "fire"
+      },
       "lootTableId": "loot_ember_priestess",
       "sprite": {
         "atlas": "region_citadel",
@@ -572,6 +668,10 @@
       "xp": 40,
       "gold": [90, 270],
       "tags": ["undead"],
+      "attack": {
+        "style": "melee",
+        "element": "fire"
+      },
       "lootTableId": "loot_burning_throne",
       "sprite": {
         "atlas": "region_citadel",
@@ -595,6 +695,10 @@
       "xp": 45,
       "gold": [95, 285],
       "tags": ["undead", "fire"],
+      "attack": {
+        "style": "magic",
+        "element": "fire"
+      },
       "lootTableId": "loot_burning_throne",
       "sprite": {
         "atlas": "region_citadel",
@@ -617,13 +721,17 @@
       "xp": 1489,
       "gold": [4000, 12000],
       "tags": ["boss"],
+      "attack": {
+        "style": "melee",
+        "element": "fire"
+      },
       "lootTableId": "loot_charred_king",
       "sprite": {
         "atlas": "region_citadel",
         "key": "charred_king",
         "tint": "#2a1a1a",
         "spawnAnim": "rise",
-        "scale": 2.0
+        "scale": 2
       },
       "boss": true,
       "cardId": "card_charred_king"
@@ -642,6 +750,10 @@
       "xp": 10,
       "gold": [14, 44],
       "tags": ["beast"],
+      "attack": {
+        "style": "melee",
+        "element": "physical"
+      },
       "lootTableId": "loot_pale_woods",
       "sprite": {
         "atlas": "region_cinzarra",
@@ -664,6 +776,10 @@
       "xp": 11,
       "gold": [24, 74],
       "tags": ["undead"],
+      "attack": {
+        "style": "magic",
+        "element": "dark"
+      },
       "lootTableId": "loot_cracked_crypt",
       "sprite": {
         "atlas": "region_cinzarra",
@@ -686,6 +802,10 @@
       "xp": 14,
       "gold": [34, 104],
       "tags": ["beast"],
+      "attack": {
+        "style": "melee",
+        "element": "poison"
+      },
       "lootTableId": "loot_murky_bog",
       "sprite": {
         "atlas": "region_morvel",
@@ -708,6 +828,10 @@
       "xp": 16,
       "gold": [44, 134],
       "tags": ["undead"],
+      "attack": {
+        "style": "magic",
+        "element": "ice"
+      },
       "lootTableId": "loot_drowned_village",
       "sprite": {
         "atlas": "region_morvel",
@@ -730,6 +854,10 @@
       "xp": 20,
       "gold": [54, 164],
       "tags": ["undead"],
+      "attack": {
+        "style": "magic",
+        "element": "poison"
+      },
       "lootTableId": "loot_rotting_heart",
       "sprite": {
         "atlas": "region_morvel",
@@ -752,6 +880,10 @@
       "xp": 25,
       "gold": [66, 198],
       "tags": ["beast", "fire"],
+      "attack": {
+        "style": "magic",
+        "element": "fire"
+      },
       "lootTableId": "loot_ash_gates",
       "sprite": {
         "atlas": "region_citadel",
@@ -774,6 +906,10 @@
       "xp": 33,
       "gold": [79, 237],
       "tags": ["construct", "fire"],
+      "attack": {
+        "style": "magic",
+        "element": "fire"
+      },
       "lootTableId": "loot_molten_halls",
       "sprite": {
         "atlas": "region_citadel",
@@ -796,6 +932,10 @@
       "xp": 42,
       "gold": [92, 278],
       "tags": ["beast"],
+      "attack": {
+        "style": "melee",
+        "element": "fire"
+      },
       "lootTableId": "loot_burning_throne",
       "sprite": {
         "atlas": "region_citadel",
