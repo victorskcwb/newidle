@@ -120,7 +120,8 @@ export class Actor {
     if (look.weapon) {
       this.weapon.setTexture(look.weapon.texture, look.weapon.frame).setScale(look.scale * 0.7);
     }
-    this.weapon.setVisible(look.weapon !== undefined);
+    // The weapon only shows while swinging; held at rest it looked like it floated.
+    this.weapon.setVisible(false);
     this.playLoop(this.moving ? 'run' : 'idle', true);
     this.setFacing(this.facingLeft);
     this.label.setY(this.top - 7);
@@ -261,7 +262,10 @@ export class Actor {
       // Wind up behind the shoulder, then strike through to the front.
       const side = this.facingLeft ? -1 : 1;
       this.scene.tweens.killTweensOf(this.weapon);
-      this.weapon.setAngle(side * -70);
+      this.weapon
+        .setAngle(side * -70)
+        .setAlpha(1)
+        .setVisible(true);
       this.scene.tweens.add({
         targets: this.weapon,
         angle: side * 110,
@@ -271,7 +275,9 @@ export class Actor {
           this.scene.tweens.add({
             targets: this.weapon,
             angle: side * 25,
+            alpha: 0,
             duration: Math.max(80, total - impact),
+            onComplete: () => this.weapon.setVisible(false),
           }),
       });
     }
