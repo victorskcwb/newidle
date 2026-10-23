@@ -1219,5 +1219,15 @@
   "import.implausible": "This save did not pass the server's check (its numbers do not add up), so it cannot be brought in.",
   "auth.error.already_imported": "This account already brought a hero from a device.",
   "auth.error.hero_exists": "Your account already has a hero.",
-  "auth.error.invalid_save": "Could not read this device's save."
+  "auth.error.invalid_save": "Could not read this device's save.",
+  "privacy.title": "Privacy",
+  "privacy.what": "We keep what the game needs: your hero, your e-mail (if you link one) or Google id, and the connected devices with when they were used.",
+  "privacy.why": "We use this data only so you can play and keep your hero. We do not sell it or share it with advertisers.",
+  "privacy.where": "Your password is never stored: only a cryptographic digest of it (argon2id).",
+  "privacy.rights": "You can download all your data and delete the account at any time, here in Options → Account.",
+  "privacy.delete": "When you delete the account, the e-mail and sign-ins go at once; the hero is removed for good after 30 days.",
+  "account.export": "Download my data",
+  "account.delete": "Delete account",
+  "account.deleteWarning": "The account and the hero will be deleted. The e-mail and sign-ins go at once; the hero, in 30 days. This cannot be undone.",
+  "account.deleteConfirm": "Delete the account for good"
 }

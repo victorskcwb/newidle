@@ -114,3 +114,20 @@ test('online: the hero played on this device is brought into a new account', asy
   ).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test('online: download the data and delete the account', async ({ page }) => {
+  await page.goto('/?online=1');
+  await expect(page.getByTestId('auth')).toContainText('Privacidade');
+  await page.getByTestId('auth-guest').click();
+  await page.getByTestId('hero-name').fill('Passageiro');
+  await page.getByTestId('create-hero').click();
+  await page.getByTestId('tip-ok').click();
+  await page.getByTestId('nav-settings').click();
+  const download = page.waitForEvent('download');
+  await page.getByTestId('export-data').click();
+  expect((await download).suggestedFilename()).toBe('abismo-dados.json');
+  await page.getByTestId('delete-account').click();
+  await page.getByTestId('delete-confirm').click();
+  // Back to the first screen: the session and the account are gone.
+  await expect(page.getByTestId('auth')).toBeVisible();
+});

@@ -95,6 +95,8 @@ export const api = {
     call<void>('POST', '/api/auth/password/reset', { token, password }),
   googleStart: () => call<{ url: string }>('POST', '/api/auth/google/start', {}),
   createHero: (hero: NewHeroChoice) => call<{ result: string }>('POST', '/api/heroes', hero),
+  exportData: () => call<unknown>('GET', '/api/account/export'),
+  deleteAccount: () => call<void>('DELETE', '/api/account', { confirm: 'APAGAR' }),
   importHero: (save: string, replace: boolean) =>
     call<{ result: string }>('POST', '/api/heroes/import', { save, replace }),
 };

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { t } from '../i18n.ts';
 import { api, setSessionToken, type Me, type SessionInfo } from '../net/api.ts';
+import { PrivacySummary } from './PrivacySummary.tsx';
 import { apiErrorText } from './screens/AuthScreen.tsx';
 
 /** "Chrome · Android" from a user agent, or null when nothing is recognized. */
@@ -38,6 +39,7 @@ export function AccountSection() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const refresh = async () => {
     try {
@@ -187,6 +189,61 @@ export function AccountSection() {
       >
         {t('account.logout')}
       </button>
+      <h4 className="pixel">{t('privacy.title')}</h4>
+      <PrivacySummary />
+      <button
+        type="button"
+        className="btn"
+        disabled={busy}
+        onClick={() =>
+          void run(async () => {
+            const data = await api.exportData();
+            const url = URL.createObjectURL(
+              new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }),
+            );
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'abismo-dados.json';
+            a.click();
+            URL.revokeObjectURL(url);
+          })
+        }
+        data-testid="export-data"
+      >
+        {t('account.export')}
+      </button>
+      {deleting ? (
+        <div className="account-delete">
+          <p className="tone-bad small">{t('account.deleteWarning')}</p>
+          <button
+            type="button"
+            className="btn btn-danger"
+            disabled={busy}
+            onClick={() =>
+              void run(async () => {
+                await api.deleteAccount();
+                setSessionToken(null);
+                location.reload();
+              })
+            }
+            data-testid="delete-confirm"
+          >
+            {t('account.deleteConfirm')}
+          </button>
+          <button type="button" className="btn" onClick={() => setDeleting(false)}>
+            {t('action.back')}
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          className="btn"
+          onClick={() => setDeleting(true)}
+          data-testid="delete-account"
+        >
+          {t('account.delete')}
+        </button>
+      )}
       {error && <p className="tone-bad small">{error}</p>}
     </div>
   );

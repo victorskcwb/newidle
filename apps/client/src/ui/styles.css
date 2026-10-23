@@ -3067,3 +3067,21 @@ input[type='range'] {
   justify-content: space-between;
   gap: 8px;
 }
+
+/* LGPD: privacy summary and account deletion. */
+.privacy {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+
+.account-delete {
+  display: grid;
+  gap: 8px;
+}
+
+.btn-danger {
+  border-color: rgba(220, 80, 80, 0.7);
+  color: #ffb3b3;
+}

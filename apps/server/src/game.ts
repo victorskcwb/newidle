@@ -262,12 +262,16 @@ export class GameServer {
     return record ? decodeSave(record.save, this.deps.content).state : null;
   }
 
-  /** Saves and closes the account's session, if one is open. */
-  async closeAccount(accountId: string) {
+  /**
+   * Saves the account's hero in play. With `end` (the default), also closes its session (an
+   * import replaces the hero, the account is deleted); without, the hero keeps playing.
+   */
+  async closeAccount(accountId: string, end = true) {
     const s = this.sessions.get(accountId);
     if (!s) return;
     this.advance(s, this.deps.now());
     await this.save(s, this.deps.now());
+    if (!end) return;
     this.sessions.delete(accountId);
     this.kick(s.conn, 'other_session');
     await this.deps.store.release(accountId, s.sessionId);

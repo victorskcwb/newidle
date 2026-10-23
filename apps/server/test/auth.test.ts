@@ -1,6 +1,6 @@
 import { createGame, encodeSave, startHunt, stepQuiet } from '@abismo/engine';
 import { describe, expect, it } from 'vitest';
-import { Accounts, AttemptLimiter } from '../src/accounts.ts';
+import { Accounts, AttemptLimiter, DELETE_AFTER_DAYS } from '../src/accounts.ts';
 import { buildApp } from '../src/app.ts';
 import type { GoogleProvider } from '../src/authRoutes.ts';
 import { connectPglite } from '../src/db/db.ts';
@@ -281,5 +281,40 @@ describe('accounts', () => {
     expect(welcome.offlineReport).toBeNull();
     expect(back.replica!.state.hero.name).toBe('Do Aparelho');
     expect(back.replica!.state.tick).toBeLessThan(local.tick + 100);
+  });
+
+  it('exports the account data and deletes the account (LGPD)', async () => {
+    const { call, db } = await setup();
+    const reg = await call('POST', '/api/auth/register', {
+      email: 'lia@ex.com',
+      password: 'abcdefgh',
+    });
+    const token = reg.body.token!;
+    await call('POST', '/api/heroes', hero, token);
+
+    const exported = await call('GET', '/api/account/export', undefined, token);
+    expect(exported.status).toBe(200);
+    expect(String(exported.headers['content-disposition'])).toContain('attachment');
+    const data = exported.body as unknown as {
+      identities: { email: string; password_hash?: string }[];
+      heroes: { name: string; save: string }[];
+    };
+    expect(data.identities[0]!.email).toBe('lia@ex.com');
+    expect(JSON.stringify(data)).not.toContain('argon2');
+    expect(data.heroes[0]!.name).toBe('Conta Nova');
+
+    expect((await call('DELETE', '/api/account', {}, token)).status).toBe(400);
+    expect((await call('DELETE', '/api/account', { confirm: 'APAGAR' }, token)).status).toBe(204);
+    expect((await call('GET', '/api/auth/me', undefined, token)).status).toBe(401);
+    // The e-mail is free again at once; the hero waits 30 days, then goes.
+    expect(
+      (await call('POST', '/api/auth/register', { email: 'lia@ex.com', password: 'outra-senha' }))
+        .status,
+    ).toBe(201);
+    const later = new Accounts(db, () => Date.now() + (DELETE_AFTER_DAYS + 1) * 86_400_000);
+    expect(await new Accounts(db).purgeDeleted()).toBe(0);
+    expect(await later.purgeDeleted()).toBe(1);
+    const left = await db.query('SELECT name FROM heroes', []);
+    expect(left).toEqual([]);
   });
 });

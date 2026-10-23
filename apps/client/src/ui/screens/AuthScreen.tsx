@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { t } from '../../i18n.ts';
 import { ApiError, api, setSessionToken } from '../../net/api.ts';
+import { PrivacySummary } from '../PrivacySummary.tsx';
 
 type Mode = 'start' | 'login' | 'register' | 'forgot';
 
@@ -162,6 +163,10 @@ export function AuthScreen({
             </div>
           </form>
         )}
+        <details className="small">
+          <summary>{t('privacy.title')}</summary>
+          <PrivacySummary />
+        </details>
         {info && <p className="tone-good small">{info}</p>}
         {error && (
           <p className="tone-bad small" role="alert">

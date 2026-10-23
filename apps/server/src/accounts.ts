@@ -27,6 +27,8 @@ export interface AuthSession {
 
 const SESSION_DAYS = 90;
 const RESET_MINUTES = 30;
+/** Days a deleted account's hero is kept before it is purged. */
+export const DELETE_AFTER_DAYS = 30;
 /** last_seen is written at most this often per session. */
 const SEEN_EVERY_MS = 60_000;
 
@@ -196,6 +198,60 @@ export class Accounts {
       [accountId, new Date(this.now()).toISOString()],
     );
     return rows.length === 1;
+  }
+
+  /**
+   * Deletes the account (LGPD): the sign-ins (e-mail, Google id) and sessions go at once, so
+   * the e-mail can be used again; the account row and its hero stay for 30 days (backups,
+   * mistakes) and are then purged by `purgeDeleted`.
+   */
+  async deleteAccount(accountId: string) {
+    await this.db.tx(async (t) => {
+      await t.query('UPDATE accounts SET deleted_at = $2 WHERE id = $1', [
+        accountId,
+        new Date(this.now()).toISOString(),
+      ]);
+      await t.query('DELETE FROM identities WHERE account_id = $1', [accountId]);
+      await t.query('DELETE FROM sessions WHERE account_id = $1', [accountId]);
+      await t.query('DELETE FROM password_resets WHERE account_id = $1', [accountId]);
+    });
+  }
+
+  /** Removes accounts deleted more than 30 days ago, with their heroes. Returns how many. */
+  async purgeDeleted(): Promise<number> {
+    const cutoff = new Date(this.now() - DELETE_AFTER_DAYS * 86_400_000).toISOString();
+    return this.db.tx(async (t) => {
+      const gone = await t.query<{ id: string }>(
+        'SELECT id FROM accounts WHERE deleted_at IS NOT NULL AND deleted_at < $1',
+        [cutoff],
+      );
+      for (const { id } of gone) {
+        await t.query('DELETE FROM heroes WHERE account_id = $1', [id]);
+        await t.query('DELETE FROM accounts WHERE id = $1', [id]);
+      }
+      return gone.length;
+    });
+  }
+
+  /** Everything the game keeps about the account (LGPD export), without secrets. */
+  async exportData(accountId: string) {
+    const [account] = await this.db.query('SELECT id, created_at FROM accounts WHERE id = $1', [
+      accountId,
+    ]);
+    const identities = await this.db.query(
+      'SELECT provider, email, created_at FROM identities WHERE account_id = $1',
+      [accountId],
+    );
+    const sessions = await this.db.query(
+      `SELECT device, created_at, last_seen, expires_at, revoked_at FROM sessions
+       WHERE account_id = $1`,
+      [accountId],
+    );
+    const heroes = await this.db.query(
+      'SELECT name, origin, created_at, updated_at, save FROM heroes WHERE account_id = $1',
+      [accountId],
+    );
+    return { account, identities, sessions, heroes };
   }
 
   /** How the account signs in (for the account screen). */

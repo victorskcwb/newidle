@@ -207,6 +207,26 @@ export async function registerAuthRoutes(app: FastifyInstance, d: AuthDeps) {
     },
   );
 
+  app.get('/api/account/export', async (req, reply) => {
+    const s = await session(req);
+    if (!s) return reply.code(401).send({ error: 'auth' });
+    // A hero in play is saved first, so the export has the latest state.
+    await d.game.closeAccount(s.accountId, false);
+    return reply
+      .header('content-disposition', 'attachment; filename="abismo-dados.json"')
+      .send(await d.accounts.exportData(s.accountId));
+  });
+
+  app.delete('/api/account', async (req, reply) => {
+    const s = await session(req);
+    if (!s) return reply.code(401).send({ error: 'auth' });
+    const body = z.strictObject({ confirm: z.literal('APAGAR') }).safeParse(req.body);
+    if (!body.success) return reply.code(400).send({ error: 'confirm' });
+    await d.game.closeAccount(s.accountId);
+    await d.accounts.deleteAccount(s.accountId);
+    return reply.code(204).send();
+  });
+
   app.post('/api/heroes/import', { bodyLimit: MAX_FRAME_BYTES }, async (req, reply) => {
     const s = await session(req);
     if (!s) return reply.code(401).send({ error: 'auth' });

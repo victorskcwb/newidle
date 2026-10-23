@@ -1219,5 +1219,15 @@
   "import.implausible": "Este save não passou na checagem do servidor (os números não batem), então não pode ser trazido.",
   "auth.error.already_imported": "Esta conta já trouxe um herói de um aparelho.",
   "auth.error.hero_exists": "A sua conta já tem um herói.",
-  "auth.error.invalid_save": "Não foi possível ler o save deste aparelho."
+  "auth.error.invalid_save": "Não foi possível ler o save deste aparelho.",
+  "privacy.title": "Privacidade",
+  "privacy.what": "Guardamos o que o jogo precisa: o seu herói, o e-mail (se você vincular um) ou o identificador do Google, os aparelhos conectados e quando foram usados.",
+  "privacy.why": "Usamos esses dados só para você jogar e não perder o herói. Não vendemos nem compartilhamos com anunciantes.",
+  "privacy.where": "A senha nunca é guardada: só um resumo criptográfico dela (argon2id).",
+  "privacy.rights": "Você pode baixar todos os seus dados e apagar a conta a qualquer momento, aqui em Opções → Conta.",
+  "privacy.delete": "Ao apagar a conta, o e-mail e os acessos somem na hora; o herói é removido de vez em 30 dias.",
+  "account.export": "Baixar meus dados",
+  "account.delete": "Apagar a conta",
+  "account.deleteWarning": "A conta e o herói serão apagados. O e-mail e os acessos somem na hora; o herói, em 30 dias. Não dá para desfazer.",
+  "account.deleteConfirm": "Apagar a conta de vez"
 }

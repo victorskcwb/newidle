@@ -67,8 +67,19 @@ const loop = setInterval(() => {
     .finally(() => (ticking = false));
 }, TICK_MS);
 
+// LGPD: accounts deleted more than 30 days ago are purged, hero included (every hour).
+const purge = setInterval(
+  () =>
+    void accounts
+      .purgeDeleted()
+      .then((n) => n > 0 && log('accounts_purged', { n }))
+      .catch((e: unknown) => app.log.error(e)),
+  3_600_000,
+);
+
 async function shutdown() {
   clearInterval(loop);
+  clearInterval(purge);
   await game.saveAll();
   await rates.close();
   await app.close();
