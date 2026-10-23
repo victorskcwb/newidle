@@ -11,8 +11,9 @@ import {
   type OfflineReport,
 } from '@abismo/engine';
 import {
-  CHECKPOINT_TICKS,
   CLIENT_LEAD_TICKS,
+  isCheckpoint,
+  nextCheckpoint,
   tickAt,
   type ClientMessage,
   type ServerMessage,
@@ -49,6 +50,7 @@ export class Replica {
   /** A checkpoint that arrived before the replica reached its tick. */
   private expected = new Map<number, string>();
   private resyncAsked = false;
+  private checkpointPhase: number;
   /** Counts for diagnostics (divergences should be zero). */
   readonly stats = { resyncs: 0, lateIntents: 0, checkpointMismatches: 0, checkpointsVerified: 0 };
 
@@ -62,6 +64,7 @@ export class Replica {
     this.clock = welcome.clock;
     this.offsetMs = welcome.serverNow - localNowMs;
     this.nextSeq = welcome.lastSeq + 1;
+    this.checkpointPhase = welcome.checkpointPhase;
     this.offlineReport = welcome.offlineReport;
   }
 
@@ -108,12 +111,12 @@ export class Replica {
   }
 
   private nextCheckpoint(): number {
-    return (Math.floor(this.state.tick / CHECKPOINT_TICKS) + 1) * CHECKPOINT_TICKS;
+    return nextCheckpoint(this.state.tick, this.checkpointPhase);
   }
 
   /** Steps to `until` (at most the next checkpoint), recording the hash of a checkpoint tick. */
   private stepTo(until: number, events: GameEvent[] | null) {
-    if (this.state.tick % CHECKPOINT_TICKS === 0) this.recordHash(this.state.tick);
+    if (isCheckpoint(this.state.tick, this.checkpointPhase)) this.recordHash(this.state.tick);
     const out = step(this.state, this.content, until - this.state.tick);
     if (events) for (const e of out) events.push(e);
   }
@@ -183,6 +186,7 @@ export class Replica {
           this.offlineReport = m.offlineReport;
         }
         this.nextSeq = Math.max(this.nextSeq, m.lastSeq + 1);
+        this.checkpointPhase = m.checkpointPhase;
         this.hashes.clear();
         this.expected.clear();
         this.resyncAsked = false;

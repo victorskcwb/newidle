@@ -16,8 +16,22 @@ export const PROTOCOL_VERSION = 1;
 export const CLIENT_LEAD_TICKS = 5;
 /** Intents scheduled further ahead than this are refused (`too_early`). */
 export const MAX_LEAD_TICKS = 50;
-/** Ticks between two state hashes from the server (30 s). */
-export const CHECKPOINT_TICKS = 300;
+/**
+ * Ticks between two state hashes from the server (2 min). Hashing an endgame hero with a big
+ * stash takes ~9 ms, so every 30 s it was most of the server's CPU (load test, decision 180).
+ */
+export const CHECKPOINT_TICKS = 1_200;
+
+/** Whether a tick is a checkpoint for a hero whose checkpoints fall on `phase` (0–1199). */
+export function isCheckpoint(tick: number, phase: number): boolean {
+  return (((tick - phase) % CHECKPOINT_TICKS) + CHECKPOINT_TICKS) % CHECKPOINT_TICKS === 0;
+}
+
+/** The first checkpoint tick after `tick`. */
+export function nextCheckpoint(tick: number, phase: number): number {
+  const since = (((tick - phase) % CHECKPOINT_TICKS) + CHECKPOINT_TICKS) % CHECKPOINT_TICKS;
+  return tick + CHECKPOINT_TICKS - since;
+}
 
 /** Fingerprint of the bundled content: the client caches content by it. */
 export const CONTENT_VERSION = fnv1a64(canonicalJson(CONTENT_FILES));
@@ -69,6 +83,12 @@ export const serverMessageSchema = z.discriminatedUnion('type', [
     /** The time away just resolved, if it was long enough for a summary. */
     offlineReport: z.custom<OfflineReport>((v) => v === null || typeof v === 'object').nullable(),
     contentVersion: z.string(),
+    /** This hero's checkpoints fall on ticks ≡ phase (mod 1200), so heroes do not hash together. */
+    checkpointPhase: z
+      .number()
+      .int()
+      .min(0)
+      .max(CHECKPOINT_TICKS - 1),
   }),
   z.strictObject({ type: z.literal('ack'), seq, appliedAt: tick }),
   z.strictObject({ type: z.literal('reject'), seq, code: z.string() }),
@@ -78,6 +98,11 @@ export const serverMessageSchema = z.discriminatedUnion('type', [
     clock,
     save: z.string(),
     lastSeq: z.number().int().min(0),
+    checkpointPhase: z
+      .number()
+      .int()
+      .min(0)
+      .max(CHECKPOINT_TICKS - 1),
   }),
   z.strictObject({ type: z.literal('kicked'), reason: z.enum(KICK_REASONS) }),
   z.strictObject({ type: z.literal('pong'), t: ms, serverNow: ms }),

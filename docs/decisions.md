@@ -307,6 +307,17 @@ Plano em `docs/plan-fase-1.md`, a partir da Fase 1 de `docs/prompt-proximas-fase
 
 179. **LGPD no modo online.** Em Opções → Conta, o jogador baixa um arquivo JSON com tudo o que o jogo guarda dele: conta, formas de entrar (sem a senha), aparelhos e o save do herói. No mesmo lugar ele apaga a conta, com confirmação em dois passos. Ao apagar, o e-mail, o identificador do Google, as sessões e os links de senha somem na hora (o e-mail fica livre para uma conta nova), e a conta e o herói são removidos de vez depois de 30 dias, por uma limpeza que roda a cada hora. A tela de entrada e Opções mostram um resumo da privacidade em cinco linhas (o que guardamos, para quê, a senha que nunca é guardada, os direitos e o prazo de exclusão). **Pendente antes do primeiro jogador de fora:** a política de privacidade e os termos de uso completos precisam ser escritos e revisados por alguém com conhecimento jurídico (registro do aceite: colunas `accounts.terms_version` e `terms_at`, já criadas), além do controlador, do contato do encarregado e da base legal.
 
+180. **Teste de carga e o que ele mudou** (`pnpm --filter @abismo/server load N TICKS`, com `RICH=1` para heróis de fim de jogo). Cada herói tem uma conexão que descarta o que recebe, num relógio falso, então mede só a CPU do jogo. Resultado nesta máquina, num processo só, 3.000 ticks:
+     - heróis novos (save de 2 KB): 2.000 heróis com 5,8 ms por tick em média (p99 10,6 ms, máximo 31 ms), uns 3 µs por herói por tick;
+     - heróis de fim de jogo (save de 132 KB, 1.111 itens no baú): 1.000 heróis com 17,5 ms em média (p99 40 ms, máximo 55 ms) e 2.000 com 36 ms (p99 68 ms, máximo 161 ms).
+
+     O orçamento é o próprio tick (100 ms). Com a meta de p99 abaixo de 50 ms, um processo aguenta uns 1.000 a 1.300 heróis de fim de jogo online ao mesmo tempo, ou uns 5.000 novos. O teste encontrou três problemas, já corrigidos:
+     - o hash de checkpoint de um herói com o baú cheio custa 9 ms, e a cada 30 s era três quartos da CPU, então o checkpoint passou a ser a cada 2 min;
+     - os heróis que entram juntos calculavam o hash no mesmo tick (picos de 25 ms a 3 s), então cada sessão sorteia a sua fase de checkpoint (`checkpointPhase`, enviada no `welcome`);
+     - o save periódico de 60 s também acontecia no mesmo tick para todos (picos de 1,5 s), então cada sessão sorteia o seu horário de save.
+
+     Uma divergência entre cliente e servidor é bug e não deveria acontecer, por isso esperar até 2 min para detectá-la não pesa no jogo.
+
 ## Perguntas para revisão
 
 - ~~**Resets cada vez mais rápidos (seção 12.2):** a meta "cada reset chega ao 100 pelo menos 10% mais rápido que o anterior, até o reset 10" não é atingida. No simulador (perfil ativo), os ciclos ficam em 3,0 → 1,9 → 1,8 → 1,6 → 1,7 → 1,8 → 1,4 dias: caem no começo e depois estabilizam. Com 10 pontos por reset (a fórmula da seção 8.1, até a masmorra do marco 3) e a Sabedoria dando +10% de XP por nível com custo linear, o bônus de XP não cresce 10% a cada ciclo. Opções: (a) pontos de reset crescerem com o número do reset (ex.: 10 + 2 × resets); (b) Sabedoria multiplicativa (×1,1 por nível); (c) aceitar até a masmorra existir. Recomendo (a), porque é uma linha de conteúdo/constante e mantém a loja simples.~~ Resolvido: decisões 68–70.

@@ -20,6 +20,8 @@ const stats = (page: Page) =>
 test('online: guest, hero, linked e-mail, and the same hero on another device', async ({
   browser,
 }) => {
+  // Waits for a checkpoint, which comes every 2 minutes.
+  test.setTimeout(300_000);
   const email = `e2e-${crypto.randomUUID()}@example.com`;
   const password = 'senha-forte-123';
   const device = async () => {
@@ -43,10 +45,10 @@ test('online: guest, hero, linked e-mail, and the same hero on another device', 
     timeout: 60_000,
   });
 
-  // The replica agrees with the server: checkpoints (tick 0, then every 30 s) compared and matched.
+  // The replica agrees with the server: a checkpoint (every 2 min, on the hero's phase) matched.
   await expect
-    .poll(async () => (await stats(phone.page)).checkpointsVerified, { timeout: 60_000 })
-    .toBeGreaterThan(1);
+    .poll(async () => (await stats(phone.page)).checkpointsVerified, { timeout: 150_000 })
+    .toBeGreaterThan(0);
   expect(await stats(phone.page)).toMatchObject({
     resyncs: 0,
     checkpointMismatches: 0,

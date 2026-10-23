@@ -2,10 +2,13 @@ import { loadContent } from '@abismo/content';
 import { createGame, decodeSave, encodeSave, resolveOffline } from '@abismo/engine';
 import { describe, expect, it } from 'vitest';
 import {
+  CHECKPOINT_TICKS,
   CONTENT_VERSION,
   PROTOCOL_VERSION,
   brasiliaDay,
   decodeClientMessage,
+  isCheckpoint,
+  nextCheckpoint,
   decodeServerMessage,
   encodeMessage,
   tickAt,
@@ -44,6 +47,7 @@ describe('protocol', () => {
       lastSeq: 0,
       offlineReport: report,
       contentVersion: CONTENT_VERSION,
+      checkpointPhase: 17,
     };
     const back = decodeServerMessage(encodeMessage(welcome));
     expect(back).toEqual(welcome);
@@ -89,5 +93,16 @@ describe('protocol', () => {
     expect(at('2026-10-24T03:00:00Z')).toBe(at('2026-10-23T03:00:00Z') + 1);
     // January (southern summer): still 03:00 UTC, no daylight saving time since 2019.
     expect(at('2027-01-15T03:00:00Z') - at('2027-01-15T02:59:59Z')).toBe(1);
+  });
+
+  it('checkpoints fall every CHECKPOINT_TICKS on the hero phase', () => {
+    const C = CHECKPOINT_TICKS;
+    expect(isCheckpoint(17, 17)).toBe(true);
+    expect(isCheckpoint(C + 17, 17)).toBe(true);
+    expect(isCheckpoint(C, 17)).toBe(false);
+    expect(nextCheckpoint(0, 17)).toBe(17);
+    expect(nextCheckpoint(17, 17)).toBe(C + 17);
+    expect(nextCheckpoint(C - 1, 0)).toBe(C);
+    expect(nextCheckpoint(C, 0)).toBe(2 * C);
   });
 });

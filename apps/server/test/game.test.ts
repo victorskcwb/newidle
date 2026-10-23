@@ -27,7 +27,8 @@ describe('game server', () => {
       c.act(fiddles[minute % fiddles.length]!);
       await w.run(60_000);
     }
-    expect(c.of('checkpoint').length).toBeGreaterThanOrEqual(19);
+    // One checkpoint every 2 minutes, on this hero's phase.
+    expect(c.of('checkpoint').length).toBeGreaterThanOrEqual(4);
     expect(c.replica!.stats).toMatchObject({ resyncs: 0, lateIntents: 0, checkpointMismatches: 0 });
     // Every checkpoint after the first was compared, not skipped.
     expect(c.replica!.stats.checkpointsVerified).toBeGreaterThanOrEqual(
@@ -167,7 +168,7 @@ describe('game server', () => {
     const server = w.server.stateOf('hugo')!;
     expect(c.replica!.stats.checkpointMismatches).toBe(0);
     expect(c.replica!.stats.resyncs).toBe(0);
-    expect(c.replica!.stats.checkpointsVerified).toBeGreaterThanOrEqual(119);
+    expect(c.replica!.stats.checkpointsVerified).toBeGreaterThanOrEqual(29);
     // The replica runs CLIENT_LEAD_TICKS ahead; stepping a copy of the server there matches it.
     const ahead = structuredClone(server);
     stepQuiet(ahead, content, c.replica!.state.tick - ahead.tick);

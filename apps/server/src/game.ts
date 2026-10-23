@@ -21,6 +21,8 @@ import {
 } from '@abismo/engine';
 import {
   CHECKPOINT_TICKS,
+  isCheckpoint,
+  nextCheckpoint,
   CONTENT_VERSION,
   MAX_LEAD_TICKS,
   PROTOCOL_VERSION,
@@ -99,8 +101,11 @@ class Session {
   lastSeq = 0;
   applied = new Map<number, number>();
   dirtySinceMs: number | null = null;
-  lastSaveMs: number;
+  /** When the periodic save is due; drawn at random at first, so heroes save apart. */
+  nextSaveMs: number;
   tokens = RATE_BURST;
+  /** Spreads the state hashes of different heroes over the 2 minutes (see the load test). */
+  readonly checkpointPhase = Math.floor(Math.random() * CHECKPOINT_TICKS);
   tokensAtMs: number;
 
   constructor(
@@ -113,7 +118,9 @@ class Session {
   ) {
     this.conn = conn;
     this.clock = { tick: state.tick, atMs: nowMs };
-    this.lastSaveMs = nowMs;
+    // Periodic saves spread over the minute, so heroes that came in together do not all save
+    // on the same tick (load test, decision 180).
+    this.nextSaveMs = nowMs + Math.floor(Math.random() * SAVE_EVERY_MS);
     this.tokensAtMs = nowMs;
   }
 
@@ -182,12 +189,15 @@ export class GameServer {
     const now = this.deps.now();
     const saves: Promise<void>[] = [];
     for (const s of this.sessions.values()) {
-      if (this.advance(s, now)) saves.push(this.save(s, now));
-      else if (
-        (s.dirtySinceMs !== null && now - s.dirtySinceMs >= SAVE_DEBOUNCE_MS) ||
-        now - s.lastSaveMs >= SAVE_EVERY_MS
+      const periodic = now >= s.nextSaveMs;
+      // Only the periodic save moves the schedule, so each hero keeps its own slot.
+      if (periodic) s.nextSaveMs = now + SAVE_EVERY_MS;
+      if (
+        this.advance(s, now) ||
+        periodic ||
+        (s.dirtySinceMs !== null && now - s.dirtySinceMs >= SAVE_DEBOUNCE_MS)
       ) {
-        saves.push(this.save(s, now));
+        saves.push(this.save(s));
       }
     }
     await Promise.all(saves);
@@ -199,7 +209,7 @@ export class GameServer {
     await Promise.all(
       [...this.sessions.values()].map((s) => {
         this.advance(s, now);
-        return this.save(s, now);
+        return this.save(s);
       }),
     );
   }
@@ -270,7 +280,7 @@ export class GameServer {
     const s = this.sessions.get(accountId);
     if (!s) return;
     this.advance(s, this.deps.now());
-    await this.save(s, this.deps.now());
+    await this.save(s);
     if (!end) return;
     this.sessions.delete(accountId);
     this.kick(s.conn, 'other_session');
@@ -347,7 +357,7 @@ export class GameServer {
     if (live) {
       // A second device: the first one leaves, the hero carries on from where it is.
       this.advance(live, now);
-      await this.save(live, now);
+      await this.save(live);
       const old = live.conn;
       live.conn = link.conn;
       live.queue = [];
@@ -370,7 +380,7 @@ export class GameServer {
     const report = advanceAway(state, this.deps.content, away, rates);
     const session = new Session(accountId, sessionId, state, link.conn, this.deps.now());
     this.sessions.set(accountId, session);
-    await this.save(session, session.clock.atMs);
+    await this.save(session);
     this.deps.log?.('session_opened', { accountId, awayTicks: away });
     this.welcome(session, report);
   }
@@ -384,6 +394,7 @@ export class GameServer {
       lastSeq: s.lastSeq,
       offlineReport: report,
       contentVersion: CONTENT_VERSION,
+      checkpointPhase: s.checkpointPhase,
     });
   }
 
@@ -393,6 +404,7 @@ export class GameServer {
       clock: { tick: s.state.tick, atMs: s.stateTimeMs() },
       save: encodeSave(s.state, s.stateTimeMs()),
       lastSeq: s.lastSeq,
+      checkpointPhase: s.checkpointPhase,
     });
   }
 
@@ -449,12 +461,15 @@ export class GameServer {
     let saveNow = false;
     while (s.state.tick < target) {
       this.applyDue(s);
-      if (s.state.tick % CHECKPOINT_TICKS === 0) {
+      if (isCheckpoint(s.state.tick, s.checkpointPhase)) {
         this.send(s.conn, { type: 'checkpoint', tick: s.state.tick, hash: hashState(s.state) });
       }
-      const nextCheckpoint = (Math.floor(s.state.tick / CHECKPOINT_TICKS) + 1) * CHECKPOINT_TICKS;
       const nextIntent = s.queue[0]?.atTick ?? Infinity;
-      const stop = Math.min(target, nextCheckpoint, Math.max(s.state.tick + 1, nextIntent));
+      const stop = Math.min(
+        target,
+        nextCheckpoint(s.state.tick, s.checkpointPhase),
+        Math.max(s.state.tick + 1, nextIntent),
+      );
       for (const e of step(s.state, this.deps.content, stop - s.state.tick)) {
         if (important(e)) saveNow = true;
       }
@@ -463,9 +478,8 @@ export class GameServer {
   }
 
   /** Saves a session; if another session (another process) took the hero over, this one ends. */
-  private async save(s: Session, nowMs: number) {
+  private async save(s: Session) {
     s.dirtySinceMs = null;
-    s.lastSaveMs = nowMs;
     const saved = await this.deps.store.save(
       s.accountId,
       s.sessionId,
@@ -484,7 +498,7 @@ export class GameServer {
     const s = link.accountId ? this.sessions.get(link.accountId) : undefined;
     if (!s || s.conn !== link.conn) return;
     this.advance(s, this.deps.now());
-    await this.save(s, this.deps.now());
+    await this.save(s);
     this.sessions.delete(s.accountId);
     await this.deps.store.release(s.accountId, s.sessionId);
     this.deps.log?.('session_closed', { accountId: s.accountId });
