@@ -1,8 +1,9 @@
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import type { ContentDb } from '@abismo/content';
 import {
   IntentError,
   OFFLINE_AFTER_TICKS,
+  SAVE_VERSION,
   TICK_MS,
   advanceAway,
   applyIntent,
@@ -30,7 +31,7 @@ import {
   type NewHeroChoice,
   type ServerMessage,
 } from '@abismo/protocol';
-import type { HeroStore } from './store.ts';
+import type { HeroRecord, HeroStore } from './store.ts';
 
 /** One open WebSocket, as the game server sees it. */
 export interface Connection {
@@ -52,6 +53,17 @@ export interface GameServerDeps {
   /** Engine and content build; clients with another one are asked to reload. */
   buildId: string;
   log?(event: string, data?: Record<string, unknown>): void;
+}
+
+/** What the store keeps of a state whose tick ran at `atMs`. */
+function heroRecord(state: GameState, atMs: number): HeroRecord {
+  return {
+    save: encodeSave(state, atMs),
+    savedAtMs: atMs,
+    name: state.hero.name,
+    tick: state.tick,
+    saveVersion: SAVE_VERSION,
+  };
 }
 
 /** Save after an intent once things settle, and at least this often while playing. */
@@ -93,6 +105,8 @@ class Session {
 
   constructor(
     readonly accountId: string,
+    /** Owner id in the store: a newer session elsewhere makes this one's saves fail. */
+    readonly sessionId: string,
     public state: GameState,
     conn: Connection,
     nowMs: number,
@@ -186,12 +200,13 @@ export class GameServer {
     );
   }
 
-  /** Stores a hero as the account's (tests, imports). */
-  async createHero(accountId: string, state: GameState) {
-    await this.deps.store.save(accountId, {
-      save: encodeSave(state, this.deps.now()),
-      savedAtMs: this.deps.now(),
-    });
+  /** Stores a hero as the account's (tests, imports); false when the account has one. */
+  async createHero(
+    accountId: string,
+    state: GameState,
+    origin: 'new' | 'imported' = 'new',
+  ): Promise<boolean> {
+    return this.deps.store.create(accountId, heroRecord(state, this.deps.now()), origin);
   }
 
   /**
@@ -199,7 +214,6 @@ export class GameServer {
    * randomness, already on the way to the first hunt (like the local game's creation).
    */
   async newHero(accountId: string, choice: NewHeroChoice): Promise<'created' | 'exists'> {
-    if (await this.deps.store.load(accountId)) return 'exists';
     const words = new Uint32Array(randomBytes(16).buffer.slice(0, 16));
     const state = createGame(this.deps.content, {
       ...choice,
@@ -207,7 +221,7 @@ export class GameServer {
     });
     const first = [...this.deps.content.hunts.values()].find((h) => h.startUnlocked);
     if (first) applyIntent(state, this.deps.content, { type: 'start_hunt', huntId: first.id });
-    await this.createHero(accountId, state);
+    if (!(await this.createHero(accountId, state))) return 'exists';
     this.deps.log?.('hero_created', { accountId });
     return 'created';
   }
@@ -282,18 +296,19 @@ export class GameServer {
       this.welcome(live, null);
       return;
     }
-    const stored = await this.deps.store.load(accountId);
-    if (link.closed) return;
+    const sessionId = randomUUID();
+    const stored = await this.deps.store.claim(accountId, sessionId);
     if (!stored) return this.kick(link.conn, 'no_hero');
+    if (link.closed) return this.deps.store.release(accountId, sessionId);
     const state = decodeSave(stored.save, this.deps.content).state;
     const away = Math.max(0, Math.floor((now - stored.savedAtMs) / TICK_MS));
     let rates: RateSheet | null = null;
     if (away >= OFFLINE_AFTER_TICKS && state.hunt && state.activity.kind !== 'idle_town') {
       rates = await this.deps.rates(state, state.hunt.huntId);
     }
-    if (link.closed) return;
+    if (link.closed) return this.deps.store.release(accountId, sessionId);
     const report = advanceAway(state, this.deps.content, away, rates);
-    const session = new Session(accountId, state, link.conn, this.deps.now());
+    const session = new Session(accountId, sessionId, state, link.conn, this.deps.now());
     this.sessions.set(accountId, session);
     await this.save(session, session.clock.atMs);
     this.deps.log?.('session_opened', { accountId, awayTicks: away });
@@ -387,11 +402,19 @@ export class GameServer {
     return saveNow;
   }
 
+  /** Saves a session; if another session (another process) took the hero over, this one ends. */
   private async save(s: Session, nowMs: number) {
     s.dirtySinceMs = null;
     s.lastSaveMs = nowMs;
-    const at = s.stateTimeMs();
-    await this.deps.store.save(s.accountId, { save: encodeSave(s.state, at), savedAtMs: at });
+    const saved = await this.deps.store.save(
+      s.accountId,
+      s.sessionId,
+      heroRecord(s.state, s.stateTimeMs()),
+    );
+    if (saved || this.sessions.get(s.accountId) !== s) return;
+    this.sessions.delete(s.accountId);
+    this.kick(s.conn, 'other_session');
+    this.deps.log?.('session_lost', { accountId: s.accountId });
   }
 
   private async disconnect(link: Link) {
@@ -399,9 +422,10 @@ export class GameServer {
     link.closed = true;
     const s = link.accountId ? this.sessions.get(link.accountId) : undefined;
     if (!s || s.conn !== link.conn) return;
-    this.sessions.delete(s.accountId);
     this.advance(s, this.deps.now());
     await this.save(s, this.deps.now());
+    this.sessions.delete(s.accountId);
+    await this.deps.store.release(s.accountId, s.sessionId);
     this.deps.log?.('session_closed', { accountId: s.accountId });
   }
 }

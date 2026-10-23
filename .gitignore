@@ -21,3 +21,6 @@ tools/simulator/out/
 /tibia-client-15.25.0a00a0.zip
 /tibia-1533-assets/
 /tibia-1533-assets.zip
+
+# Local game server database (PGlite)
+.data/

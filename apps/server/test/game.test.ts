@@ -2,6 +2,7 @@ import { TICKS_PER_HOUR, hashState, stepQuiet, type Intent } from '@abismo/engin
 import { CHECKPOINT_TICKS, PROTOCOL_VERSION, encodeMessage } from '@abismo/protocol';
 import { describe, expect, it } from 'vitest';
 import { brasiliaDay } from '@abismo/protocol';
+import type { MemoryStore } from '../src/store.ts';
 import { World, content } from './harness.ts';
 
 const HUNT: Intent = { type: 'start_hunt', huntId: 'forgotten_cemetery' };
@@ -81,7 +82,7 @@ describe('game server', () => {
     c.disconnect();
     await w.run(500);
     expect(w.server.online).toBe(0);
-    const saved = w.store.heroes.get('davi')!;
+    const saved = (w.store as MemoryStore).heroes.get('davi')!;
     w.now += 2 * 60 * 60 * 1000;
     const back = w.connect('davi');
     await w.run(3_000);
@@ -185,7 +186,7 @@ describe('game server', () => {
     expect(state.hero.name).toBe('Lia');
     expect(state.hunt?.huntId).toBe('forgotten_cemetery');
     const seeds = ['ivo', 'jade'].map(
-      (id) => w.store.heroes.get(id)!.save.match(/"rng":\[[^\]]*\]/)![0],
+      (id) => (w.store as MemoryStore).heroes.get(id)!.save.match(/"rng":\[[^\]]*\]/)![0],
     );
     expect(seeds[0]).not.toBe(seeds[1]);
   });

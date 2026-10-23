@@ -10,7 +10,7 @@ import {
   type ServerMessage,
 } from '@abismo/protocol';
 import { GameServer } from '../src/game.ts';
-import { MemoryStore } from '../src/store.ts';
+import { MemoryStore, type HeroStore } from '../src/store.ts';
 
 export const content = loadContent();
 
@@ -21,14 +21,13 @@ export const content = loadContent();
  */
 export class World {
   now = 1_700_000_000_000;
-  readonly store = new MemoryStore();
   readonly logs: { event: string; data?: Record<string, unknown> }[] = [];
   readonly server: GameServer;
   private inFlight: { at: number; deliver: () => void }[] = [];
   private lastTick = this.now;
   readonly clients: Client[] = [];
 
-  constructor() {
+  constructor(readonly store: HeroStore = new MemoryStore()) {
     this.server = new GameServer({
       content,
       store: this.store,

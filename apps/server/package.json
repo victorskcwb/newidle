@@ -13,8 +13,10 @@
     "@abismo/content": "workspace:*",
     "@abismo/engine": "workspace:*",
     "@abismo/protocol": "workspace:*",
+    "@electric-sql/pglite": "0.5.8",
     "@fastify/websocket": "11.3.3",
     "fastify": "5.12.5",
+    "postgres": "3.4.9",
     "tsx": "4.23.15",
     "zod": "4.6.7"
   },

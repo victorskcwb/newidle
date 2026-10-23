@@ -4,11 +4,19 @@ import { buildApp } from './app.ts';
 import { brasiliaDay } from '@abismo/protocol';
 import { GameServer } from './game.ts';
 import { RatesPool } from './ratesPool.ts';
-import { MemoryStore } from './store.ts';
+import { connectPglite, connectPostgres } from './db/db.ts';
+import { migrate } from './db/migrations.ts';
+import { PgStore } from './store.ts';
 
 const content = loadContent();
 const rates = new RatesPool();
-const store = new MemoryStore();
+// Postgres when DATABASE_URL is set (production, docker-compose); otherwise PGlite in a local
+// folder, so development needs no database server.
+const db = process.env.DATABASE_URL
+  ? connectPostgres(process.env.DATABASE_URL)
+  : await connectPglite(process.env.PGLITE_DIR ?? '.data/pglite');
+await migrate(db);
+const store = new PgStore(db);
 const dev = process.env.NODE_ENV !== 'production';
 /** Replaced by the HTTP app's logger once it exists. */
 let log: (event: string, data?: Record<string, unknown>) => void = () => {};
@@ -46,6 +54,7 @@ async function shutdown() {
   await game.saveAll();
   await rates.close();
   await app.close();
+  await db.close();
   process.exit(0);
 }
 process.on('SIGINT', () => void shutdown());
