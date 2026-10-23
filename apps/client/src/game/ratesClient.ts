@@ -1,4 +1,4 @@
-import { encodeSave, type GameState, type RateSheet } from '@abismo/engine';
+import { encodeSave, type GameState, type HuntDifficulty, type RateSheet } from '@abismo/engine';
 import type { RatesRequest } from './rates.worker.ts';
 
 /** Asks the rates worker for a rate sheet; requests are answered in order. */
@@ -14,9 +14,14 @@ export class RatesClient {
     };
   }
 
-  compute(state: GameState, huntId: string): Promise<RateSheet> {
+  compute(state: GameState, huntId: string, difficulty?: HuntDifficulty): Promise<RateSheet> {
     const id = this.nextId++;
-    const request: RatesRequest = { id, save: encodeSave(state, 0), huntId };
+    const request: RatesRequest = {
+      id,
+      save: encodeSave(state, 0),
+      huntId,
+      ...(difficulty ? { difficulty } : {}),
+    };
     return new Promise((resolve) => {
       this.pending.set(id, resolve);
       this.worker.postMessage(request);

@@ -14,6 +14,9 @@
       "xp": 18,
       "gold": [2, 6],
       "tags": ["undead"],
+      "resistances": {
+        "fire": -15
+      },
       "attack": {
         "style": "melee",
         "element": "physical"
@@ -68,6 +71,9 @@
       "xp": 400,
       "gold": [80, 150],
       "tags": ["undead"],
+      "resistances": {
+        "fire": -15
+      },
       "attack": {
         "style": "melee",
         "element": "dark"
@@ -179,6 +185,9 @@
       "xp": 11,
       "gold": [23, 69],
       "tags": ["undead"],
+      "resistances": {
+        "fire": -15
+      },
       "attack": {
         "style": "ranged",
         "element": "physical"
@@ -205,6 +214,9 @@
       "xp": 11,
       "gold": [26, 78],
       "tags": ["undead"],
+      "resistances": {
+        "fire": -15
+      },
       "attack": {
         "style": "melee",
         "element": "poison"
@@ -260,6 +272,9 @@
       "xp": 13,
       "gold": [33, 99],
       "tags": ["beast"],
+      "resistances": {
+        "ice": -15
+      },
       "attack": {
         "style": "melee",
         "element": "poison"
@@ -286,6 +301,9 @@
       "xp": 14,
       "gold": [36, 108],
       "tags": ["beast"],
+      "resistances": {
+        "ice": -15
+      },
       "attack": {
         "style": "melee",
         "element": "physical"
@@ -313,6 +331,9 @@
       "xp": 303,
       "gold": [1000, 3000],
       "tags": ["boss"],
+      "resistances": {
+        "ice": -15
+      },
       "attack": {
         "style": "melee",
         "element": "poison"
@@ -342,6 +363,10 @@
       "xp": 16,
       "gold": [43, 129],
       "tags": ["undead"],
+      "resistances": {
+        "fire": -15,
+        "ice": 25
+      },
       "attack": {
         "style": "melee",
         "element": "physical"
@@ -368,6 +393,9 @@
       "xp": 17,
       "gold": [46, 138],
       "tags": ["human"],
+      "resistances": {
+        "arcane": 25
+      },
       "attack": {
         "style": "magic",
         "element": "poison"
@@ -394,6 +422,10 @@
       "xp": 369,
       "gold": [1250, 3750],
       "tags": ["boss"],
+      "resistances": {
+        "ice": 50,
+        "fire": -25
+      },
       "attack": {
         "style": "melee",
         "element": "ice"
@@ -423,6 +455,9 @@
       "xp": 19,
       "gold": [53, 159],
       "tags": ["undead"],
+      "resistances": {
+        "fire": -15
+      },
       "attack": {
         "style": "melee",
         "element": "poison"
@@ -505,6 +540,10 @@
       "xp": 24,
       "gold": [64, 192],
       "tags": ["beast", "fire"],
+      "resistances": {
+        "fire": 50,
+        "ice": -25
+      },
       "attack": {
         "style": "melee",
         "element": "fire"
@@ -531,6 +570,9 @@
       "xp": 26,
       "gold": [68, 204],
       "tags": ["undead"],
+      "resistances": {
+        "fire": -15
+      },
       "attack": {
         "style": "melee",
         "element": "physical"
@@ -557,6 +599,10 @@
       "xp": 582,
       "gold": [1825, 5475],
       "tags": ["boss"],
+      "resistances": {
+        "fire": 50,
+        "ice": -25
+      },
       "attack": {
         "style": "melee",
         "element": "fire"
@@ -586,6 +632,11 @@
       "xp": 32,
       "gold": [77, 231],
       "tags": ["construct", "fire"],
+      "resistances": {
+        "fire": 50,
+        "ice": -25,
+        "arcane": 25
+      },
       "attack": {
         "style": "melee",
         "element": "fire"
@@ -613,6 +664,10 @@
       "xp": 34,
       "gold": [81, 243],
       "tags": ["human", "fire"],
+      "resistances": {
+        "fire": 50,
+        "ice": -25
+      },
       "attack": {
         "style": "magic",
         "element": "fire"
@@ -639,6 +694,10 @@
       "xp": 752,
       "gold": [2150, 6450],
       "tags": ["boss"],
+      "resistances": {
+        "fire": 50,
+        "ice": -25
+      },
       "attack": {
         "style": "magic",
         "element": "fire"
@@ -668,6 +727,10 @@
       "xp": 40,
       "gold": [90, 270],
       "tags": ["undead"],
+      "resistances": {
+        "fire": 50,
+        "ice": -25
+      },
       "attack": {
         "style": "melee",
         "element": "fire"
@@ -695,6 +758,10 @@
       "xp": 45,
       "gold": [95, 285],
       "tags": ["undead", "fire"],
+      "resistances": {
+        "fire": 50,
+        "ice": -25
+      },
       "attack": {
         "style": "magic",
         "element": "fire"
@@ -721,6 +788,10 @@
       "xp": 1489,
       "gold": [4000, 12000],
       "tags": ["boss"],
+      "resistances": {
+        "fire": 50,
+        "ice": -25
+      },
       "attack": {
         "style": "melee",
         "element": "fire"
@@ -776,6 +847,10 @@
       "xp": 11,
       "gold": [24, 74],
       "tags": ["undead"],
+      "resistances": {
+        "fire": -15,
+        "arcane": -25
+      },
       "attack": {
         "style": "magic",
         "element": "dark"
@@ -802,6 +877,9 @@
       "xp": 14,
       "gold": [34, 104],
       "tags": ["beast"],
+      "resistances": {
+        "ice": -15
+      },
       "attack": {
         "style": "melee",
         "element": "poison"
@@ -828,6 +906,10 @@
       "xp": 16,
       "gold": [44, 134],
       "tags": ["undead"],
+      "resistances": {
+        "fire": -25,
+        "ice": 50
+      },
       "attack": {
         "style": "magic",
         "element": "ice"
@@ -854,6 +936,10 @@
       "xp": 20,
       "gold": [54, 164],
       "tags": ["undead"],
+      "resistances": {
+        "fire": -15,
+        "arcane": 25
+      },
       "attack": {
         "style": "magic",
         "element": "poison"
@@ -880,6 +966,10 @@
       "xp": 25,
       "gold": [66, 198],
       "tags": ["beast", "fire"],
+      "resistances": {
+        "fire": 50,
+        "ice": -25
+      },
       "attack": {
         "style": "magic",
         "element": "fire"
@@ -906,6 +996,11 @@
       "xp": 33,
       "gold": [79, 237],
       "tags": ["construct", "fire"],
+      "resistances": {
+        "fire": 50,
+        "ice": -25,
+        "arcane": 25
+      },
       "attack": {
         "style": "magic",
         "element": "fire"
@@ -932,6 +1027,10 @@
       "xp": 42,
       "gold": [92, 278],
       "tags": ["beast"],
+      "resistances": {
+        "fire": 50,
+        "ice": -25
+      },
       "attack": {
         "style": "melee",
         "element": "fire"

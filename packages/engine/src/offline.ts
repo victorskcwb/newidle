@@ -21,6 +21,7 @@ import { runAutomations } from './automation.ts';
 import { stepQuiet } from './hunt.ts';
 import { rngBinomial, rngChance, rngInt, type RngState } from './rng.ts';
 import { heroStats } from './stats.ts';
+import { difficultyRule, huntAt } from './difficulty.ts';
 import { offlineCapTicks } from './upgrades.ts';
 import type { GameEvent, GameState, ItemInstance } from './types.ts';
 
@@ -365,13 +366,14 @@ function resolveStretch(
   const resolvedTicks = Math.max(0, Math.min(elapsedTicks, capTicks));
   const report: OfflineReport = { ...emptyReport(s, elapsedTicks), resolvedTicks };
   const hunting = s.hunt !== null && s.activity.kind !== 'idle_town' && rates !== null;
-  if (!hunting || rates.huntId !== s.hunt!.huntId) {
+  if (!hunting || rates.huntId !== s.hunt!.huntId || rates.difficulty !== s.hunt!.difficulty) {
     // Production keeps going in town.
     resolveProfessions(s, content, resolvedTicks, 0, report);
     s.tick += elapsedTicks;
     return report;
   }
-  const hunt = content.hunts.get(rates.huntId)!;
+  const hunt = huntAt(content.hunts.get(rates.huntId)!, rates.difficulty);
+  const mfBonus = difficultyRule(rates.difficulty).magicFindPct;
 
   // 1. Effective hunting time.
   let hours = resolvedTicks / TICKS_PER_HOUR;
@@ -463,7 +465,13 @@ function resolveStretch(
   const counts = kills.map((c) => {
     const out = emptyRarities();
     if (c.n === 0) return out;
-    const loot = categoryLoot(content, c.monsterId, c.elite, stats.magicFindPct, hunt.ilvl);
+    const loot = categoryLoot(
+      content,
+      c.monsterId,
+      c.elite,
+      stats.magicFindPct + mfBonus,
+      hunt.ilvl,
+    );
     for (const r of RARITY_ORDER) {
       const perRollPpm = Math.floor((loot.dropPpm * loot.rarity[r]) / PPM);
       out[r] = rngBinomial(rng, c.n * loot.rolls, perRollPpm);

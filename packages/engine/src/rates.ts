@@ -15,7 +15,8 @@ import { cardChancePpm } from './cards.ts';
 import { legendaryAllowed, rarityTable } from './items.ts';
 import { cloneState } from './state.ts';
 import { heroStats } from './stats.ts';
-import type { GameState } from './types.ts';
+import { difficultyRule, huntAt } from './difficulty.ts';
+import type { GameState, HuntDifficulty } from './types.ts';
 
 /** Kills of one kind of monster (elite or not) per hour. */
 export interface KillCategory {
@@ -31,6 +32,7 @@ export interface KillCategory {
  */
 export interface RateSheet {
   huntId: string;
+  difficulty: HuntDifficulty;
   heroLevel: number;
   /** Simulated hunting time the sheet is based on. */
   sampleTicks: number;
@@ -70,15 +72,33 @@ export function newCounters(): SimCounters {
   };
 }
 
+/**
+ * Difficulty a hunt is sampled at when none is given: the one the hero has chosen there,
+ * or normal for another hunt.
+ */
+export function sampleDifficulty(state: GameState, huntId: string): HuntDifficulty {
+  return state.hunt?.huntId === huntId ? state.hunt.difficulty : 'normal';
+}
+
 /** Puts a copy of the hero at the start of a hunt (no travel), ready to sample it. */
-export function prepareSample(state: GameState, content: ContentDb, huntId: string): GameState {
+export function prepareSample(
+  state: GameState,
+  content: ContentDb,
+  huntId: string,
+  difficulty: HuntDifficulty = sampleDifficulty(state, huntId),
+): GameState {
   const s = cloneState(state);
   s.dungeon.active = false;
   // Fed when there is a meal to eat, so the sheet measures the setup the hero will hunt with.
   eatIfHungry(s, content);
   const stats = heroStats(s.hero, content);
   const same = s.hunt?.huntId === huntId;
-  s.hunt = { huntId, killsSinceBoss: same ? s.hunt!.killsSinceBoss : 0, consecutiveDeaths: 0 };
+  s.hunt = {
+    huntId,
+    difficulty,
+    killsSinceBoss: same ? s.hunt!.killsSinceBoss : 0,
+    consecutiveDeaths: 0,
+  };
   s.activity = { kind: 'to_hunt', untilTick: s.tick };
   s.hero.hp = stats.maxHp;
   s.hero.mana = stats.maxMana;
@@ -164,8 +184,9 @@ export function computeRates(
   content: ContentDb,
   huntId: string,
   sampleTicks = RATE_SAMPLE_TICKS,
+  difficulty: HuntDifficulty = sampleDifficulty(state, huntId),
 ): RateSheet {
-  const s = prepareSample(state, content, huntId);
+  const s = prepareSample(state, content, huntId, difficulty);
   const counters = newCounters();
   const start = s.tick;
   stepQuiet(s, content, sampleTicks, { freezeLevel: true, counters });
@@ -186,7 +207,8 @@ export function computeRates(
   // Kill counts come from the sample; the mix of monsters is exact from the hunt's content
   // (spawn weights, group sizes, elite chance), so rare elite drops do not depend on a lucky
   // sample. Bosses come from the sample (they only count when the hero actually wins).
-  const hunt = content.hunts.get(huntId)!;
+  const hunt = huntAt(content.hunts.get(huntId)!, difficulty);
+  const bonus = difficultyRule(difficulty);
   let normalKills = 0;
   let bossKills = 0;
   for (const [key, n] of counters.kills) {
@@ -211,7 +233,8 @@ export function computeRates(
   for (const { monsterId, elite, n } of mix) {
     if (n <= 0) continue;
     const killsPerHour = perHour(n);
-    goldPerHour += killsPerHour * expectedGold(content, monsterId, elite, stats.goldPct);
+    goldPerHour +=
+      killsPerHour * expectedGold(content, monsterId, elite, stats.goldPct + bonus.goldPct);
     const cardId = content.monsters.get(monsterId)?.cardId;
     const card = cardId ? content.cards.get(cardId) : undefined;
     if (card) {
@@ -220,7 +243,13 @@ export function computeRates(
         (killsPerHour * cardChancePpm(card, elite, false, stats.cardLuckPct)) / PPM;
     }
     categories.push({ monsterId, elite, killsPerHour });
-    const loot = categoryLoot(content, monsterId, elite, stats.magicFindPct, hunt.ilvl);
+    const loot = categoryLoot(
+      content,
+      monsterId,
+      elite,
+      stats.magicFindPct + bonus.magicFindPct,
+      hunt.ilvl,
+    );
     for (const r of RARITY_ORDER) {
       dropsPerHour[r] += (killsPerHour * loot.rolls * loot.dropPpm * loot.rarity[r]) / (PPM * PPM);
     }
@@ -238,6 +267,7 @@ export function computeRates(
 
   return {
     huntId,
+    difficulty,
     heroLevel: state.hero.level,
     sampleTicks: activeTicks,
     killsPerHour: perHour(kills),

@@ -1,5 +1,6 @@
 import { improvesCollection } from './collection.ts';
 import { endDungeonRun } from './dungeon.ts';
+import { HUNT_DIFFICULTIES, difficultyUnlocked } from './difficulty.ts';
 import { EQUIPMENT_SLOTS, type ContentDb, type EquipmentSlot, type Rarity } from '@abismo/content';
 import { MAX_LEVEL, TELEPORT_TICKS, TICKS_PER_SECOND } from './constants.ts';
 import { rarityRank, rollSalvage } from './items.ts';
@@ -9,6 +10,7 @@ import type {
   AutoAllocateProfile,
   GameEvent,
   GameState,
+  HuntDifficulty,
   ItemInstance,
   LootFilter,
   TargetPriority,
@@ -22,14 +24,24 @@ import { xpToNext } from './xp.ts';
  */
 
 /** Sends the hero to a hunt. From the field, the hero leaves the current fight at once. */
-export function startHunt(s: GameState, content: ContentDb, huntId: string): GameEvent[] {
+export function startHunt(
+  s: GameState,
+  content: ContentDb,
+  huntId: string,
+  /** Absent: the difficulty already chosen in this hunt, or normal in another one. */
+  difficulty?: HuntDifficulty,
+): GameEvent[] {
   const hunt = content.hunts.get(huntId);
   if (!hunt) throw new IntentError('unknown_hunt');
   if (!s.unlockedHunts.includes(huntId)) throw new IntentError('hunt_locked');
-  endDungeonRun(s, s.tick, null, 'left');
   const sameHunt = s.hunt?.huntId === huntId;
+  const d = difficulty ?? (sameHunt ? s.hunt!.difficulty : 'normal');
+  if (!HUNT_DIFFICULTIES.includes(d)) throw new IntentError('unknown_difficulty');
+  if (!difficultyUnlocked(s, hunt, d)) throw new IntentError('difficulty_locked');
+  endDungeonRun(s, s.tick, null, 'left');
   s.hunt = {
     huntId,
+    difficulty: d,
     killsSinceBoss: sameHunt ? s.hunt!.killsSinceBoss : 0,
     consecutiveDeaths: 0,
   };

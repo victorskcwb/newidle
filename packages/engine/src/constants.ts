@@ -53,6 +53,14 @@ export const ELITE_DAMAGE_PCT = 150;
 export const ELITE_REWARD_PCT = 200;
 export const ELITE_DROP_CHANCE_PCT = 300;
 export const ELITE_MAGIC_FIND_BONUS = 100;
+/** Largest group a hunt sends at once (content allows up to this; hard difficulty caps here). */
+export const MAX_GROUP_SIZE = 4;
+/** Hunt difficulties (decision 168): normal is the hunt as written in the content. */
+export const HUNT_DIFFICULTY_RULES = {
+  easy: { groupSizeDelta: -1, eliteChancePct: 50, goldPct: 0, magicFindPct: -20 },
+  normal: { groupSizeDelta: 0, eliteChancePct: 100, goldPct: 0, magicFindPct: 0 },
+  hard: { groupSizeDelta: 1, eliteChancePct: 150, goldPct: 15, magicFindPct: 25 },
+} as const;
 /** Elite modifiers rolled per elite (milestone 2). */
 export const ELITE_AFFIX_COUNT: readonly [number, number] = [1, 2];
 export const POTION_COOLDOWN_TICKS = 5 * TICKS_PER_SECOND;

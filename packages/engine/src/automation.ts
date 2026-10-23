@@ -1,4 +1,5 @@
 import type { ContentDb, Hunt } from '@abismo/content';
+import { difficultyUnlocked } from './difficulty.ts';
 import { equipBest } from './intents.ts';
 import { IntentError } from './progression.ts';
 import { performReset, resetBlock } from './resets.ts';
@@ -61,7 +62,7 @@ export function runAutomations(s: GameState, content: ContentDb, out: GameEvent[
     // Back to hunting, somewhere a level-1 hero can survive.
     const start = bestHuntFor(s, content);
     if (start) {
-      s.hunt = { huntId: start.id, killsSinceBoss: 0, consecutiveDeaths: 0 };
+      s.hunt = { huntId: start.id, difficulty: 'normal', killsSinceBoss: 0, consecutiveDeaths: 0 };
       s.activity = { kind: 'to_hunt', untilTick: s.tick + 1 };
       out?.push({ type: 'HuntStarted', tick: s.tick, huntId: start.id });
     }
@@ -77,7 +78,9 @@ export function runAutomations(s: GameState, content: ContentDb, out: GameEvent[
   if (automationOn(s, 'bestHunt') && s.hunt) {
     const best = bestHuntFor(s, content);
     if (best && best.id !== s.hunt.huntId) {
-      s.hunt = { huntId: best.id, killsSinceBoss: 0, consecutiveDeaths: 0 };
+      // Keeps the chosen difficulty when the new hunt allows it.
+      const keep = difficultyUnlocked(s, best, s.hunt.difficulty) ? s.hunt.difficulty : 'normal';
+      s.hunt = { huntId: best.id, difficulty: keep, killsSinceBoss: 0, consecutiveDeaths: 0 };
       changed = true;
       out?.push({ type: 'HuntStarted', tick: s.tick, huntId: best.id });
     }

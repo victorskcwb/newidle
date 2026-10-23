@@ -9,7 +9,7 @@ import type { GameState, ItemInstance } from './types.ts';
  * the GameState with every bigint written as `{ "$bigint": "<digits>" }`. Loading migrates
  * older versions step by step and validates the result with Zod and against the content.
  */
-export const SAVE_VERSION = 19;
+export const SAVE_VERSION = 20;
 
 export interface SaveFile {
   version: number;
@@ -56,6 +56,25 @@ const monster = z.strictObject({
   affixes: z.array(id),
 });
 
+const pctThreshold = int.min(1).max(99);
+const ruleCondition = z.discriminatedUnion('kind', [
+  z.strictObject({
+    kind: z.enum(['hero_hp', 'hero_mana', 'target_hp']),
+    op: z.enum(['below', 'above']),
+    pct: pctThreshold,
+  }),
+  z.strictObject({
+    kind: z.literal('enemies'),
+    op: z.enum(['at_least', 'at_most']),
+    count: int.min(1).max(8),
+  }),
+  z.strictObject({ kind: z.literal('target'), is: z.enum(['boss', 'elite', 'normal']) }),
+]);
+export const skillRuleSchema = z.strictObject({
+  logic: z.enum(['all', 'any']),
+  conditions: z.array(ruleCondition).max(3),
+});
+
 const townReason = z.enum(['backpack_full', 'no_potions', 'death', 'manual']);
 
 const attributes = z.strictObject({
@@ -82,7 +101,7 @@ const quest = z.strictObject({
 });
 
 export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
-  version: z.literal(19),
+  version: z.literal(20),
   tick: nonNeg,
   rng: z.tuple([int, int, int, int]),
   nextUid: nonNeg,
@@ -144,9 +163,15 @@ export const gameStateSchema: z.ZodType<GameState> = z.strictObject({
       autoSkills: z.boolean(),
       autoReset: z.boolean(),
     }),
+    skillRules: z.record(z.string(), skillRuleSchema),
   }),
   hunt: z
-    .strictObject({ huntId: id, killsSinceBoss: nonNeg, consecutiveDeaths: nonNeg })
+    .strictObject({
+      huntId: id,
+      difficulty: z.enum(['easy', 'normal', 'hard']),
+      killsSinceBoss: nonNeg,
+      consecutiveDeaths: nonNeg,
+    })
     .nullable(),
   activity: z.discriminatedUnion('kind', [
     z.strictObject({ kind: z.literal('idle_town') }),
@@ -318,6 +343,19 @@ export const SAVE_MIGRATIONS: Record<
       resources: {},
     },
   }),
+  /** v19 → v20: skill rules (none: every skill used when ready) and hunt difficulty (normal). */
+  19: (raw) => {
+    const state = raw.state as { settings: object; hunt: object | null };
+    return {
+      ...raw,
+      state: {
+        ...state,
+        version: 20,
+        settings: { ...state.settings, skillRules: {} },
+        hunt: state.hunt ? { ...state.hunt, difficulty: 'normal' } : null,
+      },
+    };
+  },
   /** v18 → v19: pets (none found). */
   18: (raw) => {
     const state = raw.state as { hero: object };

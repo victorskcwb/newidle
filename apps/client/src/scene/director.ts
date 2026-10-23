@@ -62,7 +62,7 @@ const WANDERER_RESPAWN_MS: [number, number] = [4000, 9000];
 const WANDER_RADIUS = 3;
 const WANDER_SPEED = 1.2;
 /** A group monster notices the hero this close (tiles) and runs at it. */
-const AGGRO_RADIUS = 5;
+const AGGRO_RADIUS = 3;
 const CHASE_SPEED = 2.2;
 /** Archers and casters stop this far from the hero to shoot. */
 const MONSTER_REACH = 3;
@@ -1079,21 +1079,15 @@ export class Director {
           break;
         }
         const d = chebyshev(hero.tile, target.actor.tile);
-        // Ranged classes stop as soon as the target is within reach.
-        if (this.range > 1 && d <= this.range) hero.path = [];
+        // Stop as soon as the target is within reach (it may have come to meet the hero).
+        if (d <= this.range) hero.path = [];
         if (d <= this.range && !moving) {
           this.mode = 'fight';
           hero.face(target.actor.x, target.actor.y);
           break;
         }
-        // A fighter running at the hero: stand and wait for it rather than walk into it.
-        if (target.chasing && this.reachOf(target.def) === 1 && d <= AGGRO_RADIUS) {
-          hero.path = [];
-          hero.face(target.actor.x, target.actor.y);
-          this.engageDest = null;
-          break;
-        }
-        if (!moving || !this.engageDest) {
+        // Keep walking at the target; a new path when it has moved away from the old spot.
+        if (!moving || !this.engageDest || chebyshev(this.engageDest, target.actor.tile) > 1) {
           this.engageDest = this.attackSpot(target.actor.tile);
           hero.path = this.paths.find(hero.tile, this.engageDest) ?? [];
           if (hero.path.length === 0 && key(hero.tile) !== key(this.engageDest)) {

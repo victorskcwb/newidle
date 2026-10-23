@@ -5,6 +5,7 @@ import { formatNumber, t } from '../../i18n.ts';
 import { Sheet, tryIntent } from '../Sheet.tsx';
 import { useSim } from '../useSim.ts';
 import { Icon } from '../Icon.tsx';
+import { SkillRuleEditor } from '../SkillRuleEditor.tsx';
 
 function blockText(
   block: LearnBlock,
@@ -60,6 +61,10 @@ export function SkillsScreen() {
   const learnedActives = tree.filter(
     (s) => s.kind === 'active' && (hero.skillLevels[s.id] ?? 0) > 0,
   );
+  // Skills in the action slots, in priority order: the ones a rule can apply to.
+  const slotted = hero.activeSkills
+    .map((id) => (id ? sim.content.skills.get(id) : undefined))
+    .filter((sk): sk is Skill => !!sk && sk.kind === 'active');
 
   return (
     <Sheet title={t('screen.skills')} testId="skills">
@@ -128,6 +133,18 @@ export function SkillsScreen() {
         </div>
       )}
       {error && <p className="tone-bad">{error}</p>}
+
+      {slotted.length > 0 && (
+        <>
+          <h3 className="pixel">{t('rules.title')}</h3>
+          <p className="muted small">{t('rules.hint')}</p>
+          <div className="skill-rules">
+            {slotted.map((skill) => (
+              <SkillRuleEditor key={skill.id} skill={skill} />
+            ))}
+          </div>
+        </>
+      )}
 
       <h3 className="pixel">{t(`skills.tree.${hero.classId}`)}</h3>
       <div className="tree" style={{ gridTemplateRows: `repeat(${rows}, auto)` }}>

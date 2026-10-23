@@ -33,7 +33,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
     refine: 0,
   };
   const s: GameState = {
-    version: 19,
+    version: 20,
     tick: 0,
     rng: createRng(hero.seed),
     nextUid: 2,
@@ -85,6 +85,7 @@ export function createGame(content: ContentDb, hero: NewHero): GameState {
       autoSellUpTo: null,
       mealId: null,
       automation: { equipBest: false, bestHunt: false, autoSkills: false, autoReset: false },
+      skillRules: {},
     },
     hunt: null,
     activity: { kind: 'idle_town' },

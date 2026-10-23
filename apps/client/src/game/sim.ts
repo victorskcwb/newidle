@@ -39,6 +39,7 @@ import {
   salvageUpTo,
   sellItems,
   setActiveSkill,
+  setSkillRule,
   setHuntBehaviour,
   setAutoAllocate,
   setLootFilter,
@@ -53,12 +54,14 @@ import {
   type AutoAllocateProfile,
   type GameEvent,
   type GameState,
+  type HuntDifficulty,
   type LootFilter,
   type OfflineReport,
   type PotionSettings,
   type RateSheet,
   type RefineResult,
   type RolledAffix,
+  type SkillRule,
 } from '@abismo/engine';
 import { RatesClient } from './ratesClient.ts';
 import { recordHistory } from './history.ts';
@@ -189,8 +192,12 @@ export class GameSim {
 
   // --- Intents ------------------------------------------------------------------------------
 
-  startHunt(huntId: string) {
-    this.emit({ kind: 'events', events: startHunt(this.state, this.content, huntId) });
+  /** Without a difficulty: the one already chosen in that hunt, or normal elsewhere. */
+  startHunt(huntId: string, difficulty?: HuntDifficulty) {
+    this.emit({
+      kind: 'events',
+      events: startHunt(this.state, this.content, huntId, difficulty),
+    });
     this.changed(true);
   }
 
@@ -359,6 +366,12 @@ export class GameSim {
     this.changed(true);
   }
 
+  /** When an active skill may be used (null clears the rule: used whenever ready). */
+  setSkillRule(skillId: string, rule: SkillRule | null) {
+    setSkillRule(this.state, this.content, skillId, rule);
+    this.changed(true);
+  }
+
   respecSkills() {
     respecSkills(this.state);
     this.freshSnapshot();
@@ -434,9 +447,9 @@ export class GameSim {
   }
 
   /** Rate sheet of the current setup in any hunt (computed off the main thread). */
-  ratesFor(huntId: string): Promise<RateSheet> {
+  ratesFor(huntId: string, difficulty?: HuntDifficulty): Promise<RateSheet> {
     this.ratesClient ??= new RatesClient();
-    return this.ratesClient.compute(this.state, huntId);
+    return this.ratesClient.compute(this.state, huntId, difficulty);
   }
 
   // --- Internals ----------------------------------------------------------------------------

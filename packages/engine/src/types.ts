@@ -107,7 +107,30 @@ export interface Settings {
   targetPriority: TargetPriority;
   /** On every town visit, backpack items up to this rarity are sold (null = never). */
   autoSellUpTo: Rarity | null;
+  /**
+   * When each active skill may be used (skill id → rule). A skill without a rule is used
+   * whenever it is ready, as before rules existed.
+   */
+  skillRules: Record<string, SkillRule>;
 }
+
+/** Comparison of a percentage (life, mana) with a threshold. */
+export type PctOp = 'below' | 'above';
+
+/** One condition of a skill rule, checked when the hero is about to swing. */
+export type RuleCondition =
+  | { kind: 'hero_hp' | 'hero_mana' | 'target_hp'; op: PctOp; pct: number }
+  | { kind: 'enemies'; op: 'at_least' | 'at_most'; count: number }
+  | { kind: 'target'; is: 'boss' | 'elite' | 'normal' };
+
+export interface SkillRule {
+  /** all = every condition must hold; any = one is enough. */
+  logic: 'all' | 'any';
+  conditions: RuleCondition[];
+}
+
+/** Hunt difficulty: how many monsters come at once and how much they are worth. */
+export type HuntDifficulty = 'easy' | 'normal' | 'hard';
 
 export type TargetPriority = 'first' | 'weakest' | 'strongest';
 
@@ -140,6 +163,7 @@ export type TownReason = 'backpack_full' | 'no_potions' | 'death' | 'manual' | '
 
 export interface HuntProgress {
   huntId: string;
+  difficulty: HuntDifficulty;
   killsSinceBoss: number;
   consecutiveDeaths: number;
 }
@@ -172,7 +196,7 @@ export interface DropPity {
  * (gold, materials, lifetime totals); the save layer encodes bigints as strings.
  */
 export interface GameState {
-  version: 19;
+  version: 20;
   /** Simulation ticks since the hero was created. */
   tick: number;
   rng: RngState;

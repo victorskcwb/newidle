@@ -1,5 +1,14 @@
 import type { Hunt, Monster } from '@abismo/content';
-import { ILVL_SPREAD, LEGENDARY_MIN_HUNT_ILVL, type RateSheet } from '@abismo/engine';
+import {
+  difficultyRule,
+  difficultyUnlocked,
+  huntAt,
+  HUNT_DIFFICULTIES,
+  ILVL_SPREAD,
+  LEGENDARY_MIN_HUNT_ILVL,
+  type HuntDifficulty,
+  type RateSheet,
+} from '@abismo/engine';
 import { useEffect, useState } from 'react';
 import { formatNumber, t } from '../i18n.ts';
 import { useUi } from '../state/store.ts';
@@ -51,6 +60,29 @@ export function MonsterSprite({ monster }: { monster: Monster }) {
 }
 
 /** Everything about one hunt: monsters, drops and, when unlocked, the rates per hour. */
+function signed(n: number): string {
+  return n > 0 ? `+${n}` : String(n);
+}
+
+/** What a monster resists or is weak to (decision 170), e.g. "fogo 50% · gelo −25%". */
+function Resistances({ monster }: { monster: Monster }) {
+  const entries = Object.entries(monster.resistances ?? {}).filter(([, v]) => v !== 0);
+  if (entries.length === 0) return null;
+  return (
+    <div className="small resistances">
+      {entries.map(([element, pct]) => (
+        <span
+          key={element}
+          className={pct! > 0 ? 'tone-bad' : 'tone-good'}
+          title={pct! > 0 ? t('resist.resists') : t('resist.weak')}
+        >
+          {t(`element.${element}`)} {pct! > 0 ? `${pct}%` : `−${-pct!}%`}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function HuntInfo({
   hunt,
   rates,
@@ -63,6 +95,21 @@ export function HuntInfo({
   const sim = useSim();
   const openScreen = useUi((s) => s.openScreen);
   const s = sim.state;
+  const chosen = s.hunt?.huntId === hunt.id ? s.hunt.difficulty : 'normal';
+  const [difficulty, setDifficulty] = useState<HuntDifficulty>(chosen);
+  // The sheet passed in is for the difficulty already chosen; another one is sampled here.
+  const [otherRates, setOtherRates] = useState<RateSheet | null>(null);
+  useEffect(() => setDifficulty(chosen), [hunt.id]);
+  useEffect(() => {
+    setOtherRates(null);
+    if (locked || rates?.difficulty === difficulty) return;
+    let live = true;
+    void sim.ratesFor(hunt.id, difficulty).then((r) => live && setOtherRates(r));
+    return () => {
+      live = false;
+    };
+  }, [hunt.id, difficulty]);
+  const shown = rates?.difficulty === difficulty ? rates : (otherRates ?? undefined);
   const totalWeight = hunt.spawns.reduce((n, sp) => n + sp.weight, 0);
   const mobs = hunt.spawns.map((sp) => ({
     m: sim.content.monsters.get(sp.monsterId)!,
@@ -75,7 +122,12 @@ export function HuntInfo({
         n + share * (sim.content.lootTables.get(m.lootTableId)?.equipmentDropChancePpm ?? 0),
       0,
     ) / 10_000;
-  const current = s.hunt?.huntId === hunt.id && s.activity.kind !== 'idle_town';
+  const current =
+    s.hunt?.huntId === hunt.id &&
+    s.hunt.difficulty === difficulty &&
+    s.activity.kind !== 'idle_town';
+  const groups = huntAt(hunt, difficulty).groupSize;
+  const rule = difficultyRule(difficulty);
   return (
     <div className="hunt-info" data-testid="hunt-info">
       <div className="hunt-info-head">
@@ -93,7 +145,7 @@ export function HuntInfo({
             className={`btn${current ? '' : ' btn-primary'}`}
             disabled={current}
             onClick={() => {
-              sim.startHunt(hunt.id);
+              sim.startHunt(hunt.id, difficulty);
               openScreen(null);
             }}
             data-testid="map-hunt"
@@ -103,6 +155,41 @@ export function HuntInfo({
         )}
       </div>
       {locked && <div className="tone-bad small">🔒 {locked}</div>}
+
+      {!locked && (
+        <div className="difficulty" role="radiogroup" aria-label={t('difficulty.title')}>
+          {HUNT_DIFFICULTIES.map((d) => {
+            const open = difficultyUnlocked(s, hunt, d);
+            return (
+              <button
+                key={d}
+                type="button"
+                role="radio"
+                aria-checked={difficulty === d}
+                className={`filter-chip difficulty-${d}${difficulty === d ? ' active' : ''}`}
+                disabled={!open}
+                title={open ? undefined : t('difficulty.locked')}
+                onClick={() => setDifficulty(d)}
+                data-testid={`difficulty-${d}`}
+              >
+                {!open && '🔒 '}
+                {t(`difficulty.${d}`)}
+              </button>
+            );
+          })}
+          <div className="muted small difficulty-facts">
+            {[
+              t('difficulty.groups', { min: groups.min, max: groups.max }),
+              rule.eliteChancePct !== 100 && t('difficulty.elites', { pct: rule.eliteChancePct }),
+              rule.goldPct !== 0 && t('difficulty.gold', { pct: signed(rule.goldPct) }),
+              rule.magicFindPct !== 0 &&
+                t('difficulty.magicFind', { pct: signed(rule.magicFindPct) }),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </div>
+        </div>
+      )}
 
       <h4 className="pixel">{t('map.monsters')}</h4>
       <div className="mob-list">
@@ -115,6 +202,7 @@ export function HuntInfo({
                 {t('hud.level', { level: m.level })} · {t('map.hp', { n: formatNumber(m.hp) })} ·{' '}
                 {t('map.xp', { n: m.xp })} · {Math.round(share * 100)}%
               </div>
+              <Resistances monster={m} />
             </div>
           </div>
         ))}
@@ -130,6 +218,7 @@ export function HuntInfo({
                 {t('hud.level', { level: boss.level })} ·{' '}
                 {t('map.hp', { n: formatNumber(boss.hp) })}
               </div>
+              <Resistances monster={boss} />
             </div>
           </div>
         )}
@@ -159,26 +248,26 @@ export function HuntInfo({
       {!locked && (
         <>
           <h4 className="pixel">{t('map.perHour')}</h4>
-          {rates ? (
+          {shown ? (
             <div className="rate-grid">
               <div>
-                <Icon name="hunt" size={16} /> <b>{formatNumber(rates.killsPerHour)}</b>
+                <Icon name="hunt" size={16} /> <b>{formatNumber(shown.killsPerHour)}</b>
                 <span className="muted small">{t('map.kills')}</span>
               </div>
               <div>
                 <Icon name="xp" size={16} className="tone-xp" />{' '}
-                <b>{formatNumber(rates.xpPerHour)}</b>
+                <b>{formatNumber(shown.xpPerHour)}</b>
                 <span className="muted small">XP</span>
               </div>
               <div>
-                <PixelIcon name="gold" size={16} /> <b>{formatNumber(rates.goldPerHour)}</b>
+                <PixelIcon name="gold" size={16} /> <b>{formatNumber(shown.goldPerHour)}</b>
                 <span className="muted small">{t('hud.gold')}</span>
               </div>
               <div>
                 <PixelIcon name="item.iron_blade" size={16} />{' '}
                 <b>
                   {formatNumber(
-                    Math.round(Object.values(rates.dropsPerHour).reduce((a, b) => a + b, 0)),
+                    Math.round(Object.values(shown.dropsPerHour).reduce((a, b) => a + b, 0)),
                   )}
                 </b>
                 <span className="muted small">{t('map.items')}</span>
@@ -187,13 +276,13 @@ export function HuntInfo({
                 <PixelIcon name="consumable.potion_hp_small" size={16} />{' '}
                 <b>
                   {formatNumber(
-                    Math.round(Object.values(rates.potionsUsedPerHour).reduce((a, b) => a + b, 0)),
+                    Math.round(Object.values(shown.potionsUsedPerHour).reduce((a, b) => a + b, 0)),
                   )}
                 </b>
                 <span className="muted small">{t('map.potions')}</span>
               </div>
               <div>
-                <PixelIcon name="skull" size={16} /> <b>{rates.deathsPerHour.toFixed(1)}</b>
+                <PixelIcon name="skull" size={16} /> <b>{shown.deathsPerHour.toFixed(1)}</b>
                 <span className="muted small">{t('map.deaths')}</span>
               </div>
             </div>

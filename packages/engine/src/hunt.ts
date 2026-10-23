@@ -1,4 +1,13 @@
-import type { Consumable, ContentDb, Hunt, Monster, MonsterAffix, Rarity } from '@abismo/content';
+import type {
+  Consumable,
+  ContentDb,
+  Element,
+  Hunt,
+  Monster,
+  MonsterAffix,
+  Rarity,
+} from '@abismo/content';
+import { classOf } from './classes.ts';
 import { rollHit, type AttackProfile } from './combat.ts';
 import {
   BASE_CRIT_CHANCE_PPM,
@@ -49,6 +58,8 @@ import {
   isBossFloor,
 } from './dungeon.ts';
 import { grantReward } from './login.ts';
+import { currentDifficulty, difficultyRule, huntAt } from './difficulty.ts';
+import { ruleAllows, type RuleContext } from './skillRules.ts';
 import { rollSetPiece } from './sets.ts';
 import { rollPetDrop } from './pets.ts';
 import { sellPrice } from './town.ts';
@@ -129,7 +140,8 @@ export function huntOf(state: GameState, content: ContentDb): Hunt | null {
     if (!hunt) cache.set(state.dungeon.floor, (hunt = floorHunt(content, state.dungeon.floor)));
     return hunt;
   }
-  return state.hunt ? (content.hunts.get(state.hunt.huntId) ?? null) : null;
+  const hunt = state.hunt ? content.hunts.get(state.hunt.huntId) : undefined;
+  return hunt ? huntAt(hunt, state.hunt!.difficulty) : null;
 }
 
 function seconds(s: number): number {
@@ -467,8 +479,18 @@ function usePotions(
   }
 }
 
-/** Picks the first active skill (by priority) that is learned, off cooldown and affordable. */
-function pickSkill(s: GameState, content: ContentDb, t: number) {
+/**
+ * Picks the first active skill (by priority) that is learned, off cooldown, affordable and
+ * allowed by its rule right now (decision 169).
+ */
+function pickSkill(
+  s: GameState,
+  content: ContentDb,
+  stats: HeroStats,
+  group: MonsterInstance[],
+  t: number,
+) {
+  let ctx: RuleContext | null = null;
   for (const id of s.hero.activeSkills) {
     if (id === null) continue;
     const level = s.hero.skillLevels[id] ?? 0;
@@ -479,9 +501,28 @@ function pickSkill(s: GameState, content: ContentDb, t: number) {
     if (t < (s.combat.skillReadyTick[id] ?? 0)) continue;
     // A buff is not recast while it is still running.
     if (skill.buff && t < (s.combat.buffUntil[id] ?? 0)) continue;
+    const rule = s.settings.skillRules[id];
+    if (rule) {
+      ctx ??= ruleContext(s, stats, group);
+      if (!ruleAllows(rule, ctx)) continue;
+    }
     return { skill, level, cost };
   }
   return null;
+}
+
+function ruleContext(s: GameState, stats: HeroStats, group: MonsterInstance[]): RuleContext {
+  let enemies = 0;
+  for (const m of group) if (m.hp > 0) enemies++;
+  const target = targetOrder(s, group).find((m) => m.hp > 0) ?? null;
+  return {
+    heroHp: s.hero.hp,
+    heroMaxHp: stats.maxHp,
+    heroMana: s.hero.mana,
+    heroMaxMana: stats.maxMana,
+    target,
+    enemies,
+  };
 }
 
 /** Sum of one numeric parameter over the hero's unique effects of a kind. */
@@ -566,7 +607,8 @@ function killMonster(
   const goldRoll = rngInt(s.rng, def.gold[0], def.gold[1]);
   // Gold in 1/10,000ths: the fraction carries to the next kill, so small bonuses on cheap
   // monsters are not lost to rounding.
-  const raw = goldRoll * rewardPct * (100 + stats.goldPct) + s.goldRemainder;
+  const bonus = difficultyRule(currentDifficulty(s));
+  const raw = goldRoll * rewardPct * (100 + stats.goldPct + bonus.goldPct) + s.goldRemainder;
   const gold = Math.floor(raw / 10_000);
   s.goldRemainder = raw % 10_000;
 
@@ -596,7 +638,8 @@ function killMonster(
     PPM,
     Math.floor((table.equipmentDropChancePpm * (m.elite ? ELITE_DROP_CHANCE_PCT : 100)) / 100),
   );
-  const magicFindPct = stats.magicFindPct + (m.elite ? ELITE_MAGIC_FIND_BONUS : 0);
+  const magicFindPct =
+    stats.magicFindPct + bonus.magicFindPct + (m.elite ? ELITE_MAGIC_FIND_BONUS : 0);
   const bagSize = backpackSize(s.hero, content);
   const legendaryOk = legendaryAllowed(hunt.ilvl);
   // A new hero's 5th kill always drops a magic item (first ten minutes, section 11.4).
@@ -698,6 +741,11 @@ function killMonster(
   }
 }
 
+/** Percent of the hero's damage of an element a monster ignores (negative = weakness). */
+export function resistancePct(def: Monster, element: Element): number {
+  return def.resistances?.[element] ?? 0;
+}
+
 /** One swing of the hero (a normal attack or a damaging skill) against the group. */
 /** The group in the order the hero hits it (the target priority setting). */
 function targetOrder(s: GameState, group: MonsterInstance[]): MonsterInstance[] {
@@ -728,6 +776,10 @@ function heroStrike(
   const skillPct = Math.floor((baseSkillPct * (100 + buffDamagePct(s, content, t))) / 100);
   const hits: HitResult[] = [];
   let leech = 0;
+  // Element of this swing: the skill's own, else the class's basic attack (decision 170).
+  const element =
+    (picked?.skill.kind === 'active' ? picked.skill.element : undefined) ??
+    classOf(content, hero).element;
   for (const m of targetOrder(s, group)) {
     if (hits.length >= maxTargets) break;
     if (m.hp <= 0) continue;
@@ -743,7 +795,11 @@ function heroStrike(
       critChancePpm: stats.critChancePpm,
       critDamagePct: stats.critDamagePct,
       damagePct: Math.floor(
-        (skillPct * (100 + undead) * (100 + uniqueHitPct(stats, hero.hp, m, group))) / 10_000,
+        (Math.floor(
+          (skillPct * (100 + undead) * (100 + uniqueHitPct(stats, hero.hp, m, group))) / 10_000,
+        ) *
+          (100 - resistancePct(def, element))) /
+          100,
       ),
     };
     const armorPct = 100 + affixTotal(content, m, 'defensePct');
@@ -788,7 +844,7 @@ function fight(
   const c = s.combat;
 
   if (t >= c.nextAttackTick) {
-    const picked = pickSkill(s, content, t);
+    const picked = pickSkill(s, content, stats, group, t);
     const bonus = picked ? skillBonus(stats, picked.skill.id) : null;
     const maxTargets = (picked ? picked.skill.maxTargets : 1) + (bonus?.extraTargets ?? 0);
     let skillPct = 100;

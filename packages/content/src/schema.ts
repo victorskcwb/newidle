@@ -26,8 +26,8 @@ export const slotSchema = z.enum(EQUIPMENT_SLOTS);
 export type EquipmentSlot = z.infer<typeof slotSchema>;
 
 /**
- * Damage elements. Presentation only (colours of the damage numbers, effects): the engine
- * has no resistances, so every element hits the same.
+ * Damage elements. The hero's hits carry one (the skill's, else the class's basic attack) and
+ * monsters may resist or be weak to it (decision 170). Monster attacks are not resisted yet.
  */
 export const ELEMENTS = ['physical', 'fire', 'ice', 'arcane', 'poison', 'dark'] as const;
 export const elementSchema = z.enum(ELEMENTS);
@@ -153,6 +153,11 @@ export const monsterSchema = z.strictObject({
   xp: nonNegInt,
   gold: range,
   tags: z.array(id),
+  /**
+   * Damage taken from the hero's hits of each element, as a percent off (50 = half damage,
+   * -25 = a quarter more). Absent element = 0.
+   */
+  resistances: z.partialRecord(elementSchema, z.number().int().min(-100).max(90)).optional(),
   /**
    * How the attack looks: melee lunges, ranged shoots arrows, magic casts bolts (the engine
    * treats them all alike). Absent = melee, physical.

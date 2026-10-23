@@ -2923,3 +2923,80 @@ input[type='range'] {
   border-color: var(--accent);
   background: rgb(217 164 65 / 8%);
 }
+
+/* Hunt difficulty (decision 168) */
+.difficulty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.difficulty .filter-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.difficulty .filter-chip.difficulty-hard.active {
+  border-color: var(--bad);
+  background: #3a1a17;
+}
+
+.difficulty .filter-chip.difficulty-easy.active {
+  border-color: var(--good);
+  background: #1c2e18;
+}
+
+.difficulty-facts {
+  flex-basis: 100%;
+}
+
+/* Elemental resistances on the hunt sheet (decision 170) */
+.resistances {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Skill rules (decision 169) */
+.skill-rules {
+  display: grid;
+  gap: 6px;
+}
+
+.skill-rule {
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.skill-rule-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.skill-rule-head .btn {
+  margin-left: auto;
+}
+
+.skill-rule-editor {
+  display: grid;
+  gap: 8px;
+}
+
+.skill-rule-presets,
+.skill-rule-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.rule-number {
+  width: 64px;
+}

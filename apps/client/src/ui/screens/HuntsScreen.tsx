@@ -217,7 +217,11 @@ export function HuntsScreen() {
                   </div>
                   {locked && <div className="tone-bad small adv-locked">{locked}</div>}
                   <span className={`adv-level${locked ? ' bad' : ''}`}>
-                    {here ? t('hunts.here') : t('adventures.level', { level: h.recommendedLevel })}
+                    {here
+                      ? s.hunt!.difficulty === 'normal'
+                        ? t('hunts.here')
+                        : `${t('hunts.here')} · ${t(`difficulty.${s.hunt!.difficulty}`)}`
+                      : t('adventures.level', { level: h.recommendedLevel })}
                   </span>
                   {rates[h.id] && (
                     <div className="rates small">
