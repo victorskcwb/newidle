@@ -12,6 +12,7 @@ export * from './constants.ts';
 export * from './hash.ts';
 export * from './hunt.ts';
 export * from './intents.ts';
+export * from './intent.ts';
 export * from './items.ts';
 export * from './login.ts';
 export * from './meals.ts';

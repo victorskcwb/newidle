@@ -1,60 +1,28 @@
 import { loadContent, type ContentDb } from '@abismo/content';
 import type { EquipmentSlot, Rarity } from '@abismo/content';
 import {
-  type CraftRarity,
   TICK_MS,
-  allocateAttribute,
-  buyConsumable,
-  buyUpgrade,
-  claimQuest,
-  claimLogin,
-  setGathering,
-  setRecipe,
-  setMeal,
-  setActivePet,
-  registerItem,
-  enterDungeon,
-  setAutomation,
-  type AutomationId,
+  applyIntent,
   checkAchievements,
-  setTitle,
-  loginDue,
-  depositAll,
   computeRates,
   createGame,
   debugSetLevel,
-  equipBest,
-  equipItem,
-  forgeItem,
   heroStats,
-  learnSkill,
-  performReset,
-  refineItem,
-  refreshQuests,
-  reforgeItem,
+  loginDue,
   resolveOffline,
-  respecSkills,
-  returnToTown,
-  salvageItem,
-  salvageUpTo,
-  sellItems,
-  setActiveSkill,
-  setSkillRule,
-  setHuntBehaviour,
-  setAutoAllocate,
-  setLootFilter,
-  setPotionSettings,
-  startHunt,
   step,
   stepQuiet,
-  unequipItem,
   xpToNext,
   type Activity,
   type Attribute,
   type AutoAllocateProfile,
+  type AutomationId,
+  type CraftRarity,
   type GameEvent,
   type GameState,
   type HuntDifficulty,
+  type Intent,
+  type ItemInstance,
   type LootFilter,
   type OfflineReport,
   type PotionSettings,
@@ -62,7 +30,9 @@ import {
   type RefineResult,
   type RolledAffix,
   type SkillRule,
+  type TargetPriority,
 } from '@abismo/engine';
+import type { salvageUpTo } from '@abismo/engine';
 import { RatesClient } from './ratesClient.ts';
 import { recordHistory } from './history.ts';
 
@@ -97,6 +67,16 @@ const CATCH_UP_TICKS = 300;
 const OFFLINE_AFTER_TICKS = 5 * 60 * 10;
 const SNAPSHOT_HISTORY = 3000;
 const RATES_DEBOUNCE_MS = 400;
+
+/** How an intent changes what the UI shows: `setup` also recomputes the rate sheet. */
+interface ActOptions {
+  setup?: boolean;
+  /** The HUD must show the new values at once (see freshSnapshot). */
+  fresh?: boolean;
+}
+const SETUP: ActOptions = { setup: true };
+const FRESH: ActOptions = { fresh: true };
+const SETUP_FRESH: ActOptions = { setup: true, fresh: true };
 
 /**
  * Runs the engine in real time in the browser: one engine tick per 100 ms of wall clock.
@@ -194,116 +174,85 @@ export class GameSim {
 
   /** Without a difficulty: the one already chosen in that hunt, or normal elsewhere. */
   startHunt(huntId: string, difficulty?: HuntDifficulty) {
-    this.emit({
-      kind: 'events',
-      events: startHunt(this.state, this.content, huntId, difficulty),
-    });
-    this.changed(true);
+    this.act({ type: 'start_hunt', huntId, ...(difficulty ? { difficulty } : {}) }, SETUP);
   }
 
   enterDungeon() {
-    this.emit({ kind: 'events', events: enterDungeon(this.state) });
-    this.changed(true);
+    this.act({ type: 'enter_dungeon' }, SETUP);
   }
 
   returnToTown() {
-    this.emit({ kind: 'events', events: returnToTown(this.state, this.content) });
-    this.changed(false);
+    this.act({ type: 'return_to_town' });
   }
 
   equip(uid: number) {
-    equipItem(this.state, this.content, uid);
-    this.freshSnapshot();
-    this.changed(true);
+    this.act({ type: 'equip', uid }, SETUP_FRESH);
   }
 
   /** Equips the strongest items from the backpack and stash; returns how many changed. */
   equipBest() {
-    const n = equipBest(this.state, this.content).length;
-    this.freshSnapshot();
-    this.changed(true);
-    return n;
+    return (this.act({ type: 'equip_best' }, SETUP_FRESH) as number[]).length;
   }
 
   /** Gives an item up to the collection. */
   register(uid: number) {
-    registerItem(this.state, uid);
-    this.freshSnapshot();
-    this.changed(true);
+    this.act({ type: 'register', uid }, SETUP_FRESH);
   }
 
   salvage(uid: number) {
-    salvageItem(this.state, this.content, uid);
-    this.changed(false);
+    this.act({ type: 'salvage', uid });
   }
 
   /** Action bar: target priority and auto-sell in town. */
-  setHuntBehaviour(behaviour: Parameters<typeof setHuntBehaviour>[1]) {
-    setHuntBehaviour(this.state, behaviour);
-    this.changed(true);
+  setHuntBehaviour(behaviour: { targetPriority: TargetPriority; autoSellUpTo: Rarity | null }) {
+    this.act({ type: 'set_hunt_behaviour', ...behaviour }, SETUP);
   }
 
   /** Town: sells items to the merchant. */
   sell(uids: number[]) {
-    const r = sellItems(this.state, uids);
-    this.freshSnapshot();
-    this.changed(false);
-    return r;
+    return this.act({ type: 'sell', uids }, FRESH) as { count: number; gold: number };
   }
 
   /** Town: everything in the backpack goes to the stash. */
   depositAll() {
-    const n = depositAll(this.state);
-    this.changed(false);
-    return n;
+    return this.act({ type: 'deposit_all' }) as number;
   }
 
   /** Town: buys consumables from the merchant. */
   buy(consumableId: string, qty: number) {
-    buyConsumable(this.state, this.content, consumableId, qty);
-    this.freshSnapshot();
-    this.changed(false);
+    this.act({ type: 'buy', consumableId, qty }, FRESH);
   }
 
   /** Town: the smith forges a new item. */
   forge(slot: EquipmentSlot, rarity: CraftRarity) {
-    const item = forgeItem(this.state, this.content, slot, rarity);
-    this.freshSnapshot();
-    this.changed(false);
-    return item;
+    return this.act({ type: 'forge', slot, rarity }, FRESH) as ItemInstance;
   }
 
   /** New daily/weekly goals when the local day changed (the engine has no clock). */
   refreshQuests() {
     const day = localDay();
     if (this.state.quests.day === day) return;
-    refreshQuests(this.state, day);
-    this.changed(false);
+    this.act({ type: 'refresh_quests', day });
   }
 
   setGathering(professionId: string | null) {
-    setGathering(this.state, this.content, professionId);
-    this.changed(false);
+    this.act({ type: 'set_gathering', professionId });
   }
 
   setAutomation(id: AutomationId, on: boolean) {
-    setAutomation(this.state, id, on);
-    this.changed(false);
+    this.act({ type: 'set_automation', id, on });
   }
 
   setActivePet(petId: string | null) {
-    setActivePet(this.state, petId);
-    this.changed(true);
+    this.act({ type: 'set_active_pet', petId }, SETUP);
   }
 
   setMeal(mealId: string | null) {
-    setMeal(this.state, this.content, mealId);
-    this.changed(true);
+    this.act({ type: 'set_meal', mealId }, SETUP);
   }
 
   setRecipe(recipeId: string | null) {
-    setRecipe(this.state, this.content, recipeId);
-    this.changed(false);
+    this.act({ type: 'set_recipe', recipeId });
   }
 
   /** Today's login calendar reward is waiting. */
@@ -312,14 +261,12 @@ export class GameSim {
   }
 
   claimLogin() {
-    claimLogin(this.state, this.content, localDay());
-    this.changed(false);
+    this.act({ type: 'claim_login', day: localDay() });
   }
 
   /** Shows an unlocked achievement's title next to the hero's name (null hides it). */
   setTitle(achievementId: string | null) {
-    setTitle(this.state, this.content, achievementId);
-    this.changed(false);
+    this.act({ type: 'set_title', achievementId });
   }
 
   dismissAchievements() {
@@ -328,8 +275,7 @@ export class GameSim {
   }
 
   claimQuest(which: number | 'weekly') {
-    claimQuest(this.state, which);
-    this.changed(false);
+    this.act({ type: 'claim_quest', which });
   }
 
   dismissOffline() {
@@ -338,95 +284,74 @@ export class GameSim {
   }
 
   unequip(slot: EquipmentSlot) {
-    unequipItem(this.state, this.content, slot);
-    this.freshSnapshot();
-    this.changed(true);
+    this.act({ type: 'unequip', slot }, SETUP_FRESH);
   }
 
   allocate(attribute: Attribute, points: number) {
-    allocateAttribute(this.state, attribute, points);
-    this.freshSnapshot();
-    this.changed(true);
+    this.act({ type: 'allocate', attribute, points }, SETUP_FRESH);
   }
 
   setAutoAllocate(profile: AutoAllocateProfile) {
-    setAutoAllocate(this.state, this.content, profile);
-    this.freshSnapshot();
-    this.changed(true);
+    this.act({ type: 'set_auto_allocate', profile }, SETUP_FRESH);
   }
 
   learnSkill(skillId: string) {
-    learnSkill(this.state, this.content, skillId);
-    this.freshSnapshot();
-    this.changed(true);
+    this.act({ type: 'learn_skill', skillId }, SETUP_FRESH);
   }
 
   setActiveSkill(slot: number, skillId: string | null) {
-    setActiveSkill(this.state, this.content, slot, skillId);
-    this.changed(true);
+    this.act({ type: 'set_active_skill', slot, skillId }, SETUP);
   }
 
   /** When an active skill may be used (null clears the rule: used whenever ready). */
   setSkillRule(skillId: string, rule: SkillRule | null) {
-    setSkillRule(this.state, this.content, skillId, rule);
-    this.changed(true);
+    this.act({ type: 'set_skill_rule', skillId, rule }, SETUP);
   }
 
   respecSkills() {
-    respecSkills(this.state);
-    this.freshSnapshot();
-    this.changed(true);
+    this.act({ type: 'respec_skills' }, SETUP_FRESH);
   }
 
   refine(uid: number, useProtection: boolean, useTempering = false): RefineResult {
-    const result = refineItem(this.state, this.content, uid, useProtection, useTempering);
-    this.freshSnapshot();
-    this.changed(true);
-    return result;
+    return this.act(
+      { type: 'refine', uid, useProtection, useTempering },
+      SETUP_FRESH,
+    ) as RefineResult;
   }
 
   reforge(uid: number, index: number): RolledAffix {
-    const rolled = reforgeItem(this.state, this.content, uid, index);
-    this.freshSnapshot();
-    this.changed(true);
-    return rolled;
+    return this.act({ type: 'reforge', uid, index }, SETUP_FRESH) as RolledAffix;
   }
 
   salvageUpTo(rarity: Rarity) {
-    const result = salvageUpTo(this.state, this.content, rarity);
-    this.changed(false);
-    return result;
+    return this.act({ type: 'salvage_up_to', rarity }) as ReturnType<typeof salvageUpTo>;
   }
 
   setLootFilter(filter: LootFilter) {
-    setLootFilter(this.state, this.content, filter);
-    this.changed(true);
+    this.act({ type: 'set_loot_filter', ...filter }, SETUP);
   }
 
   setPotionSettings(settings: PotionSettings) {
-    setPotionSettings(this.state, settings);
-    this.changed(true);
+    this.act({ type: 'set_potion_settings', ...settings }, SETUP);
   }
 
   reset(nextClassId?: string) {
-    const result = performReset(this.state, this.content, nextClassId);
-    this.freshSnapshot();
+    const result = this.act(
+      { type: 'reset', ...(nextClassId ? { nextClassId } : {}) },
+      SETUP_FRESH,
+    ) as { points: number };
     this.emit({ kind: 'resync' });
-    this.changed(true);
     return result;
   }
 
   buyUpgrade(upgradeId: string) {
-    buyUpgrade(this.state, this.content, upgradeId);
-    this.freshSnapshot();
-    this.changed(true);
+    this.act({ type: 'buy_upgrade', upgradeId }, SETUP_FRESH);
   }
 
   /** Marks a one-time tip as seen. */
   setFlag(flag: string) {
     if (this.state.flags.includes(flag)) return;
-    this.state.flags.push(flag);
-    this.changed(false);
+    this.act({ type: 'set_flag', flag });
   }
 
   /** Debug only (dev builds). */
@@ -453,6 +378,18 @@ export class GameSim {
   }
 
   // --- Internals ----------------------------------------------------------------------------
+
+  /**
+   * Applies a player intent through the engine's single entry point (decision 173) and
+   * notifies the scene and the UI. Throws IntentError like the rule it runs.
+   */
+  private act(intent: Intent, o: ActOptions = {}): unknown {
+    const { events, result } = applyIntent(this.state, this.content, intent);
+    if (events.length > 0) this.emit({ kind: 'events', events });
+    if (o.fresh) this.freshSnapshot();
+    this.changed(!!o.setup);
+    return result;
+  }
 
   private resetClock() {
     this.originMs = performance.now();
