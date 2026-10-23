@@ -51,6 +51,13 @@ export default defineConfig({
   ],
   // Maps, tilesets and sprite manifests are served straight from the repo's assets/ folder.
   publicDir: fileURLToPath(new URL('../../assets', import.meta.url)),
-  server: { port: 5173 },
+  server: {
+    port: 5173,
+    // The game server (apps/server) in development: same origin for the socket and the API.
+    proxy: {
+      '/ws': { target: 'ws://localhost:8787', ws: true },
+      '/api': 'http://localhost:8787',
+    },
+  },
   build: { chunkSizeWarningLimit: 2000 },
 });

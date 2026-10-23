@@ -3,12 +3,13 @@ import { IntentError, computeRates, createGame, type Intent } from '@abismo/engi
 import {
   PROTOCOL_VERSION,
   Replica,
+  brasiliaDay,
   decodeServerMessage,
   encodeMessage,
   type ClientMessage,
   type ServerMessage,
 } from '@abismo/protocol';
-import { GameServer, brasiliaDay } from '../src/game.ts';
+import { GameServer } from '../src/game.ts';
 import { MemoryStore } from '../src/store.ts';
 
 export const content = loadContent();
@@ -68,8 +69,8 @@ export class World {
     }
   }
 
-  connect(accountId: string, latencyMs = 40, buildId = 'test') {
-    const c = new Client(this, accountId, latencyMs, buildId);
+  connect(accountId: string, latencyMs = 40, buildId = 'test', token = `dev:${accountId}`) {
+    const c = new Client(this, accountId, latencyMs, buildId, token);
     this.clients.push(c);
     return c;
   }
@@ -87,6 +88,7 @@ export class Client {
     readonly accountId: string,
     private readonly latencyMs: number,
     buildId: string,
+    token: string,
   ) {
     this.link = world.server.connect({
       send: (text) => world.later(latencyMs, () => this.onFrame(text)),
@@ -100,7 +102,7 @@ export class Client {
         type: 'hello',
         protocol: PROTOCOL_VERSION,
         buildId,
-        token: `dev:${accountId}`,
+        token,
       }),
     );
   }

@@ -1,6 +1,7 @@
 import { loadContent, type ContentDb } from '@abismo/content';
 import type { EquipmentSlot, Rarity } from '@abismo/content';
 import {
+  OFFLINE_AFTER_TICKS,
   TICK_MS,
   applyIntent,
   checkAchievements,
@@ -32,6 +33,8 @@ import {
   type TargetPriority,
 } from '@abismo/engine';
 import type { salvageUpTo } from '@abismo/engine';
+import { brasiliaDay } from '@abismo/protocol';
+import { localNow, type LinkStatus, type OnlineLink } from './online.ts';
 import { RatesClient } from './ratesClient.ts';
 import { recordHistory } from './history.ts';
 
@@ -109,9 +112,38 @@ export class GameSim {
     state: GameState,
     /** Debug only (dev builds): game speed multiplier. */
     readonly speed = 1,
+    /**
+     * Online (decision 173): the state is the replica's, intents go through it to the server,
+     * and time comes from the server's clock. Absent: the local single-player game.
+     */
+    readonly link: OnlineLink | null = null,
   ) {
     this.state = state;
     this.snapshot();
+    if (link) {
+      // The local save is the player's offline hero (to import later): never overwrite it.
+      this.saveEnabled = false;
+      this.offlineReport = link.replica?.offlineReport ?? null;
+      link.onStateReplaced = () => {
+        this.state = link.replica!.state;
+        this.offlineReport = link.replica!.offlineReport ?? this.offlineReport;
+        this.freshSnapshot();
+        this.emit({ kind: 'resync' });
+        this.changed(true);
+      };
+      link.onStatus = () => this.changed(false);
+    }
+  }
+
+  /** Online: what the connection is doing (the UI shows reconnecting / taken over). */
+  get connection(): LinkStatus | null {
+    return this.link?.status ?? null;
+  }
+
+  /** The game day: Brasília's on the server's clock online, the device's local day offline. */
+  private today(): number {
+    const replica = this.link?.replica;
+    return replica ? brasiliaDay(replica.serverNow(localNow())) : localDay();
   }
 
   /** A brand-new hero (level 1, starter sword) with a seed from the browser's crypto RNG. */
@@ -227,7 +259,7 @@ export class GameSim {
 
   /** New daily/weekly goals when the local day changed (the engine has no clock). */
   refreshQuests() {
-    const day = localDay();
+    const day = this.today();
     if (this.state.quests.day === day) return;
     this.act({ type: 'refresh_quests', day });
   }
@@ -254,11 +286,11 @@ export class GameSim {
 
   /** Today's login calendar reward is waiting. */
   loginDue(): boolean {
-    return loginDue(this.state, localDay());
+    return loginDue(this.state, this.today());
   }
 
   claimLogin() {
-    this.act({ type: 'claim_login', day: localDay() });
+    this.act({ type: 'claim_login', day: this.today() });
   }
 
   /** Shows an unlocked achievement's title next to the hero's name (null hides it). */
@@ -381,7 +413,10 @@ export class GameSim {
    * notifies the scene and the UI. Throws IntentError like the rule it runs.
    */
   private act(intent: Intent, o: ActOptions = {}): unknown {
-    const { events, result } = applyIntent(this.state, this.content, intent);
+    const replica = this.link?.replica;
+    const { events, result } = replica
+      ? replica.act(intent)
+      : applyIntent(this.state, this.content, intent);
     if (events.length > 0) this.emit({ kind: 'events', events });
     if (o.fresh) this.freshSnapshot();
     this.changed(!!o.setup);
@@ -400,10 +435,18 @@ export class GameSim {
   }
 
   private pump() {
-    let due = this.dueTicks();
+    const replica = this.link?.replica;
+    if (replica?.waitingForState) return;
+    let due = replica ? replica.targetTick(localNow()) - this.state.tick : this.dueTicks();
     if (due <= 0) return;
+    if (replica && due > OFFLINE_AFTER_TICKS) {
+      // A long pause (background tab): the server has the hero's state; ask instead of replaying.
+      replica.requestState();
+      return;
+    }
     if (due > CATCH_UP_TICKS) {
-      stepQuiet(this.state, this.content, due);
+      if (replica) replica.stepUntil(this.state.tick + due);
+      else stepQuiet(this.state, this.content, due);
       this.snapshot();
       this.emit({ kind: 'resync' });
       this.changed(true);
@@ -413,7 +456,10 @@ export class GameSim {
     let levelUp = false;
     let inventory = false;
     while (due-- > 0) {
-      for (const e of step(this.state, this.content, 1)) {
+      const tickEvents = replica
+        ? replica.stepUntil(this.state.tick + 1)
+        : step(this.state, this.content, 1);
+      for (const e of tickEvents) {
         events.push(e);
         // A new level, or an automation that changed gear or hunt: new rates too.
         if (
@@ -455,7 +501,8 @@ export class GameSim {
     if (this.hiddenAtMs === null) return;
     const away = Math.floor(((performance.now() - this.hiddenAtMs) * this.speed) / TICK_MS);
     this.hiddenAtMs = null;
-    this.applyAway(away);
+    // Online, the server kept playing: the next pump catches up or asks for the state.
+    if (!this.link) this.applyAway(away);
     this.resetClock();
     this.timer = setInterval(() => this.pump(), 50);
   };

@@ -47,7 +47,15 @@ export type ClientMessage = z.infer<typeof clientMessageSchema>;
 /** The server's clock: `tick` started at `atMs` (server wall time); one tick per 100 ms. */
 const clock = z.strictObject({ tick, atMs: ms });
 
-export const KICK_REASONS = ['other_session', 'reload', 'auth', 'maintenance', 'protocol'] as const;
+export const KICK_REASONS = [
+  'other_session',
+  'reload',
+  'auth',
+  /** The account has no hero yet: the client shows the hero creation. */
+  'no_hero',
+  'maintenance',
+  'protocol',
+] as const;
 
 export const serverMessageSchema = z.discriminatedUnion('type', [
   z.strictObject({
@@ -75,6 +83,33 @@ export const serverMessageSchema = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('pong'), t: ms, serverNow: ms }),
 ]);
 export type ServerMessage = z.infer<typeof serverMessageSchema>;
+
+// --- Heroes and days ---------------------------------------------------------------------------
+
+/** 3–16 letters, digits, spaces, "-" or "_", starting and ending with a letter or digit. */
+export const HERO_NAME = /^[\p{L}\p{N}](?:[\p{L}\p{N} _-]{1,14})[\p{L}\p{N}]$/u;
+
+export function isValidHeroName(name: string): boolean {
+  return HERO_NAME.test(name) && !name.includes('  ');
+}
+
+/** What the player chooses when creating a hero (the server draws the seed). */
+export const newHeroSchema = z.strictObject({
+  name: z.string().refine(isValidHeroName),
+  appearance: z.strictObject({
+    hair: z.number().int().min(0).max(3),
+    outfit: z.number().int().min(0).max(3),
+  }),
+});
+export type NewHeroChoice = z.infer<typeof newHeroSchema>;
+
+/**
+ * The game day (decision 176): days since 1970-01-01 at Brasília time. Brasília has had no
+ * daylight saving time since 2019, so its midnight is always 03:00 UTC.
+ */
+export function brasiliaDay(ms: number): number {
+  return Math.floor((ms - 3 * 3_600_000) / 86_400_000);
+}
 
 // --- Codec -----------------------------------------------------------------------------------
 

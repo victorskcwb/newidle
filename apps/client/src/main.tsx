@@ -3,6 +3,7 @@ import { TICK_MS } from '@abismo/engine';
 import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { GameSim } from './game/sim.ts';
+import { OnlineLink, devToken } from './game/online.ts';
 import { t } from './i18n.ts';
 import { deleteSave, loadSave, startAutosave, writeSave, type LoadResult } from './save/storage.ts';
 import { usePrefs } from './state/prefs.ts';
@@ -22,12 +23,18 @@ const params = new URLSearchParams(location.search);
 const speed = import.meta.env.DEV ? Math.max(1, Number(params.get('speed') ?? 1)) : 1;
 const content = loadContent();
 const firstHunt = [...content.hunts.values()].find((h) => h.startUnlocked)!;
+// Online mode (decision 173): `?online=1` in development until accounts exist (commit 8).
+const online = import.meta.env.DEV && params.has('online');
+const BUILD_ID: string = import.meta.env.VITE_BUILD_ID ?? 'dev';
 
 type Phase =
   | { kind: 'loading' }
   | { kind: 'create' }
   | { kind: 'broken'; result: Extract<LoadResult, { kind: 'broken' }> }
-  | { kind: 'game'; sim: GameSim };
+  | { kind: 'game'; sim: GameSim }
+  /** Online, the account has no hero yet. */
+  | { kind: 'create-online'; link: OnlineLink }
+  | { kind: 'no-server' };
 
 function run(sim: GameSim): GameSim {
   const reminders = new Reminders(sim);
@@ -47,8 +54,28 @@ function run(sim: GameSim): GameSim {
   return sim;
 }
 
+/** Connects to the game server and waits for the hero (or learns there is none yet). */
+function bootOnline(link: OnlineLink): Promise<Phase> {
+  bootStep(t('boot.server'), 40);
+  return new Promise((resolve) => {
+    link.onReplica = (replica) =>
+      resolve({ kind: 'game', sim: run(new GameSim(replica.state, 1, link)) });
+    link.onStatus = (status) => {
+      if (status === 'no_hero') resolve({ kind: 'create-online', link });
+      else if (status === 'auth') resolve({ kind: 'no-server' });
+    };
+    link.connect();
+  });
+}
+
+function newLink(): OnlineLink {
+  const scheme = location.protocol === 'https:' ? 'wss' : 'ws';
+  return new OnlineLink(`${scheme}://${location.host}/ws`, devToken(), BUILD_ID, content);
+}
+
 /** Loads the save, applies the time away (offline), or asks for a new hero. */
 async function boot(): Promise<Phase> {
+  if (online) return bootOnline(newLink());
   bootStep(t('boot.save'), 40);
   const result = await loadSave(content);
   if (result.kind === 'empty') return { kind: 'create' };
@@ -84,6 +111,18 @@ function BrokenSave({
   );
 }
 
+/** Creates the account's hero on the server, then connects to play it. */
+async function createOnline(link: OnlineLink, hero: NewHeroChoice): Promise<Phase> {
+  const res = await fetch('/api/dev/heroes', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ token: devToken(), ...hero }),
+  });
+  if (!res.ok && res.status !== 409) return { kind: 'no-server' };
+  link.status = 'connecting';
+  return bootOnline(link);
+}
+
 // Started once at module load (StrictMode runs effects twice; the sim must exist only once).
 const booting = boot();
 
@@ -113,6 +152,27 @@ function Root() {
           onStartOver={() => void deleteSave().then(() => setPhase({ kind: 'create' }))}
         />
       );
+    case 'no-server':
+      return (
+        <main className="screen">
+          <div className="panel screen-card">
+            <p className="tone-bad">{t('net.unavailable')}</p>
+          </div>
+        </main>
+      );
+    case 'create-online': {
+      const link = phase.link;
+      return (
+        <CreateHeroScreen
+          onCreate={(hero: NewHeroChoice) => {
+            void createOnline(link, hero).then((p) => {
+              if (p.kind === 'game') bootStep(t('boot.map'), 85);
+              setPhase(p);
+            });
+          }}
+        />
+      );
+    }
     case 'create':
       return (
         <CreateHeroScreen

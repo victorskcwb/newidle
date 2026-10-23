@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import type { ContentDb } from '@abismo/content';
 import {
   IntentError,
@@ -5,6 +6,7 @@ import {
   TICK_MS,
   advanceAway,
   applyIntent,
+  createGame,
   decodeSave,
   encodeSave,
   hashState,
@@ -25,6 +27,7 @@ import {
   encodeMessage,
   tickAt,
   type ClientMessage,
+  type NewHeroChoice,
   type ServerMessage,
 } from '@abismo/protocol';
 import type { HeroStore } from './store.ts';
@@ -49,11 +52,6 @@ export interface GameServerDeps {
   /** Engine and content build; clients with another one are asked to reload. */
   buildId: string;
   log?(event: string, data?: Record<string, unknown>): void;
-}
-
-/** Brasília has no daylight saving time since 2019: midnight is always 03:00 UTC. */
-export function brasiliaDay(ms: number): number {
-  return Math.floor((ms - 3 * 3_600_000) / 86_400_000);
 }
 
 /** Save after an intent once things settle, and at least this often while playing. */
@@ -188,12 +186,30 @@ export class GameServer {
     );
   }
 
-  /** Creates the hero of an account that has none (account flow, commit 8). */
+  /** Stores a hero as the account's (tests, imports). */
   async createHero(accountId: string, state: GameState) {
     await this.deps.store.save(accountId, {
       save: encodeSave(state, this.deps.now()),
       savedAtMs: this.deps.now(),
     });
+  }
+
+  /**
+   * A brand-new hero for an account that has none: level 1, a seed from the server's
+   * randomness, already on the way to the first hunt (like the local game's creation).
+   */
+  async newHero(accountId: string, choice: NewHeroChoice): Promise<'created' | 'exists'> {
+    if (await this.deps.store.load(accountId)) return 'exists';
+    const words = new Uint32Array(randomBytes(16).buffer.slice(0, 16));
+    const state = createGame(this.deps.content, {
+      ...choice,
+      seed: [words[0]!, words[1]!, words[2]!, words[3]!],
+    });
+    const first = [...this.deps.content.hunts.values()].find((h) => h.startUnlocked);
+    if (first) applyIntent(state, this.deps.content, { type: 'start_hunt', huntId: first.id });
+    await this.createHero(accountId, state);
+    this.deps.log?.('hero_created', { accountId });
+    return 'created';
   }
 
   // --- Messages --------------------------------------------------------------------------------
@@ -268,7 +284,7 @@ export class GameServer {
     }
     const stored = await this.deps.store.load(accountId);
     if (link.closed) return;
-    if (!stored) return this.kick(link.conn, 'auth');
+    if (!stored) return this.kick(link.conn, 'no_hero');
     const state = decodeSave(stored.save, this.deps.content).state;
     const away = Math.max(0, Math.floor((now - stored.savedAtMs) / TICK_MS));
     let rates: RateSheet | null = null;

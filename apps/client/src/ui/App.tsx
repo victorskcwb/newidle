@@ -8,6 +8,7 @@ import { SceneView } from '../scene/SceneView.tsx';
 import { usePrefs } from '../state/prefs.ts';
 import { useUi, type Screen } from '../state/store.ts';
 import { BackpackPanel } from './BackpackPanel.tsx';
+import { ConnectionBanner } from './ConnectionBanner.tsx';
 import { EventLog } from './EventLog.tsx';
 import { Hud } from './Hud.tsx';
 import { LevelUpBanner } from './LevelUpBanner.tsx';
@@ -106,6 +107,7 @@ function Game() {
       {Current && <Current />}
       <NpcDialog />
       <OfflineModal />
+      <ConnectionBanner />
       <LoginModal />
       <ItemTooltip />
     </>

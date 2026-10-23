@@ -3015,3 +3015,24 @@ input[type='range'] {
   flex: none;
   width: 56px;
 }
+
+/* Online: connection lost or account opened elsewhere (decision 173). */
+.net-banner {
+  position: fixed;
+  left: 50%;
+  top: 64px;
+  transform: translateX(-50%);
+  z-index: 60;
+  max-width: min(92vw, 420px);
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(20, 18, 26, 0.95);
+  border: 1px solid rgba(255, 200, 80, 0.5);
+  text-align: center;
+}
+
+.net-banner-stop {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}

@@ -21,7 +21,8 @@
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "workbox-window": "7.4.1",
-    "zustand": "5.0.15"
+    "zustand": "5.0.15",
+    "@abismo/protocol": "workspace:*"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",

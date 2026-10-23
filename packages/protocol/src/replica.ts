@@ -70,6 +70,11 @@ export class Replica {
     return tickAt(this.clock, localNowMs + this.offsetMs) + CLIENT_LEAD_TICKS;
   }
 
+  /** Server wall time now, as far as the replica can tell. */
+  serverNow(localNowMs: number): number {
+    return localNowMs + this.offsetMs;
+  }
+
   /**
    * Steps up to the target tick. Returns the events for the scene, or null when the gap was
    * so large that it jumped without them (the scene must rebuild from the state).
@@ -77,12 +82,29 @@ export class Replica {
   advance(localNowMs: number): GameEvent[] | null {
     const target = this.targetTick(localNowMs);
     if (target - this.state.tick > MAX_STEP_PER_CALL) {
-      while (this.state.tick < target) this.stepTo(Math.min(target, this.nextCheckpoint()), null);
+      this.stepUntil(target);
       return null;
     }
+    return this.stepUntil(target);
+  }
+
+  /** Steps up to `tick` (checkpoint hashes included) and returns the events. */
+  stepUntil(tick: number): GameEvent[] {
     const events: GameEvent[] = [];
-    while (this.state.tick < target) this.stepTo(Math.min(target, this.nextCheckpoint()), events);
+    while (this.state.tick < tick) this.stepTo(Math.min(tick, this.nextCheckpoint()), events);
     return events;
+  }
+
+  /** Asks the server for the whole state (after a long pause, instead of replaying it). */
+  requestState() {
+    if (this.resyncAsked) return;
+    this.resyncAsked = true;
+    this.send({ type: 'resync' });
+  }
+
+  /** True while a requested state has not arrived. */
+  get waitingForState(): boolean {
+    return this.resyncAsked;
   }
 
   private nextCheckpoint(): number {

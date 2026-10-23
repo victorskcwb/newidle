@@ -1,7 +1,7 @@
 import { TICKS_PER_HOUR, hashState, stepQuiet, type Intent } from '@abismo/engine';
 import { CHECKPOINT_TICKS, PROTOCOL_VERSION, encodeMessage } from '@abismo/protocol';
 import { describe, expect, it } from 'vitest';
-import { brasiliaDay } from '../src/game.ts';
+import { brasiliaDay } from '@abismo/protocol';
 import { World, content } from './harness.ts';
 
 const HUNT: Intent = { type: 'start_hunt', huntId: 'forgotten_cemetery' };
@@ -145,10 +145,12 @@ describe('game server', () => {
     expect(noisy.of('kicked')).toEqual([{ type: 'kicked', reason: 'protocol' }]);
 
     const old = w.connect('gil', 40, 'an-old-build');
-    const stranger = w.connect('nobody');
+    const stranger = w.connect('nobody', 40, 'test', 'not-a-token');
+    const heroless = w.connect('nobody');
     await w.run(500);
     expect(old.of('kicked')).toEqual([{ type: 'kicked', reason: 'reload' }]);
     expect(stranger.of('kicked')).toEqual([{ type: 'kicked', reason: 'auth' }]);
+    expect(heroless.of('kicked')).toEqual([{ type: 'kicked', reason: 'no_hero' }]);
     expect(
       encodeMessage({ type: 'hello', protocol: PROTOCOL_VERSION, buildId: 'test', token: 'x' }),
     ).toContain('hello');
@@ -170,4 +172,21 @@ describe('game server', () => {
     stepQuiet(ahead, content, c.replica!.state.tick - ahead.tick);
     expect(hashState(c.replica!.state)).toBe(hashState(ahead));
   }, 120_000);
+
+  it('a new hero gets a server seed and starts on the way to the first hunt', async () => {
+    const w = new World();
+    const choice = { name: 'Lia', appearance: { hair: 1, outfit: 2 } };
+    expect(await w.server.newHero('ivo', choice)).toBe('created');
+    expect(await w.server.newHero('ivo', choice)).toBe('exists');
+    expect(await w.server.newHero('jade', choice)).toBe('created');
+    const c = w.connect('ivo');
+    await w.run(500);
+    const state = c.replica!.state;
+    expect(state.hero.name).toBe('Lia');
+    expect(state.hunt?.huntId).toBe('forgotten_cemetery');
+    const seeds = ['ivo', 'jade'].map(
+      (id) => w.store.heroes.get(id)!.save.match(/"rng":\[[^\]]*\]/)![0],
+    );
+    expect(seeds[0]).not.toBe(seeds[1]);
+  });
 });
