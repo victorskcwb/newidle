@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CONTENT_VERSION,
   PROTOCOL_VERSION,
+  brasiliaDay,
   decodeClientMessage,
   decodeServerMessage,
   encodeMessage,
@@ -80,5 +81,13 @@ describe('protocol', () => {
     expect(tickAt(c, 50_100)).toBe(1_001);
     expect(tickAt(c, 60_000)).toBe(1_100);
     expect(tickAt(c, 40_000)).toBe(1_000);
+  });
+
+  it('the game day turns at midnight in Brasília (03:00 UTC), all year round', () => {
+    const at = (iso: string) => brasiliaDay(Date.parse(iso));
+    expect(at('2026-10-24T02:59:59Z')).toBe(at('2026-10-23T03:00:00Z'));
+    expect(at('2026-10-24T03:00:00Z')).toBe(at('2026-10-23T03:00:00Z') + 1);
+    // January (southern summer): still 03:00 UTC, no daylight saving time since 2019.
+    expect(at('2027-01-15T03:00:00Z') - at('2027-01-15T02:59:59Z')).toBe(1);
   });
 });
