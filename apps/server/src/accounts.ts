@@ -350,7 +350,9 @@ export class AttemptLimiter {
 
   locked(key: string): boolean {
     const recent = (this.failures.get(key) ?? []).filter((t) => this.now() - t < this.windowMs);
-    this.failures.set(key, recent);
+    // Old keys are dropped, so the map does not grow with every e-mail and IP ever seen.
+    if (recent.length === 0) this.failures.delete(key);
+    else this.failures.set(key, recent);
     return recent.length >= this.max;
   }
 

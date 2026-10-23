@@ -74,6 +74,8 @@ const SAVE_EVERY_MS = 60_000;
 /** Intents per second a connection may send, and the burst it may save up. */
 const RATE_PER_SECOND = 20;
 const RATE_BURST = 40;
+/** Time a new socket has to send its hello. */
+const HELLO_TIMEOUT_MS = 10_000;
 /** Invalid frames in a row before the connection is dropped. */
 const MAX_BAD_FRAMES = 3;
 /** How many applied seqs are remembered to answer resent intents. */
@@ -147,6 +149,8 @@ interface Link {
   accountId: string | null;
   /** The sign-in session the token belongs to (revoking it closes this connection). */
   authSessionId: string | null;
+  /** When the socket opened: without a hello in HELLO_TIMEOUT_MS it is closed. */
+  openedAtMs: number;
   badFrames: number;
   closed: boolean;
 }
@@ -176,7 +180,14 @@ export class GameServer {
 
   /** Binds a new connection; feed it the frames it receives and tell it when it closes. */
   connect(conn: Connection) {
-    const link: Link = { conn, accountId: null, authSessionId: null, badFrames: 0, closed: false };
+    const link: Link = {
+      conn,
+      accountId: null,
+      authSessionId: null,
+      badFrames: 0,
+      closed: false,
+      openedAtMs: this.deps.now(),
+    };
     this.links.add(link);
     return {
       receive: (text: string) => this.receive(link, text),
@@ -187,6 +198,13 @@ export class GameServer {
   /** Advances every session to the server clock (called every 100 ms). */
   async tick() {
     const now = this.deps.now();
+    // Sockets that never said hello hold resources for nothing.
+    for (const link of this.links) {
+      if (!link.accountId && !link.closed && now - link.openedAtMs > HELLO_TIMEOUT_MS) {
+        this.kick(link.conn, 'protocol');
+        void this.disconnect(link);
+      }
+    }
     const saves: Promise<void>[] = [];
     for (const s of this.sessions.values()) {
       const periodic = now >= s.nextSaveMs;

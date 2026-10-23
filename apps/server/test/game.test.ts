@@ -191,4 +191,16 @@ describe('game server', () => {
     );
     expect(seeds[0]).not.toBe(seeds[1]);
   });
+
+  it('closes sockets that never say hello', async () => {
+    const w = new World();
+    const silent: string[] = [];
+    let closed = false;
+    w.server.connect({ send: (t) => silent.push(t), close: () => (closed = true) });
+    await w.run(9_000);
+    expect(closed).toBe(false);
+    await w.run(2_000);
+    expect(closed).toBe(true);
+    expect(silent.join()).toContain('"protocol"');
+  });
 });
