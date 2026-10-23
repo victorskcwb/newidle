@@ -27,7 +27,8 @@ export type EquipmentSlot = z.infer<typeof slotSchema>;
 
 /**
  * Damage elements. The hero's hits carry one (the skill's, else the class's basic attack) and
- * monsters may resist or be weak to it (decision 170). Monster attacks are not resisted yet.
+ * monsters may resist or be weak to it (decision 170). Monster attacks of an element other than
+ * physical are resisted by the hero's resistance stats (decision 171).
  */
 export const ELEMENTS = ['physical', 'fire', 'ice', 'arcane', 'poison', 'dark'] as const;
 export const elementSchema = z.enum(ELEMENTS);
@@ -64,6 +65,12 @@ export const STATS = [
   'goldPct',
   'magicFindPct',
   'damageVsUndeadPct',
+  /** Hero resistance to monster attacks of an element, in percent (decision 171). */
+  'fireResPct',
+  'iceResPct',
+  'arcaneResPct',
+  'poisonResPct',
+  'darkResPct',
 ] as const;
 export const statSchema = z.enum(STATS);
 export type Stat = z.infer<typeof statSchema>;

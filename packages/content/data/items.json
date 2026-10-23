@@ -1280,6 +1280,126 @@
           "max": 25
         }
       ]
+    },
+    {
+      "id": "fire_res",
+      "textKey": "affix.fire_res",
+      "stat": "fireResPct",
+      "slots": ["offhand", "helm", "chest", "pants", "boots", "belt", "ring", "amulet"],
+      "minIlvl": 1,
+      "weight": 30,
+      "tiers": [
+        {
+          "minIlvl": 1,
+          "min": 4,
+          "max": 8
+        },
+        {
+          "minIlvl": 20,
+          "min": 9,
+          "max": 15
+        },
+        {
+          "minIlvl": 45,
+          "min": 16,
+          "max": 24
+        },
+        {
+          "minIlvl": 70,
+          "min": 25,
+          "max": 35
+        }
+      ]
+    },
+    {
+      "id": "ice_res",
+      "textKey": "affix.ice_res",
+      "stat": "iceResPct",
+      "slots": ["offhand", "helm", "chest", "pants", "boots", "belt", "ring", "amulet"],
+      "minIlvl": 1,
+      "weight": 30,
+      "tiers": [
+        {
+          "minIlvl": 1,
+          "min": 4,
+          "max": 8
+        },
+        {
+          "minIlvl": 20,
+          "min": 9,
+          "max": 15
+        },
+        {
+          "minIlvl": 45,
+          "min": 16,
+          "max": 24
+        },
+        {
+          "minIlvl": 70,
+          "min": 25,
+          "max": 35
+        }
+      ]
+    },
+    {
+      "id": "poison_res",
+      "textKey": "affix.poison_res",
+      "stat": "poisonResPct",
+      "slots": ["offhand", "helm", "chest", "pants", "boots", "belt", "ring", "amulet"],
+      "minIlvl": 1,
+      "weight": 30,
+      "tiers": [
+        {
+          "minIlvl": 1,
+          "min": 4,
+          "max": 8
+        },
+        {
+          "minIlvl": 20,
+          "min": 9,
+          "max": 15
+        },
+        {
+          "minIlvl": 45,
+          "min": 16,
+          "max": 24
+        },
+        {
+          "minIlvl": 70,
+          "min": 25,
+          "max": 35
+        }
+      ]
+    },
+    {
+      "id": "dark_res",
+      "textKey": "affix.dark_res",
+      "stat": "darkResPct",
+      "slots": ["offhand", "helm", "chest", "pants", "boots", "belt", "ring", "amulet"],
+      "minIlvl": 1,
+      "weight": 30,
+      "tiers": [
+        {
+          "minIlvl": 1,
+          "min": 4,
+          "max": 8
+        },
+        {
+          "minIlvl": 20,
+          "min": 9,
+          "max": 15
+        },
+        {
+          "minIlvl": 45,
+          "min": 16,
+          "max": 24
+        },
+        {
+          "minIlvl": 70,
+          "min": 25,
+          "max": 35
+        }
+      ]
     }
   ]
 }

@@ -67,7 +67,7 @@ import { rollCard } from './cards.ts';
 import { questLoot, questProgress } from './quests.ts';
 import { addXp } from './progression.ts';
 import { rngChance, rngInt } from './rng.ts';
-import { heroStats, type HeroStats } from './stats.ts';
+import { heroResistPct, heroStats, type HeroStats } from './stats.ts';
 import type {
   GameEvent,
   GameState,
@@ -879,7 +879,8 @@ function fight(
         damageMax: m.damageMax,
         critChancePpm: BASE_CRIT_CHANCE_PPM,
         critDamagePct: BASE_CRIT_DAMAGE_PCT,
-        damagePct: 100,
+        // The hero's resistance to the attack's element (decision 171); 0 keeps it at 100%.
+        damagePct: 100 - heroResistPct(stats, def.attack?.element ?? 'physical'),
       },
       { evasion: stats.evasion, defense: stats.defense },
     );

@@ -34,6 +34,8 @@ Decididos em 2026-10-18 conforme a coluna "Recomendação" (decisão 140).
 | Metas diárias e semanal (6.1, 6.2)                                                   | decisão 75                                                           |
 | Feedback visual e sonoro, acessibilidade, modo gráfico (9)                           | decisões 76, 107, 118, 130, 133                                      |
 | Taxas por hora visíveis (9)                                                          | ficha de taxas no mapa de caçadas                                    |
+| Decisões de estratégia na caçada (1.2)                                               | dificuldade por caçada (decisão 168), regras por habilidade (169)    |
+| Elementos e resistências (3.3)                                                       | dos monstros (decisão 170) e do herói, por afixos (171)              |
 
 ## 3. O que falta, por prioridade
 
@@ -61,6 +63,7 @@ O critério é o do GDD: retenção antes de monetização, e primeiro o que nã
 12. ✅ **Skills de coleta e produção estilo OSRS** (3.2): Mineração, Herbalismo, Pesca, Forja, Alquimia e Culinária (decisões 147–150).
 13. ✅ **Pets** (3.4, 8.2.7): decisão 162.
 14. 🟡 **Classes** (3.1): Caçadora e Feiticeiro da especificação prontos (decisões 163–164); a 4ª classe do GDD (invocador) não entrou.
+15. ✅ **Ideias dos jogos de referência sem servidor** (`docs/prompt-proximas-fases.md`): dificuldade Fácil/Normal/Difícil (decisão 168), regras para usar cada habilidade (169), resistências elementais dos monstros (170) e do herói (171). A dificuldade Hardcore com entrada paga fica para a fase 4 do prompt.
 
 ### D. Dependem de servidor (marco 4)
 

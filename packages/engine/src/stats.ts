@@ -6,6 +6,7 @@ import { mealMods } from './meals.ts';
 import {
   EQUIPMENT_SLOTS,
   type ContentDb,
+  type Element,
   type EquipmentSlot,
   type Stat,
   type UniqueEffect,
@@ -20,6 +21,7 @@ import {
   BASE_LIFE,
   BASE_MANA,
   CRIT_CHANCE_PPM_PER_DEXTERITY,
+  HERO_RESIST_CAP_PCT,
   EVASION_PER_LEVEL,
   LIFE_PER_LEVEL,
   LIFE_PER_VITALITY,
@@ -37,6 +39,17 @@ import { upgradeTotal } from './upgrades.ts';
 import { cardMods } from './cards.ts';
 
 export type StatMods = Partial<Record<Stat, number>>;
+
+/** Elements the hero can resist, and the stat that holds each resistance (decision 171). */
+export const RESIST_STATS = {
+  fire: 'fireResPct',
+  ice: 'iceResPct',
+  arcane: 'arcaneResPct',
+  poison: 'poisonResPct',
+  dark: 'darkResPct',
+} as const satisfies Partial<Record<Element, Stat>>;
+export type ResistElement = keyof typeof RESIST_STATS;
+export const RESIST_ELEMENTS = Object.keys(RESIST_STATS) as ResistElement[];
 
 /** Base values of an item after refining, plus its stat modifiers (implicit + affixes). */
 export interface ItemStats {
@@ -132,6 +145,8 @@ export interface HeroStats {
   goldPct: number;
   magicFindPct: number;
   damageVsUndeadPct: number;
+  /** Resistance to monster attacks of each element, capped at HERO_RESIST_CAP_PCT. */
+  resistPct: Record<ResistElement, number>;
   inactiveSlots: EquipmentSlot[];
   /** Unique legendary effects of active equipped items. */
   uniques: UniqueEffect[];
@@ -165,6 +180,11 @@ function statsKey(hero: Hero): string {
     .map(([id, l]) => `${id}${l}`)
     .join(',');
   return `${hero.level}|${a.strength},${a.dexterity},${a.vitality},${a.energy}|${items}|${skills}|${ups}|${cards}|${collection}|${pet}|${hero.meal?.mealId ?? ''}`;
+}
+
+/** Percent of a monster attack of this element the hero ignores (physical: none). */
+export function heroResistPct(stats: HeroStats, element: Element): number {
+  return element === 'physical' ? 0 : stats.resistPct[element];
 }
 
 /** Derived stats of the hero. Cached per hero object; the cache key covers every input. */
@@ -272,6 +292,9 @@ export function computeHeroStats(hero: Hero, content: ContentDb): HeroStats {
     goldPct: m('goldPct'),
     magicFindPct: m('magicFindPct'),
     damageVsUndeadPct: m('damageVsUndeadPct'),
+    resistPct: Object.fromEntries(
+      RESIST_ELEMENTS.map((e) => [e, Math.min(HERO_RESIST_CAP_PCT, m(RESIST_STATS[e]))]),
+    ) as Record<ResistElement, number>,
     uniques,
     cardLuckPct: uniques.reduce((n, u) => n + (u.kind === 'card_luck' ? u.pct : 0), 0),
     inactiveSlots,

@@ -3,6 +3,7 @@ import {
   ATTRIBUTES,
   baseAttributes,
   heroStats,
+  RESIST_ELEMENTS,
   type Attribute,
   type AutoAllocateProfile,
 } from '@abismo/engine';
@@ -47,6 +48,12 @@ export function CharacterScreen() {
     [t('stat.label.xp'), `+${stats.xpPct}%`],
     [t('stat.label.gold'), `+${stats.goldPct}%`],
     [t('stat.label.magicFind'), `+${stats.magicFindPct}%`],
+    [
+      t('stat.label.resist'),
+      RESIST_ELEMENTS.filter((e) => stats.resistPct[e] > 0)
+        .map((e) => `${t(`element.${e}`)} ${stats.resistPct[e]}%`)
+        .join(' · ') || t('stat.label.resistNone'),
+    ],
   ];
 
   return (

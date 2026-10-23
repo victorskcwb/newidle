@@ -31,7 +31,7 @@ describe('bundled content', () => {
     expect(c.hunts.get('forgotten_cemetery')).toBeDefined();
     expect(c.monsters.size).toBe(35);
     expect(c.itemBases.size).toBe(48); // 10 slots × 4 tiers, plus bows and staves
-    expect(c.affixes.size).toBe(20);
+    expect(c.affixes.size).toBe(24); // 20 + 4 resistances (decision 171)
   });
 
   it('has pt-BR text for every key it references', () => {

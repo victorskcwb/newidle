@@ -4,6 +4,7 @@ import {
   equippedSetPieces,
   inactiveReason,
   itemStats,
+  RESIST_ELEMENTS,
   type Hero,
   type HeroStats,
   type ItemInstance,
@@ -129,6 +130,12 @@ export function compareItem(content: ContentDb, hero: Hero, item: ItemInstance):
       after: swapped.lifeLeechPct,
       digits: 0,
     },
+    ...RESIST_ELEMENTS.map((e) => ({
+      label: t(`compare.${e}ResPct`),
+      before: now.resistPct[e],
+      after: swapped.resistPct[e],
+      digits: 0,
+    })),
   ];
   return rows.filter((r) => Math.abs(r.after - r.before) > 1e-9);
 }

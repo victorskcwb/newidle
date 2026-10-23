@@ -47,6 +47,8 @@ export const HIT_CHANCE_MIN_PPM = 50_000;
 export const HIT_CHANCE_MAX_PPM = 950_000;
 export const DEFENSE_PER_ATTACKER_LEVEL = 50;
 export const DEFENSE_REDUCTION_CAP_PPM = 750_000;
+/** Most of a monster attack's element the hero can resist, in percent (decision 171). */
+export const HERO_RESIST_CAP_PCT = 75;
 export const ELITE_LIFE_PCT = 200;
 export const ELITE_DAMAGE_PCT = 150;
 /** Elites give more XP and gold and roll loot with better odds. */
