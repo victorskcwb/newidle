@@ -1204,5 +1204,20 @@
   "account.lastSeen": "Último uso: {when}",
   "account.endSession": "Desconectar",
   "account.logout": "Sair da conta",
-  "account.logoutGuest": "Sem e-mail nem Google vinculados, você não vai conseguir voltar para este herói. Sair mesmo assim?"
+  "account.logoutGuest": "Sem e-mail nem Google vinculados, você não vai conseguir voltar para este herói. Sair mesmo assim?",
+  "import.title": "Herói deste aparelho",
+  "import.hero": "{name}, {class} nível {level}, {resets} resets",
+  "import.local": "Este aparelho tem um herói salvo: {hero}.",
+  "import.account": "A sua conta já tem um herói: {hero}.",
+  "import.bring": "Levar {name} para a minha conta",
+  "import.skip": "Agora não (criar um herói novo)",
+  "import.keep": "Manter {name}, o herói da conta",
+  "import.replace": "Trocar pelo herói deste aparelho ({name})",
+  "import.replaceWarning": "{name} vai ser substituído e não dá para desfazer.",
+  "import.replaceConfirm": "Sim, jogar com {name}",
+  "import.once": "Cada conta pode trazer um herói de um aparelho uma única vez. O save deste aparelho continua guardado aqui.",
+  "import.implausible": "Este save não passou na checagem do servidor (os números não batem), então não pode ser trazido.",
+  "auth.error.already_imported": "Esta conta já trouxe um herói de um aparelho.",
+  "auth.error.hero_exists": "A sua conta já tem um herói.",
+  "auth.error.invalid_save": "Não foi possível ler o save deste aparelho."
 }

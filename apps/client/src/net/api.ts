@@ -55,10 +55,20 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
   return data as T;
 }
 
+export interface HeroSummary {
+  name: string;
+  level: number;
+  resets: number;
+  classId: string;
+}
+
 export interface Me {
   accountId: string;
   identities: { provider: 'guest' | 'password' | 'google'; email: string | null }[];
   hasHero: boolean;
+  hero: HeroSummary | null;
+  /** A save from a device may still become the account's hero (once per account). */
+  canImport: boolean;
 }
 
 export interface SessionInfo {
@@ -85,6 +95,8 @@ export const api = {
     call<void>('POST', '/api/auth/password/reset', { token, password }),
   googleStart: () => call<{ url: string }>('POST', '/api/auth/google/start', {}),
   createHero: (hero: NewHeroChoice) => call<{ result: string }>('POST', '/api/heroes', hero),
+  importHero: (save: string, replace: boolean) =>
+    call<{ result: string }>('POST', '/api/heroes/import', { save, replace }),
 };
 
 /**

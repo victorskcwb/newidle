@@ -1204,5 +1204,20 @@
   "account.lastSeen": "Last used: {when}",
   "account.endSession": "Disconnect",
   "account.logout": "Sign out",
-  "account.logoutGuest": "With no e-mail or Google linked, you will not be able to get back to this hero. Sign out anyway?"
+  "account.logoutGuest": "With no e-mail or Google linked, you will not be able to get back to this hero. Sign out anyway?",
+  "import.title": "Hero on this device",
+  "import.hero": "{name}, level {level} {class}, {resets} resets",
+  "import.local": "This device has a saved hero: {hero}.",
+  "import.account": "Your account already has a hero: {hero}.",
+  "import.bring": "Bring {name} to my account",
+  "import.skip": "Not now (create a new hero)",
+  "import.keep": "Keep {name}, the account's hero",
+  "import.replace": "Switch to this device's hero ({name})",
+  "import.replaceWarning": "{name} will be replaced, and that cannot be undone.",
+  "import.replaceConfirm": "Yes, play with {name}",
+  "import.once": "Each account can bring a hero from a device only once. This device keeps its save.",
+  "import.implausible": "This save did not pass the server's check (its numbers do not add up), so it cannot be brought in.",
+  "auth.error.already_imported": "This account already brought a hero from a device.",
+  "auth.error.hero_exists": "Your account already has a hero.",
+  "auth.error.invalid_save": "Could not read this device's save."
 }

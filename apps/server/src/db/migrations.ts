@@ -73,6 +73,13 @@ export const MIGRATIONS: readonly { version: number; sql: string }[] = [
       );
     `,
   },
+  {
+    version: 3,
+    sql: `
+      -- A save from a device can become the account's hero once (decision 177).
+      ALTER TABLE accounts ADD COLUMN imported_at timestamptz;
+    `,
+  },
 ];
 
 export async function migrate(db: Db): Promise<number[]> {

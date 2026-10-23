@@ -38,6 +38,7 @@ const game = new GameServer({
 
 const clientUrl = env.CLIENT_URL ?? 'http://localhost:5173';
 const app = await buildApp(game, {
+  content,
   accounts,
   limiter: new AttemptLimiter(),
   verifyHuman: turnstileVerifier(env.TURNSTILE_SECRET),

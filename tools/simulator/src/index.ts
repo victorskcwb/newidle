@@ -6,7 +6,7 @@
  *
  *   pnpm sim [profile=active|casual] [days=20] [seed=1]
  *   PROFESSIONS=alchemy|smithing|cooking also gathers and crafts; REFINE_MAX=15 refines past +9;
- *   DUNGEON=1 runs the Abyss every session; CLASS=huntress|sorcerer plays that class; SIM_TAG=x writes <profile>x.csv.
+ *   DUNGEON=1 runs the Abyss every session; SAVE_OUT=path writes the final save; CLASS=huntress|sorcerer plays that class; SIM_TAG=x writes <profile>x.csv.
  *
  * Writes tools/simulator/out/<profile>.csv (one row per session) and prints a summary
  * against the targets of section 12.2.
@@ -19,6 +19,7 @@ import {
   computeHeroStats,
   computeRates,
   createGame,
+  encodeSave,
   equipItem,
   learnBlock,
   learnSkill,
@@ -307,6 +308,8 @@ for (let d = 0; d < days; d++) {
 mkdirSync(new URL('../out/', import.meta.url), { recursive: true });
 const file = new URL(`../out/${profile}${process.env.SIM_TAG ?? ''}.csv`, import.meta.url);
 writeFileSync(file, rows.join('\n') + '\n');
+// SAVE_OUT=path: the final hero as save text (e.g. to check the import plausibility rules).
+if (process.env.SAVE_OUT) writeFileSync(process.env.SAVE_OUT, encodeSave(s, 0));
 
 // --- Summary against section 12.2 -----------------------------------------------------------
 const reached100 = cycleDone[0] ?? null;

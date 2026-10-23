@@ -180,6 +180,24 @@ export class Accounts {
     });
   }
 
+  /** Whether a save from a device may still become this account's hero (once per account). */
+  async canImport(accountId: string): Promise<boolean> {
+    const rows = await this.db.query<{ imported_at: unknown }>(
+      'SELECT imported_at FROM accounts WHERE id = $1',
+      [accountId],
+    );
+    return rows[0]?.imported_at === null;
+  }
+
+  /** Uses up the account's one import; false when it was already used. */
+  async markImported(accountId: string): Promise<boolean> {
+    const rows = await this.db.query(
+      'UPDATE accounts SET imported_at = $2 WHERE id = $1 AND imported_at IS NULL RETURNING id',
+      [accountId, new Date(this.now()).toISOString()],
+    );
+    return rows.length === 1;
+  }
+
   /** How the account signs in (for the account screen). */
   async identities(accountId: string) {
     return this.db.query<{ provider: string; email: string | null }>(

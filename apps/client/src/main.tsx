@@ -1,10 +1,18 @@
 import { loadContent } from '@abismo/content';
-import { TICK_MS } from '@abismo/engine';
+import { TICK_MS, encodeSave } from '@abismo/engine';
 import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { GameSim } from './game/sim.ts';
 import { OnlineLink } from './game/online.ts';
-import { ApiError, api, sessionToken, setSessionToken, takeRedirect } from './net/api.ts';
+import {
+  ApiError,
+  api,
+  sessionToken,
+  setSessionToken,
+  takeRedirect,
+  type HeroSummary,
+} from './net/api.ts';
+import { ImportScreen } from './ui/screens/ImportScreen.tsx';
 import { AuthScreen, ResetPasswordScreen } from './ui/screens/AuthScreen.tsx';
 import { t } from './i18n.ts';
 import { deleteSave, loadSave, startAutosave, writeSave, type LoadResult } from './save/storage.ts';
@@ -28,6 +36,8 @@ const firstHunt = [...content.hunts.values()].find((h) => h.startUnlocked)!;
 // Online mode (decision 173): builds with VITE_ONLINE=1, or `?online=1` in development.
 const online = import.meta.env.VITE_ONLINE === '1' || (import.meta.env.DEV && params.has('online'));
 const BUILD_ID: string = import.meta.env.VITE_BUILD_ID ?? 'dev';
+/** Set once the player answered the offer to bring this device's hero into the account. */
+const IMPORT_DISMISSED_KEY = 'abismo.importAnswered';
 
 type Phase =
   | { kind: 'loading' }
@@ -40,6 +50,8 @@ type Phase =
   | { kind: 'auth'; notice: string | null }
   /** Online, opened from a password recovery e-mail. */
   | { kind: 'reset'; token: string }
+  /** Online, on a device with a local hero the account may take in (decision 177). */
+  | { kind: 'import'; local: HeroSummary; save: string; account: HeroSummary | null }
   | { kind: 'no-server' };
 
 function run(sim: GameSim): GameSim {
@@ -58,6 +70,29 @@ function run(sim: GameSim): GameSim {
     (window as unknown as { abismoUi: typeof useUi }).abismoUi = useUi;
   }
   return sim;
+}
+
+/** The local hero, if this device has one and the account may still import it. */
+async function importOffer(): Promise<Phase | null> {
+  try {
+    if (localStorage.getItem(IMPORT_DISMISSED_KEY)) return null;
+  } catch {
+    return null;
+  }
+  const [me, local] = await Promise.all([api.me().catch(() => null), loadSave(content)]);
+  if (!me?.canImport || local.kind !== 'ok') return null;
+  const h = local.file.state.hero;
+  return {
+    kind: 'import',
+    local: { name: h.name, level: h.level, resets: h.resets.count, classId: h.classId },
+    save: encodeSave(local.file.state, local.file.savedAt),
+    account: me.hero,
+  };
+}
+
+/** Signed in: offers the local hero once, then connects. */
+async function enterOnline(): Promise<Phase> {
+  return (await importOffer()) ?? bootOnline(newLink());
 }
 
 /** Connects to the game server and waits for the hero (or learns there is none yet). */
@@ -96,7 +131,7 @@ async function boot(): Promise<Phase> {
     if (!sessionToken()) {
       return { kind: 'auth', notice: authError ? t('auth.error.google') : null };
     }
-    return bootOnline(newLink());
+    return enterOnline();
   }
   bootStep(t('boot.save'), 40);
   const result = await loadSave(content);
@@ -186,7 +221,7 @@ function Root() {
         <AuthScreen
           notice={phase.notice}
           onSession={() => {
-            void bootOnline(newLink()).then((p) => {
+            void enterOnline().then((p) => {
               if (p.kind === 'game') bootStep(t('boot.map'), 85);
               setPhase(p);
             });
@@ -198,6 +233,26 @@ function Root() {
         <ResetPasswordScreen
           token={phase.token}
           onDone={() => setPhase({ kind: 'auth', notice: t('auth.resetDone') })}
+        />
+      );
+    case 'import':
+      return (
+        <ImportScreen
+          local={phase.local}
+          save={phase.save}
+          account={phase.account}
+          onDone={() => {
+            // Asked once per device: the local hero stays here either way.
+            try {
+              localStorage.setItem(IMPORT_DISMISSED_KEY, '1');
+            } catch {
+              // Without storage the offer comes back next time, which is harmless.
+            }
+            void bootOnline(newLink()).then((p) => {
+              if (p.kind === 'game') bootStep(t('boot.map'), 85);
+              setPhase(p);
+            });
+          }}
         />
       );
     case 'create-online': {

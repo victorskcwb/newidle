@@ -235,6 +235,44 @@ export class GameServer {
     return this.deps.store.exists(accountId);
   }
 
+  /**
+   * Brings a hero from a device into the account (decision 177): the caller has validated it.
+   * The time before the import does not count as time away: the hero starts from now. With
+   * `replace`, the account's hero gives way (its open session is closed first).
+   */
+  async importHero(
+    accountId: string,
+    state: GameState,
+    replace: boolean,
+  ): Promise<'imported' | 'hero_exists'> {
+    const record = heroRecord(state, this.deps.now());
+    if (await this.deps.store.create(accountId, record, 'imported')) return 'imported';
+    if (!replace) return 'hero_exists';
+    await this.closeAccount(accountId);
+    await this.deps.store.replace(accountId, record, 'imported');
+    this.deps.log?.('hero_replaced_by_import', { accountId });
+    return 'imported';
+  }
+
+  /** The account's hero as the store has it (summary screens). */
+  async storedHero(accountId: string): Promise<GameState | null> {
+    const live = this.sessions.get(accountId);
+    if (live) return live.state;
+    const record = await this.deps.store.peek(accountId);
+    return record ? decodeSave(record.save, this.deps.content).state : null;
+  }
+
+  /** Saves and closes the account's session, if one is open. */
+  async closeAccount(accountId: string) {
+    const s = this.sessions.get(accountId);
+    if (!s) return;
+    this.advance(s, this.deps.now());
+    await this.save(s, this.deps.now());
+    this.sessions.delete(accountId);
+    this.kick(s.conn, 'other_session');
+    await this.deps.store.release(accountId, s.sessionId);
+  }
+
   /** A sign-in session was ended (logout, revoked from another device): close its sockets. */
   dropAuthSession(sessionId: string) {
     for (const link of this.links) {

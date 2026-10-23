@@ -1,5 +1,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
-import { newHeroSchema } from '@abismo/protocol';
+import type { ContentDb } from '@abismo/content';
+import { SaveError, decodeSave, implausibilities, type GameState } from '@abismo/engine';
+import { MAX_FRAME_BYTES, newHeroSchema } from '@abismo/protocol';
 import { z } from 'zod';
 import {
   emailSchema,
@@ -22,6 +24,7 @@ export interface GoogleProvider {
 }
 
 export interface AuthDeps {
+  content: ContentDb;
   accounts: Accounts;
   game: GameServer;
   limiter: AttemptLimiter;
@@ -121,10 +124,13 @@ export async function registerAuthRoutes(app: FastifyInstance, d: AuthDeps) {
   app.get('/api/auth/me', async (req, reply) => {
     const s = await session(req);
     if (!s) return reply.code(401).send({ error: 'auth' });
+    const hero = await d.game.storedHero(s.accountId);
     return reply.send({
       accountId: s.accountId,
       identities: await d.accounts.identities(s.accountId),
-      hasHero: await d.game.hasHero(s.accountId),
+      hasHero: hero !== null,
+      hero: hero && heroSummary(hero),
+      canImport: await d.accounts.canImport(s.accountId),
     });
   });
 
@@ -201,6 +207,33 @@ export async function registerAuthRoutes(app: FastifyInstance, d: AuthDeps) {
     },
   );
 
+  app.post('/api/heroes/import', { bodyLimit: MAX_FRAME_BYTES }, async (req, reply) => {
+    const s = await session(req);
+    if (!s) return reply.code(401).send({ error: 'auth' });
+    const body = z
+      .strictObject({ save: z.string().max(MAX_FRAME_BYTES), replace: z.boolean() })
+      .safeParse(req.body);
+    if (!body.success) return reply.code(400).send({ error: 'invalid' });
+    if (!(await d.accounts.canImport(s.accountId))) {
+      return reply.code(409).send({ error: 'already_imported' });
+    }
+    let state: GameState;
+    try {
+      state = decodeSave(body.data.save, d.content).state;
+    } catch (e) {
+      const code = e instanceof SaveError ? e.code : 'invalid';
+      return reply.code(400).send({ error: 'invalid_save', code });
+    }
+    const problems = implausibilities(state, d.content);
+    if (problems.length > 0) {
+      return reply.code(422).send({ error: 'implausible', problems });
+    }
+    const result = await d.game.importHero(s.accountId, state, body.data.replace);
+    if (result === 'hero_exists') return reply.code(409).send({ error: 'hero_exists' });
+    await d.accounts.markImported(s.accountId);
+    return reply.code(201).send({ result, hero: heroSummary(state) });
+  });
+
   app.post('/api/heroes', async (req, reply) => {
     const s = await session(req);
     if (!s) return reply.code(401).send({ error: 'auth' });
@@ -209,6 +242,16 @@ export async function registerAuthRoutes(app: FastifyInstance, d: AuthDeps) {
     const result = await d.game.newHero(s.accountId, body.data);
     return reply.code(result === 'created' ? 201 : 409).send({ result });
   });
+}
+
+/** What the account and import screens show of a hero. */
+function heroSummary(s: GameState) {
+  return {
+    name: s.hero.name,
+    level: s.hero.level,
+    resets: s.hero.resets.count,
+    classId: s.hero.classId,
+  };
 }
 
 /** Cloudflare Turnstile server check (https://developers.cloudflare.com/turnstile/). */

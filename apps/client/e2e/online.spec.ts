@@ -90,3 +90,27 @@ test('online: a wrong password is refused', async ({ page }) => {
   await page.getByTestId('auth-submit').click();
   await expect(page.getByRole('alert')).toContainText('E-mail ou senha errados.');
 });
+
+test('online: the hero played on this device is brought into a new account', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  // A local (offline) hero first, as before the server existed.
+  await page.goto('/?speed=4');
+  await page.getByTestId('hero-name').fill('Veterano Local');
+  await page.getByTestId('create-hero').click();
+  await page.getByTestId('tip-ok').click();
+  // Let the autosave (every 5 s) write the local hero, then go online.
+  await page.waitForTimeout(6_000);
+  await page.goto('/?online=1');
+  await page.getByTestId('auth-guest').click();
+  await expect(page.getByTestId('import')).toContainText('Veterano Local');
+  await page.getByTestId('import-bring').click();
+  await expect(page.locator('[data-testid="scene"] canvas').first()).toBeVisible();
+  await expect(page.getByText('Veterano Local').first()).toBeVisible();
+  expect(
+    await page.evaluate(() =>
+      Boolean((window as unknown as { abismo: { link: unknown } }).abismo.link),
+    ),
+  ).toBe(true);
+  expect(errors).toEqual([]);
+});

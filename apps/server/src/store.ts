@@ -26,6 +26,10 @@ export interface HeroStore {
   /** Lets go of the hero (the session closed). */
   release(accountId: string, sessionId: string): Promise<void>;
   exists(accountId: string): Promise<boolean>;
+  /** Reads the hero without taking it over. */
+  peek(accountId: string): Promise<HeroRecord | null>;
+  /** Puts another hero in the account's place (an import chosen over the server's hero). */
+  replace(accountId: string, hero: HeroRecord, origin: 'new' | 'imported'): Promise<void>;
 }
 
 /** Days of daily snapshots kept per hero (recovery after a bug). */
@@ -62,6 +66,33 @@ export class MemoryStore implements HeroStore {
   async exists(accountId: string) {
     return this.heroes.has(accountId);
   }
+
+  async replace(accountId: string, hero: HeroRecord) {
+    this.heroes.set(accountId, { ...hero, owner: null });
+  }
+
+  async peek(accountId: string) {
+    const h = this.heroes.get(accountId);
+    return h ? { ...h } : null;
+  }
+}
+
+interface HeroRow {
+  save: string;
+  saved_at_ms: string | number;
+  name: string;
+  tick: string | number;
+  save_version: number;
+}
+
+function fromRow(r: HeroRow): HeroRecord {
+  return {
+    save: r.save,
+    savedAtMs: Number(r.saved_at_ms),
+    name: r.name,
+    tick: Number(r.tick),
+    saveVersion: r.save_version,
+  };
 }
 
 export class PgStore implements HeroStore {
@@ -82,27 +113,21 @@ export class PgStore implements HeroStore {
   }
 
   async claim(accountId: string, sessionId: string) {
-    const rows = await this.db.query<{
-      save: string;
-      saved_at_ms: string | number;
-      name: string;
-      tick: string | number;
-      save_version: number;
-    }>(
+    const rows = await this.db.query<HeroRow>(
       `UPDATE heroes SET owner_session = $2, updated_at = now()
        WHERE account_id = $1
        RETURNING save, saved_at_ms, name, tick, save_version`,
       [accountId, sessionId],
     );
-    const r = rows[0];
-    if (!r) return null;
-    return {
-      save: r.save,
-      savedAtMs: Number(r.saved_at_ms),
-      name: r.name,
-      tick: Number(r.tick),
-      saveVersion: r.save_version,
-    };
+    return rows[0] ? fromRow(rows[0]) : null;
+  }
+
+  async peek(accountId: string) {
+    const rows = await this.db.query<HeroRow>(
+      'SELECT save, saved_at_ms, name, tick, save_version FROM heroes WHERE account_id = $1',
+      [accountId],
+    );
+    return rows[0] ? fromRow(rows[0]) : null;
   }
 
   async save(accountId: string, sessionId: string, hero: HeroRecord) {
@@ -140,5 +165,14 @@ export class PgStore implements HeroStore {
   async exists(accountId: string) {
     const rows = await this.db.query('SELECT 1 FROM heroes WHERE account_id = $1', [accountId]);
     return rows.length > 0;
+  }
+
+  async replace(accountId: string, hero: HeroRecord, origin: 'new' | 'imported') {
+    await this.db.query(
+      `UPDATE heroes SET name = $2, save = $3, save_version = $4, tick = $5, saved_at_ms = $6,
+         origin = $7, owner_session = NULL, updated_at = now()
+       WHERE account_id = $1`,
+      [accountId, hero.name, hero.save, hero.saveVersion, hero.tick, hero.savedAtMs, origin],
+    );
   }
 }

@@ -19,6 +19,7 @@ export * from './meals.ts';
 export * from './offline.ts';
 export * from './pets.ts';
 export * from './pity.ts';
+export * from './plausibility.ts';
 export * from './professions.ts';
 export * from './progression.ts';
 export * from './quests.ts';

@@ -1,3 +1,4 @@
+import { createGame, encodeSave, startHunt, stepQuiet } from '@abismo/engine';
 import { describe, expect, it } from 'vitest';
 import { Accounts, AttemptLimiter } from '../src/accounts.ts';
 import { buildApp } from '../src/app.ts';
@@ -5,7 +6,7 @@ import type { GoogleProvider } from '../src/authRoutes.ts';
 import { connectPglite } from '../src/db/db.ts';
 import { migrate } from '../src/db/migrations.ts';
 import { PgStore } from '../src/store.ts';
-import { World } from './harness.ts';
+import { World, content } from './harness.ts';
 
 /** The JSON bodies the account routes answer with. */
 interface Body {
@@ -14,6 +15,9 @@ interface Body {
   error?: string;
   url?: string;
   hasHero?: boolean;
+  canImport?: boolean;
+  hero?: { name: string; level: number } | null;
+  problems?: string[];
   identities?: unknown[];
   sessions?: unknown[];
 }
@@ -32,6 +36,7 @@ async function setup(o: { human?: boolean } = {}) {
   const app = await buildApp(
     world.server,
     {
+      content,
       accounts,
       limiter: new AttemptLimiter(),
       verifyHuman: async () => o.human ?? true,
@@ -218,5 +223,63 @@ describe('accounts', () => {
     w.server.dropAuthSession('auth-ana');
     await w.run(200);
     expect(c.of('kicked')).toEqual([{ type: 'kicked', reason: 'auth' }]);
+  });
+
+  it('imports a device save once, refuses edited ones, and asks before replacing a hero', async () => {
+    const { call, world } = await setup();
+    const local = createGame(content, { name: 'Do Aparelho', seed: [5, 6, 7, 8] });
+    startHunt(local, content, 'forgotten_cemetery');
+    stepQuiet(local, content, 30_000);
+    // An old savedAt must not turn into offline progress on the server.
+    const save = encodeSave(local, 0);
+
+    const guest = (await call('POST', '/api/auth/guest', {})).body.token!;
+    expect((await call('GET', '/api/auth/me', undefined, guest)).body.canImport).toBe(true);
+
+    const edited = save.replace(
+      /"goldEarned":\{"\$bigint":"\d+"\}/,
+      '"goldEarned":{"$bigint":"0"}',
+    );
+    expect(edited).not.toBe(save);
+    const bad = await call('POST', '/api/heroes/import', { save: edited, replace: false }, guest);
+    expect(bad.status).toBe(422);
+    expect(bad.body.problems).toContain('gold');
+    expect(
+      (await call('POST', '/api/heroes/import', { save: 'lixo', replace: false }, guest)).status,
+    ).toBe(400);
+
+    const ok = await call('POST', '/api/heroes/import', { save, replace: false }, guest);
+    expect(ok.status).toBe(201);
+    const me = (await call('GET', '/api/auth/me', undefined, guest)).body;
+    expect(me).toMatchObject({ hasHero: true, canImport: false, hero: { name: 'Do Aparelho' } });
+    expect(
+      (await call('POST', '/api/heroes/import', { save, replace: false }, guest)).body,
+    ).toEqual({
+      error: 'already_imported',
+    });
+
+    // Another account that already plays a hero: the import asks first, then replaces it.
+    const other = (await call('POST', '/api/auth/guest', {})).body.token!;
+    await call('POST', '/api/heroes', hero, other);
+    const otherId = (await call('GET', '/api/auth/me', undefined, other)).body.accountId!;
+    const tokenFor = (id: string) => `dev:${id}`;
+    const playing = world.connect(otherId, 40, 'test', tokenFor(otherId));
+    await world.run(500);
+    expect(playing.of('welcome')).toHaveLength(1);
+    expect(
+      (await call('POST', '/api/heroes/import', { save, replace: false }, other)).body,
+    ).toEqual({
+      error: 'hero_exists',
+    });
+    const replaced = await call('POST', '/api/heroes/import', { save, replace: true }, other);
+    expect(replaced.status).toBe(201);
+    await world.run(200);
+    expect(playing.of('kicked')).toEqual([{ type: 'kicked', reason: 'other_session' }]);
+    const back = world.connect(otherId, 40, 'test', tokenFor(otherId));
+    await world.run(1_000);
+    const welcome = back.of('welcome')[0]!;
+    expect(welcome.offlineReport).toBeNull();
+    expect(back.replica!.state.hero.name).toBe('Do Aparelho');
+    expect(back.replica!.state.tick).toBeLessThan(local.tick + 100);
   });
 });
