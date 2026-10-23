@@ -42,8 +42,8 @@ export interface Connection {
 export interface GameServerDeps {
   content: ContentDb;
   store: HeroStore;
-  /** The account a session token belongs to, or null. */
-  authenticate(token: string): Promise<string | null>;
+  /** The account and sign-in session of a token, or null. */
+  authenticate(token: string): Promise<{ accountId: string; sessionId: string } | null>;
   /** A rate sheet off the main thread (computing one takes ~1.5 s). */
   rates(state: GameState, huntId: string): Promise<RateSheet>;
   /** Server wall clock in ms. */
@@ -138,6 +138,8 @@ class Session {
 interface Link {
   conn: Connection;
   accountId: string | null;
+  /** The sign-in session the token belongs to (revoking it closes this connection). */
+  authSessionId: string | null;
   badFrames: number;
   closed: boolean;
 }
@@ -151,6 +153,7 @@ export class GameServer {
   private sessions = new Map<string, Session>();
   /** Logins in progress per account, so two hellos for one account never interleave. */
   private opening = new Map<string, Promise<void>>();
+  private links = new Set<Link>();
 
   constructor(private readonly deps: GameServerDeps) {}
 
@@ -166,7 +169,8 @@ export class GameServer {
 
   /** Binds a new connection; feed it the frames it receives and tell it when it closes. */
   connect(conn: Connection) {
-    const link: Link = { conn, accountId: null, badFrames: 0, closed: false };
+    const link: Link = { conn, accountId: null, authSessionId: null, badFrames: 0, closed: false };
+    this.links.add(link);
     return {
       receive: (text: string) => this.receive(link, text),
       closed: () => this.disconnect(link),
@@ -226,6 +230,18 @@ export class GameServer {
     return 'created';
   }
 
+  /** Whether the account has a hero (account screen, hero creation). */
+  hasHero(accountId: string): Promise<boolean> {
+    return this.deps.store.exists(accountId);
+  }
+
+  /** A sign-in session was ended (logout, revoked from another device): close its sockets. */
+  dropAuthSession(sessionId: string) {
+    for (const link of this.links) {
+      if (link.authSessionId === sessionId && !link.closed) this.kick(link.conn, 'auth');
+    }
+  }
+
   // --- Messages --------------------------------------------------------------------------------
 
   private send(conn: Connection, message: ServerMessage) {
@@ -265,10 +281,12 @@ export class GameServer {
   private async hello(link: Link, m: Extract<ClientMessage, { type: 'hello' }>) {
     if (m.protocol !== PROTOCOL_VERSION) return this.kick(link.conn, 'protocol');
     if (m.buildId !== this.deps.buildId) return this.kick(link.conn, 'reload');
-    const accountId = await this.deps.authenticate(m.token);
+    const auth = await this.deps.authenticate(m.token);
     if (link.closed) return;
-    if (!accountId) return this.kick(link.conn, 'auth');
+    if (!auth) return this.kick(link.conn, 'auth');
+    const accountId = auth.accountId;
     link.accountId = accountId;
+    link.authSessionId = auth.sessionId;
     const previous = this.opening.get(accountId) ?? Promise.resolve();
     const opening = previous.then(() => this.open(link, accountId));
     this.opening.set(accountId, opening);
@@ -420,6 +438,7 @@ export class GameServer {
   private async disconnect(link: Link) {
     if (link.closed) return;
     link.closed = true;
+    this.links.delete(link);
     const s = link.accountId ? this.sessions.get(link.accountId) : undefined;
     if (!s || s.conn !== link.conn) return;
     this.advance(s, this.deps.now());

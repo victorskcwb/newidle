@@ -12,6 +12,7 @@ import { PRESETS, presetLayout, useWindows } from '../../state/windows.ts';
 import { Sheet, tryIntent } from '../Sheet.tsx';
 import { useSim } from '../useSim.ts';
 import { Icon } from '../Icon.tsx';
+import { AccountSection } from '../AccountSection.tsx';
 
 /**
  * Settings: hunt automation (in the save: potion limits and returns) and device preferences
@@ -37,6 +38,12 @@ export function SettingsScreen() {
 
   return (
     <Sheet title={t('screen.settings')} testId="settings">
+      {sim.link && (
+        <>
+          <h3 className="pixel">{t('settings.account')}</h3>
+          <AccountSection />
+        </>
+      )}
       <h3 className="pixel">{t('settings.hunt')}</h3>
       <label className="field">
         <span>{t('settings.potionThreshold', { pct: st.potionThresholdPct })}</span>

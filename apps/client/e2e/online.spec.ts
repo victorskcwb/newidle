@@ -1,15 +1,29 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+type Abismo = {
+  abismo: {
+    state: { lifetime: { kills: bigint } };
+    link: { replica: { stats: Record<string, number> } };
+  };
+};
+
+const kills = (page: Page) =>
+  page.evaluate(() => Number((window as unknown as Abismo).abismo.state.lifetime.kills));
+const stats = (page: Page) =>
+  page.evaluate(() => (window as unknown as Abismo).abismo.link.replica.stats);
 
 /**
- * Online mode (decision 173, `?online=1` in development): the hero lives on the server. A
- * second device with the same account takes over and finds the same hero; the first device is
- * told the account was opened elsewhere.
+ * Fase 1 acceptance (docs/plan-fase-1.md): play as a guest, link an e-mail, sign in on another
+ * device and find the same hero; the first device is told the account was opened elsewhere.
+ * Editing the browser's own storage changes nothing: online, the hero is the server's.
  */
-test('online: create a hero, play, and continue on another device', async ({ browser }) => {
-  const account = crypto.randomUUID();
+test('online: guest, hero, linked e-mail, and the same hero on another device', async ({
+  browser,
+}) => {
+  const email = `e2e-${crypto.randomUUID()}@example.com`;
+  const password = 'senha-forte-123';
   const device = async () => {
     const context = await browser.newContext({ locale: 'pt-BR' });
-    await context.addInitScript((id) => localStorage.setItem('abismo.devAccount', id), account);
     const page = await context.newPage();
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
@@ -18,6 +32,7 @@ test('online: create a hero, play, and continue on another device', async ({ bro
 
   const phone = await device();
   await phone.page.goto('/?online=1');
+  await phone.page.getByTestId('auth-guest').click();
   await phone.page.getByTestId('hero-name').fill('Viajante Online');
   await phone.page.getByTestId('create-hero').click();
   await expect(phone.page.locator('[data-testid="scene"] canvas').first()).toBeVisible();
@@ -27,45 +42,51 @@ test('online: create a hero, play, and continue on another device', async ({ bro
   await expect(phone.page.getByTestId('event-log')).toContainText('derrotado!', {
     timeout: 60_000,
   });
-  const kills = await phone.page.evaluate(() =>
-    Number(
-      (window as unknown as { abismo: { state: { lifetime: { kills: bigint } } } }).abismo.state
-        .lifetime.kills,
-    ),
-  );
-  expect(kills).toBeGreaterThan(0);
 
   // The replica agrees with the server: checkpoints (tick 0, then every 30 s) compared and matched.
-  const stats = () =>
-    phone.page.evaluate(
-      () =>
-        (
-          window as unknown as {
-            abismo: { link: { replica: { stats: Record<string, number> } } };
-          }
-        ).abismo.link.replica.stats,
-    );
   await expect
-    .poll(async () => (await stats()).checkpointsVerified, { timeout: 60_000 })
+    .poll(async () => (await stats(phone.page)).checkpointsVerified, { timeout: 60_000 })
     .toBeGreaterThan(1);
-  expect(await stats()).toMatchObject({ resyncs: 0, checkpointMismatches: 0, lateIntents: 0 });
+  expect(await stats(phone.page)).toMatchObject({
+    resyncs: 0,
+    checkpointMismatches: 0,
+    lateIntents: 0,
+  });
 
-  // Editing the browser's own save changes nothing: online, the hero is the server's.
+  // Link an e-mail to the guest account (Options → Account).
+  await phone.page.getByTestId('nav-settings').click();
+  await expect(phone.page.getByTestId('account')).toContainText('Conta de convidado');
+  await phone.page.getByTestId('link-email').fill(email);
+  await phone.page.getByTestId('link-password').fill(password);
+  await phone.page.getByTestId('link-submit').click();
+  await expect(phone.page.getByTestId('account')).toContainText(email);
+  await phone.page.getByRole('button', { name: 'Fechar' }).last().click();
+  const before = await kills(phone.page);
+  expect(before).toBeGreaterThan(0);
+
+  // Wiping the browser's local data changes nothing on the server.
   await phone.page.evaluate(() => indexedDB.deleteDatabase('keyval-store'));
 
   const pc = await device();
   await pc.page.goto('/?online=1');
+  await pc.page.getByTestId('auth-login').click();
+  await pc.page.getByTestId('auth-email').fill(email);
+  await pc.page.getByTestId('auth-password').fill(password);
+  await pc.page.getByTestId('auth-submit').click();
   await expect(pc.page.locator('[data-testid="scene"] canvas').first()).toBeVisible();
   await expect(pc.page.getByText('Viajante Online').first()).toBeVisible();
-  const pcKills = await pc.page.evaluate(() =>
-    Number(
-      (window as unknown as { abismo: { state: { lifetime: { kills: bigint } } } }).abismo.state
-        .lifetime.kills,
-    ),
-  );
-  expect(pcKills).toBeGreaterThanOrEqual(kills);
+  expect(await kills(pc.page)).toBeGreaterThanOrEqual(before);
   await expect(phone.page.getByTestId('net-taken')).toBeVisible();
 
   expect(phone.errors).toEqual([]);
   expect(pc.errors).toEqual([]);
+});
+
+test('online: a wrong password is refused', async ({ page }) => {
+  await page.goto('/?online=1');
+  await page.getByTestId('auth-login').click();
+  await page.getByTestId('auth-email').fill(`nobody-${crypto.randomUUID()}@example.com`);
+  await page.getByTestId('auth-password').fill('qualquer-coisa');
+  await page.getByTestId('auth-submit').click();
+  await expect(page.getByRole('alert')).toContainText('E-mail ou senha errados.');
 });

@@ -31,7 +31,10 @@ export class World {
     this.server = new GameServer({
       content,
       store: this.store,
-      authenticate: async (token) => (token.startsWith('dev:') ? token.slice(4) : null),
+      authenticate: async (token) =>
+        token.startsWith('dev:')
+          ? { accountId: token.slice(4), sessionId: `auth-${token.slice(4)}` }
+          : null,
       rates: async (state, huntId) => computeRates(state, content, huntId),
       now: () => this.now,
       dayOf: brasiliaDay,

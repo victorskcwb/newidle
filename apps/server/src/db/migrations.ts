@@ -31,6 +31,48 @@ export const MIGRATIONS: readonly { version: number; sql: string }[] = [
       );
     `,
   },
+  {
+    version: 2,
+    sql: `
+      CREATE TABLE accounts (
+        id              text PRIMARY KEY,
+        created_at      timestamptz NOT NULL DEFAULT now(),
+        -- Set when the player asks to delete the account (LGPD); the data goes after 30 days.
+        deleted_at      timestamptz,
+        terms_version   integer,
+        terms_at        timestamptz
+      );
+      -- How an account signs in: a device token (guest), e-mail and password, or Google.
+      CREATE TABLE identities (
+        account_id     text NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+        provider       text NOT NULL CHECK (provider IN ('guest', 'password', 'google')),
+        -- guest: the account id; password: the e-mail in lower case; google: the "sub" claim.
+        subject        text NOT NULL,
+        email          text,
+        password_hash  text,
+        created_at     timestamptz NOT NULL DEFAULT now(),
+        PRIMARY KEY (provider, subject)
+      );
+      CREATE INDEX identities_account ON identities (account_id);
+      CREATE TABLE sessions (
+        id          text PRIMARY KEY,
+        token_hash  text NOT NULL UNIQUE,
+        account_id  text NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+        device      text NOT NULL DEFAULT '',
+        created_at  timestamptz NOT NULL DEFAULT now(),
+        last_seen   timestamptz NOT NULL DEFAULT now(),
+        expires_at  timestamptz NOT NULL,
+        revoked_at  timestamptz
+      );
+      CREATE INDEX sessions_account ON sessions (account_id);
+      CREATE TABLE password_resets (
+        token_hash  text PRIMARY KEY,
+        account_id  text NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+        expires_at  timestamptz NOT NULL,
+        used_at     timestamptz
+      );
+    `,
+  },
 ];
 
 export async function migrate(db: Db): Promise<number[]> {

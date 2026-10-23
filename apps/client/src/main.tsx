@@ -3,7 +3,9 @@ import { TICK_MS } from '@abismo/engine';
 import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { GameSim } from './game/sim.ts';
-import { OnlineLink, devToken } from './game/online.ts';
+import { OnlineLink } from './game/online.ts';
+import { ApiError, api, sessionToken, setSessionToken, takeRedirect } from './net/api.ts';
+import { AuthScreen, ResetPasswordScreen } from './ui/screens/AuthScreen.tsx';
 import { t } from './i18n.ts';
 import { deleteSave, loadSave, startAutosave, writeSave, type LoadResult } from './save/storage.ts';
 import { usePrefs } from './state/prefs.ts';
@@ -23,8 +25,8 @@ const params = new URLSearchParams(location.search);
 const speed = import.meta.env.DEV ? Math.max(1, Number(params.get('speed') ?? 1)) : 1;
 const content = loadContent();
 const firstHunt = [...content.hunts.values()].find((h) => h.startUnlocked)!;
-// Online mode (decision 173): `?online=1` in development until accounts exist (commit 8).
-const online = import.meta.env.DEV && params.has('online');
+// Online mode (decision 173): builds with VITE_ONLINE=1, or `?online=1` in development.
+const online = import.meta.env.VITE_ONLINE === '1' || (import.meta.env.DEV && params.has('online'));
 const BUILD_ID: string = import.meta.env.VITE_BUILD_ID ?? 'dev';
 
 type Phase =
@@ -34,6 +36,10 @@ type Phase =
   | { kind: 'game'; sim: GameSim }
   /** Online, the account has no hero yet. */
   | { kind: 'create-online'; link: OnlineLink }
+  /** Online without a session: play as a guest or sign in. */
+  | { kind: 'auth'; notice: string | null }
+  /** Online, opened from a password recovery e-mail. */
+  | { kind: 'reset'; token: string }
   | { kind: 'no-server' };
 
 function run(sim: GameSim): GameSim {
@@ -62,7 +68,11 @@ function bootOnline(link: OnlineLink): Promise<Phase> {
       resolve({ kind: 'game', sim: run(new GameSim(replica.state, 1, link)) });
     link.onStatus = (status) => {
       if (status === 'no_hero') resolve({ kind: 'create-online', link });
-      else if (status === 'auth') resolve({ kind: 'no-server' });
+      else if (status === 'auth') {
+        // The session ended (expired, revoked, signed out elsewhere): sign in again.
+        setSessionToken(null);
+        resolve({ kind: 'auth', notice: t('auth.expired') });
+      }
     };
     link.connect();
   });
@@ -70,12 +80,24 @@ function bootOnline(link: OnlineLink): Promise<Phase> {
 
 function newLink(): OnlineLink {
   const scheme = location.protocol === 'https:' ? 'wss' : 'ws';
-  return new OnlineLink(`${scheme}://${location.host}/ws`, devToken(), BUILD_ID, content);
+  return new OnlineLink(
+    `${scheme}://${location.host}/ws`,
+    () => sessionToken() ?? '',
+    BUILD_ID,
+    content,
+  );
 }
 
 /** Loads the save, applies the time away (offline), or asks for a new hero. */
 async function boot(): Promise<Phase> {
-  if (online) return bootOnline(newLink());
+  if (online) {
+    const { resetToken, authError } = takeRedirect();
+    if (resetToken) return { kind: 'reset', token: resetToken };
+    if (!sessionToken()) {
+      return { kind: 'auth', notice: authError ? t('auth.error.google') : null };
+    }
+    return bootOnline(newLink());
+  }
   bootStep(t('boot.save'), 40);
   const result = await loadSave(content);
   if (result.kind === 'empty') return { kind: 'create' };
@@ -113,12 +135,11 @@ function BrokenSave({
 
 /** Creates the account's hero on the server, then connects to play it. */
 async function createOnline(link: OnlineLink, hero: NewHeroChoice): Promise<Phase> {
-  const res = await fetch('/api/dev/heroes', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ token: devToken(), ...hero }),
-  });
-  if (!res.ok && res.status !== 409) return { kind: 'no-server' };
+  try {
+    await api.createHero(hero);
+  } catch (e) {
+    if (!(e instanceof ApiError && e.status === 409)) return { kind: 'no-server' };
+  }
   link.status = 'connecting';
   return bootOnline(link);
 }
@@ -159,6 +180,25 @@ function Root() {
             <p className="tone-bad">{t('net.unavailable')}</p>
           </div>
         </main>
+      );
+    case 'auth':
+      return (
+        <AuthScreen
+          notice={phase.notice}
+          onSession={() => {
+            void bootOnline(newLink()).then((p) => {
+              if (p.kind === 'game') bootStep(t('boot.map'), 85);
+              setPhase(p);
+            });
+          }}
+        />
+      );
+    case 'reset':
+      return (
+        <ResetPasswordScreen
+          token={phase.token}
+          onDone={() => setPhase({ kind: 'auth', notice: t('auth.resetDone') })}
+        />
       );
     case 'create-online': {
       const link = phase.link;

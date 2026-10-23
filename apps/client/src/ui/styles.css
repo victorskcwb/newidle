@@ -3036,3 +3036,34 @@ input[type='range'] {
   gap: 8px;
   justify-items: center;
 }
+
+/* Accounts (decision 175): sign-in screen and the account section in Options. */
+.auth-form {
+  display: grid;
+  gap: 10px;
+}
+
+.auth-links {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.account {
+  display: grid;
+  gap: 10px;
+}
+
+.session-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.session-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}

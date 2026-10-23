@@ -45,7 +45,8 @@ export class OnlineLink {
 
   constructor(
     private readonly url: string,
-    private readonly token: string,
+    /** The session token, read at each connection (it may change after signing in). */
+    private readonly token: () => string,
     private readonly buildId: string,
     private readonly content: ContentDb,
   ) {}
@@ -60,7 +61,7 @@ export class OnlineLink {
         type: 'hello',
         protocol: PROTOCOL_VERSION,
         buildId: this.buildId,
-        token: this.token,
+        token: this.token(),
       });
       this.pinger = setInterval(() => this.send({ type: 'ping', t: localNow() }), PING_MS);
     };
@@ -115,20 +116,4 @@ export class OnlineLink {
     this.status = s;
     this.onStatus(s);
   }
-}
-
-/** The development account of this browser (decision 175 brings real accounts). */
-export function devToken(): string {
-  const key = 'abismo.devAccount';
-  let id: string | null = null;
-  try {
-    id = localStorage.getItem(key);
-    if (!id) {
-      id = crypto.randomUUID();
-      localStorage.setItem(key, id);
-    }
-  } catch {
-    id ??= crypto.randomUUID();
-  }
-  return `dev:${id}`;
 }

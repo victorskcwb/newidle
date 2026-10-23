@@ -25,6 +25,7 @@ export interface HeroStore {
   save(accountId: string, sessionId: string, hero: HeroRecord): Promise<boolean>;
   /** Lets go of the hero (the session closed). */
   release(accountId: string, sessionId: string): Promise<void>;
+  exists(accountId: string): Promise<boolean>;
 }
 
 /** Days of daily snapshots kept per hero (recovery after a bug). */
@@ -56,6 +57,10 @@ export class MemoryStore implements HeroStore {
   async release(accountId: string, sessionId: string) {
     const h = this.heroes.get(accountId);
     if (h?.owner === sessionId) h.owner = null;
+  }
+
+  async exists(accountId: string) {
+    return this.heroes.has(accountId);
   }
 }
 
@@ -130,5 +135,10 @@ export class PgStore implements HeroStore {
       'UPDATE heroes SET owner_session = NULL WHERE account_id = $1 AND owner_session = $2',
       [accountId, sessionId],
     );
+  }
+
+  async exists(accountId: string) {
+    const rows = await this.db.query('SELECT 1 FROM heroes WHERE account_id = $1', [accountId]);
+    return rows.length > 0;
   }
 }
