@@ -25,6 +25,9 @@ import { difficultyRule, huntAt } from './difficulty.ts';
 import { offlineCapTicks } from './upgrades.ts';
 import type { GameEvent, GameState, ItemInstance } from './types.ts';
 
+/** Time away below this is replayed tick by tick; from it on, resolved from the rate sheet. */
+export const OFFLINE_AFTER_TICKS = 5 * 60 * 10;
+
 /** Offline XP is applied in this many time slices (see resolveOffline). */
 const OFFLINE_XP_SLICES = 48;
 
@@ -575,4 +578,26 @@ function resolveStretch(
   progress.consecutiveDeaths = 0;
   s.activity = report.stoppedBy ? { kind: 'idle_town' } : { kind: 'to_hunt', untilTick: s.tick };
   return report;
+}
+
+/**
+ * Time away (a background tab, a closed game, a server login): short gaps are replayed tick
+ * by tick, long ones resolved from the rate sheet of the current hunt. `rates` may be a sheet
+ * computed earlier for the same setup; without one it is computed here. Returns the report
+ * of a long absence, or null.
+ */
+export function advanceAway(
+  s: GameState,
+  content: ContentDb,
+  ticks: number,
+  rates: RateSheet | null = null,
+): OfflineReport | null {
+  if (ticks <= 0) return null;
+  if (ticks < OFFLINE_AFTER_TICKS) {
+    stepQuiet(s, content, ticks);
+    return null;
+  }
+  const huntId = s.hunt?.huntId;
+  const sheet = huntId ? (rates ?? computeRates(s, content, huntId)) : null;
+  return resolveOffline(s, content, sheet, ticks);
 }

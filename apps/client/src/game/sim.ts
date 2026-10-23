@@ -4,12 +4,11 @@ import {
   TICK_MS,
   applyIntent,
   checkAchievements,
-  computeRates,
   createGame,
   debugSetLevel,
   heroStats,
   loginDue,
-  resolveOffline,
+  advanceAway,
   step,
   stepQuiet,
   xpToNext,
@@ -63,8 +62,6 @@ export type SimSignal =
 
 /** Ticks behind beyond which the sim fast-forwards without events instead of replaying. */
 const CATCH_UP_TICKS = 300;
-/** Time away (background tab) beyond which the offline resolution is used. */
-const OFFLINE_AFTER_TICKS = 5 * 60 * 10;
 const SNAPSHOT_HISTORY = 3000;
 const RATES_DEBOUNCE_MS = 400;
 
@@ -466,13 +463,8 @@ export class GameSim {
   /** Time away: replays short gaps tick by tick, resolves long ones from the rate sheet. */
   applyAway(ticks: number) {
     if (ticks <= 0) return;
-    if (ticks < OFFLINE_AFTER_TICKS) {
-      stepQuiet(this.state, this.content, ticks);
-    } else {
-      const huntId = this.state.hunt?.huntId;
-      const rates = huntId ? (this.rates ?? computeRates(this.state, this.content, huntId)) : null;
-      this.offlineReport = resolveOffline(this.state, this.content, rates, ticks);
-    }
+    const report = advanceAway(this.state, this.content, ticks, this.rates);
+    if (report) this.offlineReport = report;
     this.snapshot();
     this.emit({ kind: 'resync' });
     this.changed(true);

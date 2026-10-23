@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  OFFLINE_AFTER_TICKS,
   OFFLINE_CAP_TICKS,
+  advanceAway,
+  hashState,
   RARITY_ORDER,
   TICKS_PER_HOUR,
   cloneState,
@@ -232,5 +235,26 @@ describe('resolveOffline', () => {
     expect(a).toEqual(b);
     expect(s).toEqual(snapshot);
     expect(a.killsPerHour).toBeGreaterThan(0);
+  });
+
+  it('advanceAway replays short gaps tick by tick and resolves long ones from the sheet', () => {
+    const short = setup();
+    const replayed = cloneState(short);
+    expect(advanceAway(short, content, OFFLINE_AFTER_TICKS - 1)).toBeNull();
+    stepQuiet(replayed, content, OFFLINE_AFTER_TICKS - 1);
+    expect(hashState(short)).toBe(hashState(replayed));
+
+    const long = setup();
+    const resolved = cloneState(long);
+    const report = advanceAway(long, content, TWO_HOURS);
+    const expected = resolveOffline(
+      resolved,
+      content,
+      computeRates(resolved, content, HUNT),
+      TWO_HOURS,
+    );
+    expect(report).toEqual(expected);
+    expect(hashState(long)).toBe(hashState(resolved));
+    expect(advanceAway(long, content, 0)).toBeNull();
   });
 });
