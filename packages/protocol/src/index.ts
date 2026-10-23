@@ -122,3 +122,5 @@ export const decodeServerMessage = (text: string) => decodeWith(serverMessageSch
 export function tickAt(c: { tick: number; atMs: number }, nowMs: number, tickMs = 100): number {
   return c.tick + Math.max(0, Math.floor((nowMs - c.atMs) / tickMs));
 }
+
+export { Replica } from './replica.ts';

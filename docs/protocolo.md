@@ -1,6 +1,6 @@
 # Protocolo cliente ↔ servidor
 
-Referência das mensagens trocadas entre o cliente e o servidor. Os tipos e esquemas estão em `packages/protocol`, que os dois lados importam. O modelo foi definido na decisão 173 (réplica com checagem).
+Referência das mensagens trocadas entre o cliente e o servidor. Os tipos e esquemas estão em `packages/protocol`, que os dois lados importam. O modelo foi definido na decisão 173 (réplica com checagem). O lado do cliente está implementado em `Replica` (`packages/protocol/src/replica.ts`), sem transporte; o navegador, os testes do servidor e o teste de carga usam a mesma classe.
 
 ## Transporte
 
@@ -17,12 +17,12 @@ O cliente roda **`CLIENT_LEAD_TICKS` (5) ticks à frente** do servidor. Cada int
 
 ## Cliente → servidor
 
-| Mensagem | Campos                         | Notas                                                                                                    |
-| -------- | ------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| `hello`  | `protocol`, `buildId`, `token` | Primeira mensagem. O `token` é o da sessão (conta convidado ou login).                                   |
-| `intent` | `seq`, `atTick`, `intent`      | `seq` começa em 1 e cresce por sessão de jogo. `intent` é um `Intent` (`packages/engine/src/intent.ts`). |
-| `resync` | —                              | Pede o estado inteiro.                                                                                   |
-| `ping`   | `t` (relógio do cliente)       | Latência e conexão viva.                                                                                 |
+| Mensagem | Campos                         | Notas                                                                                                                                                             |
+| -------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hello`  | `protocol`, `buildId`, `token` | Primeira mensagem. O `token` é o da sessão (conta convidado ou login).                                                                                            |
+| `intent` | `seq`, `atTick`, `intent`      | `seq` cresce a partir do `lastSeq` do último `welcome`/`state` (um aparelho novo continua a numeração). `intent` é um `Intent` (`packages/engine/src/intent.ts`). |
+| `resync` | —                              | Pede o estado inteiro.                                                                                                                                            |
+| `ping`   | `t` (relógio do cliente)       | Latência e conexão viva.                                                                                                                                          |
 
 ## Servidor → cliente
 
@@ -31,7 +31,7 @@ O cliente roda **`CLIENT_LEAD_TICKS` (5) ticks à frente** do servidor. Cada int
 | `welcome`    | `serverNow`, `clock`, `save`, `lastSeq`, `offlineReport`, `contentVersion` | Resposta ao `hello`. O tempo fora já foi resolvido (`advanceAway`). `lastSeq` é a última intenção aplicada.      |
 | `ack`        | `seq`, `appliedAt`                                                         | A intenção foi aplicada no tick `appliedAt`.                                                                     |
 | `reject`     | `seq`, `code`                                                              | A regra recusou, com o código de `IntentError`, ou o protocolo recusou (`too_early`, `rate_limited`, `bad_day`). |
-| `checkpoint` | `tick`, `hash`                                                             | `hashState` no começo do tick, a cada `CHECKPOINT_TICKS` (300 ticks = 30 s).                                     |
+| `checkpoint` | `tick`, `hash`                                                             | `hashState` do tick depois das intenções dele e antes de rodá-lo, a cada `CHECKPOINT_TICKS` (300 ticks = 30 s).  |
 | `state`      | `clock`, `save`, `lastSeq`                                                 | Resposta ao `resync`.                                                                                            |
 | `kicked`     | `reason`                                                                   | `other_session`, `reload` (`buildId` diferente), `auth`, `maintenance`, `protocol`. A conexão fecha em seguida.  |
 | `pong`       | `t`, `serverNow`                                                           |                                                                                                                  |

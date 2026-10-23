@@ -1,0 +1,23 @@
+{
+  "name": "@abismo/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --import tsx --watch src/main.ts",
+    "start": "node --import tsx src/main.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@abismo/content": "workspace:*",
+    "@abismo/engine": "workspace:*",
+    "@abismo/protocol": "workspace:*",
+    "@fastify/websocket": "11.3.3",
+    "fastify": "5.12.5",
+    "tsx": "4.23.15"
+  },
+  "devDependencies": {
+    "@types/ws": "8.18.2"
+  }
+}
