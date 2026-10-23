@@ -111,4 +111,19 @@ describe('save', () => {
     expect(loaded.state).toEqual(current);
     expect(() => decodeSave(JSON.stringify(v0), content)).toThrow(SaveError);
   });
+
+  it('a v19 save (no skill rules, no hunt difficulty) loads as v20 with the defaults', () => {
+    const s = hunting(19);
+    stepQuiet(s, content, 2_000);
+    const v19 = JSON.parse(encodeSave(s, 5));
+    v19.version = 19;
+    v19.state.version = 19;
+    delete v19.state.settings.skillRules;
+    delete v19.state.hunt.difficulty;
+    const loaded = decodeSave(JSON.stringify(v19), content);
+    expect(loaded.version).toBe(20);
+    expect(loaded.state.settings.skillRules).toEqual({});
+    expect(loaded.state.hunt?.difficulty).toBe('normal');
+    expect(loaded.state).toEqual(s);
+  });
 });
