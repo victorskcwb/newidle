@@ -12,7 +12,7 @@ export interface HeroRecord {
 }
 
 /**
- * Where heroes live between sessions (decision 178). A game session claims the hero when it
+ * Where heroes live between sessions (decision 176). A game session claims the hero when it
  * opens; a newer claim always wins (the newest device plays), and a save from a session that
  * lost the hero is refused, so an old process can never overwrite newer progress.
  */

@@ -17,7 +17,7 @@ export const MIGRATIONS: readonly { version: number; sql: string }[] = [
         tick           bigint NOT NULL,
         saved_at_ms    bigint NOT NULL,
         origin         text NOT NULL DEFAULT 'new' CHECK (origin IN ('new', 'imported')),
-        -- The game session that holds the hero; a newer session takes it over (decision 178).
+        -- The game session that holds the hero; a newer session takes it over (decision 176).
         owner_session  text,
         created_at     timestamptz NOT NULL DEFAULT now(),
         updated_at     timestamptz NOT NULL DEFAULT now()

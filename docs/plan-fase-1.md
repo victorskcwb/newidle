@@ -22,7 +22,7 @@ packages/protocol (Zod, compartilhado)                ──► Postgres (postgr
 ```
 
 - **Uma sessão por conta:** um login novo derruba o anterior com `kicked{other_session}`, e o servidor salva antes de entregar o herói. A posse fica numa coluna `heroes.owner_session` com expiração.
-- **Relógio e dia do servidor:** o servidor é o dono do tempo. `savedAt` e o tempo fora vêm dele. O dia muda à meia-noite de Brasília (C6), e isso entra como decisão 176. A semente do herói vem de `crypto.randomBytes`.
+- **Relógio e dia do servidor:** o servidor é o dono do tempo. `savedAt` e o tempo fora vêm dele. O dia muda à meia-noite de Brasília (C6), e isso entra como decisão 178. A semente do herói vem de `crypto.randomBytes`.
 - **Laço:** a cada 100 ms, o servidor roda `step` (com eventos, que serão usados no chat e nos anúncios da Fase 2) para cada sessão ativa. Um herói offline não ocupa CPU. Na conexão, o servidor resolve o tempo fora com `advanceAway` (ver abaixo).
 - **Persistência:** salva 1 s depois de cada intenção (com debounce), a cada 60 s e ao desconectar, sempre com `UPDATE … WHERE owner_session = $1` (escrita atômica). Também salva na hora em eventos importantes: subida de nível, drop épico ou lendário, reset. Guarda snapshots diários dos últimos 7 dias.
 
@@ -75,7 +75,7 @@ packages/protocol (Zod, compartilhado)                ──► Postgres (postgr
 7. `feat(server)`: Postgres, migrações, salvar e carregar, posse exclusiva, snapshots; `docker-compose`.
 8. `feat(server,client)`: contas (convidado, senha, Google), sessões, recuperação de senha, limites de taxa.
 9. `feat(server,client)`: importar o save local.
-10. `feat(engine,server)`: dia de Brasília (decisão 176), semente do servidor.
+10. `feat(engine,server)`: dia de Brasília (decisão 178), semente do servidor.
 11. `feat(client,server)`: LGPD.
 12. `test`: carga (N clientes falsos; medir quantos heróis um processo aguenta com p99 do laço abaixo de 50 ms) e e2e online.
 13. Deploy (depende da pergunta de hospedagem).

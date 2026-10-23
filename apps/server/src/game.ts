@@ -48,7 +48,7 @@ export interface GameServerDeps {
   rates(state: GameState, huntId: string): Promise<RateSheet>;
   /** Server wall clock in ms. */
   now(): number;
-  /** The day number intents that depend on the day must carry (decision 176). */
+  /** The day number intents that depend on the day must carry (decision 178). */
   dayOf(ms: number): number;
   /** Engine and content build; clients with another one are asked to reload. */
   buildId: string;

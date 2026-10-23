@@ -104,7 +104,7 @@ export const newHeroSchema = z.strictObject({
 export type NewHeroChoice = z.infer<typeof newHeroSchema>;
 
 /**
- * The game day (decision 176): days since 1970-01-01 at Brasília time. Brasília has had no
+ * The game day (decision 178): days since 1970-01-01 at Brasília time. Brasília has had no
  * daylight saving time since 2019, so its midnight is always 03:00 UTC.
  */
 export function brasiliaDay(ms: number): number {
