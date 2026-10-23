@@ -64,6 +64,17 @@ packages/protocol (Zod, compartilhado)                ──► Postgres (postgr
 - **LGPD:** política de privacidade (o texto precisa de revisão humana), exclusão de conta (apaga o herói em até 30 dias) e exportação dos dados (o save mais os dados da conta).
 - Dockerfile do servidor e `docker-compose.yml` com Postgres para desenvolvimento.
 
+## Situação em 2026-10-23
+
+Commits 1 a 12 prontos e testados (decisões 172 a 180). O jogo roda online com `?online=1` em desenvolvimento ou `VITE_ONLINE=1` no build. O servidor sobe com `pnpm --filter @abismo/server dev`; sem `DATABASE_URL`, ele usa PGlite em `apps/server/.data`. Falta:
+
+- **Commit 13 (deploy):** depende da escolha de hospedagem. Também falta o Dockerfile do servidor, que não dá para testar nesta máquina, porque não tem Docker.
+- **Provedor de e-mail:** enquanto não houver um, o link de recuperação de senha vai para o log do servidor.
+- **Google:** as credenciais do OAuth precisam ser criadas (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`).
+- **Turnstile:** o widget no cliente e a chave (`TURNSTILE_SECRET` no servidor).
+- **Política de privacidade e termos de uso:** os textos completos, com revisão jurídica (decisão 179).
+- **`docker-compose.yml` com Postgres de verdade:** escrito, mas não testado aqui.
+
 ## Ordem dos commits
 
 1. `feat(engine)`: `Intent` + `applyIntent` + testes; o `GameSim` passa a usar o dispatcher (nada muda para o jogador).
