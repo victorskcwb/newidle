@@ -5,6 +5,8 @@ import type { Direction } from './textures.ts';
 export const TILE = 32;
 /** Where an actor's feet stand, below the tile centre. */
 const FEET = 13;
+/** How far the body steps towards the target when attacking (map pixels). */
+const STEP_PX = 3;
 
 export function tileCenter(t: TilePoint) {
   return { x: t.tx * TILE + TILE / 2, y: t.ty * TILE + TILE / 2 };
@@ -30,23 +32,20 @@ export interface Look {
   loops?: { idle: string; run: string; hit?: string };
   /** The same per facing, for sheets drawn in four directions (then nothing is mirrored). */
   dirLoops?: Record<Direction, { idle: string; run: string }>;
-  /** A weapon held in front of the body, swung on attacks. */
-  weapon?: { texture: string; frame: number };
 }
 
 export type LookFor = (dir: Direction) => Look;
 
 /**
- * A hero or monster on the map: animated sprite (idle and run loops from the sheet), an
- * optional weapon, shadow, name/level label and life bar. Attacks, hits, spawns and deaths
+ * A hero or monster on the map: animated sprite (idle and run loops from the sheet), shadow,
+ * name/level label and life bar. Attacks, hits, spawns and deaths
  * are tweens timed from the sprite manifest (frames × frameMs, impact frame).
  */
 export class Actor {
   readonly container: Phaser.GameObjects.Container;
-  /** Sprite and weapon; tweens move this, the container stays on the tile. */
+  /** The sprite; tweens move this, the container stays on the tile. */
   private body: Phaser.GameObjects.Container;
   private sprite: Phaser.GameObjects.Sprite;
-  private weapon: Phaser.GameObjects.Image;
   private label: Phaser.GameObjects.Text;
   private bar: Phaser.GameObjects.Graphics;
   private bob = 0;
@@ -70,8 +69,7 @@ export class Actor {
   ) {
     const shadow = scene.add.image(0, FEET - 2, 'shadow');
     this.sprite = scene.add.sprite(0, 0, '__DEFAULT').setOrigin(0.5, 1);
-    this.weapon = scene.add.image(0, 0, '__DEFAULT').setOrigin(0.5, 0.92).setVisible(false);
-    this.body = scene.add.container(0, FEET, [this.sprite, this.weapon]);
+    this.body = scene.add.container(0, FEET, [this.sprite]);
     this.label = scene.add
       .text(0, 0, opts.name, {
         fontFamily: 'system-ui, "Segoe UI", Roboto, sans-serif',
@@ -117,11 +115,6 @@ export class Actor {
     this.tint = look.tint;
     if (look.tint !== undefined) this.sprite.setTint(look.tint);
     else this.sprite.clearTint();
-    if (look.weapon) {
-      this.weapon.setTexture(look.weapon.texture, look.weapon.frame).setScale(look.scale * 0.7);
-    }
-    // The weapon only shows while swinging; held at rest it looked like it floated.
-    this.weapon.setVisible(false);
     this.playLoop(this.moving ? 'run' : 'idle', true);
     this.setFacing(this.facingLeft);
     this.label.setY(this.top - 7);
@@ -140,11 +133,6 @@ export class Actor {
   private setFacing(left: boolean) {
     this.facingLeft = left;
     this.sprite.setFlipX(left && !this.look.dirLoops);
-    const side = left ? -1 : 1;
-    this.weapon
-      .setFlipX(left)
-      .setPosition(side * 5, -6)
-      .setAngle(side * 25);
   }
 
   /** Hides the name and life bar (graphics option); the hero keeps them. */
@@ -239,7 +227,12 @@ export class Actor {
     return true;
   }
 
-  /** Lunge towards a point and swing the weapon; `onImpact` fires at the impact frame. */
+  /**
+   * A short step towards the target and back; `onImpact` fires at the impact frame. The
+   * characters are drawn in the sprite pack's oblique view, so the body only nudges forward
+   * (no lunge, no separate weapon): the hit itself shows on the target, as in the reference
+   * games (decision 181).
+   */
   attack(x: number, y: number, animName: 'attack' | 'cast', onImpact: () => void) {
     const anim = this.anims[animName] ?? this.anims.attack!;
     this.face(x, y);
@@ -248,43 +241,27 @@ export class Actor {
     const dx = x - this.container.x;
     const dy = y - this.container.y;
     const d = Math.max(1, Math.hypot(dx, dy));
+    this.scene.tweens.killTweensOf(this.body);
+    this.body.setPosition(0, FEET);
     this.scene.tweens.add({
       targets: this.body,
-      x: (dx / d) * 7,
-      y: FEET + (dy / d) * 7,
+      x: (dx / d) * STEP_PX,
+      y: FEET + (dy / d) * STEP_PX,
       duration: impact,
-      yoyo: true,
-      hold: 20,
-      ease: 'Quad.easeIn',
-      onComplete: () => this.body.setPosition(0, FEET),
+      ease: 'Sine.easeOut',
+      onComplete: () =>
+        this.scene.tweens.add({
+          targets: this.body,
+          x: 0,
+          y: FEET,
+          duration: Math.max(60, total - impact),
+          ease: 'Sine.easeInOut',
+        }),
     });
-    if (this.look.weapon) {
-      // Wind up behind the shoulder, then strike through to the front.
-      const side = this.facingLeft ? -1 : 1;
-      this.scene.tweens.killTweensOf(this.weapon);
-      this.weapon
-        .setAngle(side * -70)
-        .setAlpha(1)
-        .setVisible(true);
-      this.scene.tweens.add({
-        targets: this.weapon,
-        angle: side * 110,
-        duration: impact,
-        ease: 'Back.easeIn',
-        onComplete: () =>
-          this.scene.tweens.add({
-            targets: this.weapon,
-            angle: side * 25,
-            alpha: 0,
-            duration: Math.max(80, total - impact),
-            onComplete: () => this.weapon.setVisible(false),
-          }),
-      });
-    }
     if (animName === 'cast') {
       this.scene.tweens.add({
         targets: this.body,
-        scale: 1.2,
+        scale: 1.06,
         duration: total / 2,
         yoyo: true,
       });
@@ -356,7 +333,6 @@ export class Actor {
 
   reset(showBar: boolean) {
     this.scene.tweens.killTweensOf(this.body);
-    this.scene.tweens.killTweensOf(this.weapon);
     this.scene.tweens.killTweensOf(this.label);
     this.body.setAlpha(1).setAngle(0).setScale(1).setPosition(0, FEET);
     this.hitUntil = 0;

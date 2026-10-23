@@ -248,8 +248,6 @@ export function heroLook(
       `hero_${classId}${outfit % sprite!.looks!.length}`,
       set,
     );
-    const weapon =
-      sprite!.weapon !== undefined ? { texture: key, frame: sprite!.weapon } : undefined;
     const scale = sheetScale(set);
     const height = set.height ? set.height * scale : undefined;
     return () => ({
@@ -259,7 +257,6 @@ export function heroLook(
       scale,
       loops,
       dirLoops,
-      weapon,
       height,
     });
   }
