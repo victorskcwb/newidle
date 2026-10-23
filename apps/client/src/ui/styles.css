@@ -2997,6 +2997,21 @@ input[type='range'] {
   gap: 6px;
 }
 
+/* One condition per line, even at 360 px: the selects shrink, the remove button stays. */
+.skill-rule-row {
+  flex-wrap: nowrap;
+}
+
+.skill-rule-row .ab-select {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.skill-rule-row .round-btn {
+  flex: none;
+}
+
 .rule-number {
-  width: 64px;
+  flex: none;
+  width: 56px;
 }
