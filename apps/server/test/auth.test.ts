@@ -212,6 +212,15 @@ describe('accounts', () => {
   it('refuses guests that fail the anti-bot check', async () => {
     const { call } = await setup({ human: false });
     expect((await call('POST', '/api/auth/guest', {})).status).toBe(403);
+    const fresh = { email: 'bot@example.com', password: 'correct horse battery' };
+    expect((await call('POST', '/api/auth/register', fresh)).status).toBe(403);
+  });
+
+  it('does not ask a signed-in account for the anti-bot check again when it adds an e-mail', async () => {
+    const { call, accounts } = await setup({ human: false });
+    const guest = await accounts.createGuest('test');
+    const linked = { email: 'ana@example.com', password: 'correct horse battery' };
+    expect((await call('POST', '/api/auth/register', linked, guest.token)).status).toBe(200);
   });
 
   it('ending a sign-in session closes its game connection', async () => {

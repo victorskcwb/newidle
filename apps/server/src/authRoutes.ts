@@ -80,10 +80,11 @@ export async function registerAuthRoutes(app: FastifyInstance, d: AuthDeps) {
   app.post('/api/auth/register', async (req, reply) => {
     const body = credentials.safeParse(req.body);
     if (!body.success) return reply.code(400).send({ error: 'invalid' });
-    if (!(await d.verifyHuman(body.data.turnstile, req.ip))) {
+    const current = await session(req);
+    // A signed-in account already passed the check when it was created; only new accounts ask.
+    if (!current && !(await d.verifyHuman(body.data.turnstile, req.ip))) {
       return reply.code(403).send({ error: 'not_human' });
     }
-    const current = await session(req);
     const result = await d.accounts.register(
       body.data.email,
       body.data.password,

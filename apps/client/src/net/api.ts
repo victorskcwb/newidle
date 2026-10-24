@@ -80,9 +80,14 @@ export interface SessionInfo {
 }
 
 export const api = {
-  guest: () => call<{ token: string }>('POST', '/api/auth/guest', {}),
-  register: (email: string, password: string) =>
-    call<{ token?: string }>('POST', '/api/auth/register', { email, password }),
+  guest: (turnstile?: string) =>
+    call<{ token: string }>('POST', '/api/auth/guest', turnstile ? { turnstile } : {}),
+  register: (email: string, password: string, turnstile?: string) =>
+    call<{ token?: string }>('POST', '/api/auth/register', {
+      email,
+      password,
+      ...(turnstile ? { turnstile } : {}),
+    }),
   login: (email: string, password: string) =>
     call<{ token: string }>('POST', '/api/auth/login', { email, password }),
   logout: () => call<void>('POST', '/api/auth/logout'),

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { t } from '../../i18n.ts';
 import { ApiError, api, setSessionToken } from '../../net/api.ts';
+import { TURNSTILE_SITE_KEY, Turnstile } from '../../net/Turnstile.tsx';
 import { PrivacySummary } from '../PrivacySummary.tsx';
 
 type Mode = 'start' | 'login' | 'register' | 'forgot';
@@ -30,6 +31,10 @@ export function AuthScreen({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(notice ?? null);
   const [info, setInfo] = useState<string | null>(null);
+  const [human, setHuman] = useState<string | null>(null);
+  const [humanReset, setHumanReset] = useState(0);
+  /** New accounts wait for the anti-bot check when the build has one. */
+  const waitHuman = TURNSTILE_SITE_KEY !== undefined && human === null;
 
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
@@ -45,7 +50,11 @@ export function AuthScreen({
 
   const guest = () =>
     run(async () => {
-      setSessionToken((await api.guest()).token);
+      try {
+        setSessionToken((await api.guest(human ?? undefined)).token);
+      } finally {
+        setHumanReset((n) => n + 1);
+      }
       onSession();
     });
   const google = () =>
@@ -62,7 +71,12 @@ export function AuthScreen({
       });
     } else if (mode === 'register') {
       void run(async () => {
-        const r = await api.register(email, password);
+        let r: { token?: string };
+        try {
+          r = await api.register(email, password, human ?? undefined);
+        } finally {
+          setHumanReset((n) => n + 1);
+        }
         if (r.token) setSessionToken(r.token);
         onSession();
       });
@@ -84,7 +98,7 @@ export function AuthScreen({
             <button
               type="button"
               className="btn btn-primary wide"
-              disabled={busy}
+              disabled={busy || waitHuman}
               onClick={() => void guest()}
               data-testid="auth-guest"
             >
@@ -141,7 +155,7 @@ export function AuthScreen({
             <button
               type="submit"
               className="btn btn-primary wide"
-              disabled={busy}
+              disabled={busy || (mode === 'register' && waitHuman)}
               data-testid="auth-submit"
             >
               {t(`auth.submit.${mode}`)}
@@ -162,6 +176,9 @@ export function AuthScreen({
               </button>
             </div>
           </form>
+        )}
+        {(mode === 'start' || mode === 'register') && (
+          <Turnstile onToken={setHuman} resetKey={humanReset} />
         )}
         <details className="small">
           <summary>{t('privacy.title')}</summary>
