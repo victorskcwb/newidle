@@ -45,9 +45,9 @@ export class GameScene extends Phaser.Scene {
     this.load.tilemapTiledJSON('map', `${this.mapId}.tmj`);
     this.load.image('tiles', 'sprites/tiles.png');
     this.load.spritesheet('props', 'sprites/props.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('fx', 'sprites/fx.png', { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet('items', 'sprites/items.png', { frameWidth: 16, frameHeight: 16 });
     this.load.spritesheet('hitfx', 'sprites/hitfx.png', { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet('otspfx', 'sprites/otspfx.png', { frameWidth: 64, frameHeight: 64 });
     this.load.json('manifest', 'sprites/manifest.json');
     // Sprite sheets named by the manifest are queued as soon as the manifest arrives.
     this.load.once('filecomplete-json-manifest', (_key: string, _type: string, data: unknown) => {

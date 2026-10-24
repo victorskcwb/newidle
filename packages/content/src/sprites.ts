@@ -75,46 +75,6 @@ export const spriteManifestSchema = z.strictObject({
 export type SpriteManifest = z.infer<typeof spriteManifestSchema>;
 
 /**
- * Effect textures of assets/sprites/fx.png (Kenney Particle Pack, CC0), in sheet order:
- * build-art writes the sheet from this list and the scene finds frames by name.
- */
-export const FX_FRAMES = [
-  'slash_01',
-  'slash_02',
-  'slash_03',
-  'slash_04',
-  'magic_01',
-  'magic_02',
-  'magic_03',
-  'magic_04',
-  'magic_05',
-  'twirl_01',
-  'twirl_02',
-  'fire_01',
-  'flame_01',
-  'flame_03',
-  'spark_01',
-  'spark_04',
-  'spark_05',
-  'star_01',
-  'star_04',
-  'star_06',
-  'circle_01',
-  'circle_03',
-  'circle_05',
-  'smoke_01',
-  'smoke_04',
-  'light_01',
-  'light_03',
-  'scorch_01',
-  'symbol_01',
-  'trace_01',
-  'muzzle_02',
-  'flare_01',
-] as const;
-export type FxFrame = (typeof FX_FRAMES)[number];
-
-/**
  * Animated effects of assets/sprites/hitfx.png (OpenTibia Sprite Pack misc sheet): source
  * cells in play order. Frames are laid out in this order, so an animation's first frame is
  * the sum of the cells of the ones before it.
@@ -147,6 +107,78 @@ export function hitFxFirstFrame(name: HitFxName): number {
     n += a.cells.length;
   }
   return n;
+}
+
+/**
+ * Magic effects of the OpenTibia Sprite Pack's client files (otsp.dat, CC BY 4.0), copied into
+ * assets/sprites/otspfx.png in this order, 64 px cells. `effect` is the effect id in otsp.dat
+ * and `frames` its frame count there (the build checks it). An effect covers one 32 px tile
+ * drawn at the cell's bottom right; the 2×2 ones also spill up and to the left, as in the pack.
+ */
+export const OTSP_FX = {
+  /** Red ring opening up: war cry. */
+  redRing: { effect: 1, frames: 4, frameMs: 80 },
+  /** Blue sparkle: teleport, arcane hits, level up. */
+  sparkle: { effect: 2, frames: 9, frameMs: 55 },
+  /** Purple puff: poison. */
+  poison: { effect: 3, frames: 4, frameMs: 90 },
+  /** Yellow sparks: a blow stopped by armour (misses). */
+  block: { effect: 4, frames: 3, frameMs: 90 },
+  /** Tiny golden glints: loot, buffs. */
+  glitter: { effect: 5, frames: 18, frameMs: 45 },
+  /** Fire burst: fire hits. */
+  fire: { effect: 6, frames: 13, frameMs: 45 },
+  /** Blue bubbles swirling: ice and mana. */
+  bubbles: { effect: 7, frames: 12, frameMs: 50 },
+  /** Pale dust cloud: earth and stone. */
+  dust: { effect: 9, frames: 6, frameMs: 70 },
+  /** Dark smoke: death, dark hits. */
+  smoke: { effect: 10, frames: 6, frameMs: 80 },
+  /** Small flame: burning ground. */
+  flame: { effect: 11, frames: 9, frameMs: 60 },
+  /** Red drops: physical hits that draw blood. */
+  blood: { effect: 12, frames: 9, frameMs: 40 },
+  /** Big fiery explosion (2×2): heavy strikes, fireball. */
+  explosion: { effect: 13, frames: 14, frameMs: 45 },
+  /** Rock bursting from the ground (2×2): charge, stuns. */
+  rock: { effect: 14, frames: 6, frameMs: 70 },
+  /** Ice whirl rising (2×2): frost. */
+  ice: { effect: 15, frames: 7, frameMs: 70 },
+} as const;
+export type OtspFxName = keyof typeof OTSP_FX;
+
+/**
+ * Missiles of otsp.dat, after the effects in otspfx.png: 9 cells each (3×3 directions, row by
+ * row from the top left; the middle one is empty), the missile drawn at the cell's bottom right.
+ */
+export const OTSP_MISSILES = {
+  spear: 1,
+  bolt: 2,
+  arrow: 3,
+  fire: 4,
+  poison: 5,
+  star: 6,
+  knife: 9,
+  orb: 10,
+  stone: 12,
+  snowball: 13,
+} as const;
+export type OtspMissileName = keyof typeof OTSP_MISSILES;
+
+/** First frame of an effect inside otspfx.png. */
+export function otspFxFirstFrame(name: OtspFxName): number {
+  let n = 0;
+  for (const [k, a] of Object.entries(OTSP_FX)) {
+    if (k === name) return n;
+    n += a.frames;
+  }
+  return n;
+}
+
+/** First frame (the top-left direction) of a missile inside otspfx.png. */
+export function otspMissileFirstFrame(name: OtspMissileName): number {
+  const effects = Object.values(OTSP_FX).reduce((n, a) => n + a.frames, 0);
+  return effects + Object.keys(OTSP_MISSILES).indexOf(name) * 9;
 }
 
 /** Milliseconds from the start of an animation to its impact frame (0 if it has none). */

@@ -1,19 +1,22 @@
 import {
-  FX_FRAMES,
   HIT_FX,
+  OTSP_FX,
   hitFxFirstFrame,
+  otspFxFirstFrame,
+  otspMissileFirstFrame,
   type Element,
-  type FxFrame,
   type HitFxName,
+  type OtspFxName,
+  type OtspMissileName,
   type Rarity,
 } from '@abismo/content';
 import Phaser from 'phaser';
 import { usePrefs } from '../state/prefs.ts';
 import { rarityHex } from '../ui/rarity.ts';
+import { TILE } from './actor.ts';
 
-/** Spell and hit effects, drawn with the particle textures of sprites/fx.png. */
+/** Spell and hit effects, drawn with the pixel effects of sprites/otspfx.png and hitfx.png. */
 export type SpellFx =
-  | 'slash'
   | 'heavy'
   | 'whirl'
   | 'warcry'
@@ -62,9 +65,15 @@ export const ELEMENT_COLOR: Record<Element, string> = {
 };
 export const elementTint = (e: Element) => parseInt(ELEMENT_COLOR[e].slice(1), 16);
 
-const frameOf = (name: FxFrame) => FX_FRAMES.indexOf(name);
+/** Magic missile of each element that has its own (arcane and dark use a tinted orb). */
+const BOLT: Record<'physical' | 'fire' | 'ice' | 'poison', OtspMissileName> = {
+  physical: 'stone',
+  fire: 'fire',
+  ice: 'snowball',
+  poison: 'poison',
+};
 
-/** Phaser animations for the pixel effects of hitfx.png (created once per game). */
+/** Phaser animations for the pixel effects of hitfx.png and otspfx.png (created once). */
 export function createHitFxAnimations(scene: Phaser.Scene) {
   for (const [name, a] of Object.entries(HIT_FX) as [HitFxName, (typeof HIT_FX)[HitFxName]][]) {
     const key = `hitfx:${name}`;
@@ -73,6 +82,17 @@ export function createHitFxAnimations(scene: Phaser.Scene) {
     scene.anims.create({
       key,
       frames: a.cells.map((_, i) => ({ key: 'hitfx', frame: first + i })),
+      frameRate: 1000 / a.frameMs,
+      repeat: 0,
+    });
+  }
+  for (const [name, a] of Object.entries(OTSP_FX) as [OtspFxName, (typeof OTSP_FX)[OtspFxName]][]) {
+    const key = `otspfx:${name}`;
+    if (scene.anims.exists(key)) continue;
+    const first = otspFxFirstFrame(name);
+    scene.anims.create({
+      key,
+      frames: Array.from({ length: a.frames }, (_, i) => ({ key: 'otspfx', frame: first + i })),
       frameRate: 1000 / a.frameMs,
       repeat: 0,
     });
@@ -104,7 +124,6 @@ export class Effects {
     beam: Phaser.GameObjects.Image;
   }[] = [];
   private sparks: Phaser.GameObjects.Particles.ParticleEmitter;
-  private glows: Phaser.GameObjects.Image[] = [];
   private anims: Phaser.GameObjects.Sprite[] = [];
   reducedMotion = false;
 
@@ -166,482 +185,193 @@ export class Effects {
     });
   }
 
-  private takeGlow(): Phaser.GameObjects.Image {
-    const free = this.glows.find((g) => !g.active);
-    const g = free ?? this.scene.add.image(0, 0, 'fx', 0);
-    if (!free) this.glows.push(g);
-    this.scene.tweens.killTweensOf(g);
-    return g
-      .setActive(true)
-      .setVisible(true)
-      .setAlpha(1)
-      .setAngle(0)
-      .setScale(1)
-      .setBlendMode(Phaser.BlendModes.ADD);
+  /** Plays a pixel effect of hitfx.png once at (x, y), from a pool of sprites. */
+  pixelFx(name: HitFxName, x: number, y: number, scale = 1, flipX = false) {
+    this.playAnim(`hitfx:${name}`, 'hitfx', x, y, 0.5, scale, flipX);
   }
 
-  /** Plays a pixel effect animation once at (x, y), from a pool of sprites. */
-  pixelFx(name: HitFxName, x: number, y: number, scale = 1.5, flipX = false) {
-    if (!usePrefs.getState().gfx.hitFx && name !== 'energy') return;
+  /**
+   * Plays a magic effect of otspfx.png once on the tile whose centre is (x, y), the way the
+   * pack draws it (the 2×2 ones spill up and to the left). `tint` multiplies its colours.
+   */
+  tibiaFx(name: OtspFxName, x: number, y: number, o: { scale?: number; tint?: number } = {}) {
+    const s = this.playAnim(`otspfx:${name}`, 'otspfx', x, y, 0.75, o.scale ?? 1);
+    if (o.tint !== undefined) s.setTint(o.tint);
+  }
+
+  private playAnim(
+    key: string,
+    texture: string,
+    x: number,
+    y: number,
+    origin: number,
+    scale: number,
+    flipX = false,
+  ): Phaser.GameObjects.Sprite {
     const free = this.anims.find((a) => !a.active);
-    const sprite = free ?? this.scene.add.sprite(0, 0, 'hitfx', 0);
+    const sprite = free ?? this.scene.add.sprite(0, 0, texture, 0);
     if (!free) {
       this.anims.push(sprite);
       sprite.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () =>
         sprite.setActive(false).setVisible(false),
       );
     }
-    sprite
+    return sprite
       .setActive(true)
       .setVisible(true)
+      .setTexture(texture)
+      .clearTint()
+      .setOrigin(origin)
       .setPosition(x, y)
       .setScale(scale)
       .setFlipX(flipX)
       .setDepth(100_001)
-      .play(`hitfx:${name}`);
-  }
-
-  /** One textured flash: grows or shrinks, turns, fades, then returns to the pool. */
-  private glow(
-    name: FxFrame,
-    x: number,
-    y: number,
-    o: {
-      tint: number;
-      from: number;
-      to: number;
-      ms: number;
-      angle?: number;
-      spin?: number;
-      rise?: number;
-      alpha?: number;
-      delay?: number;
-      normal?: boolean;
-    },
-  ) {
-    const g = this.takeGlow()
-      .setFrame(frameOf(name))
-      .setPosition(x, y)
-      .setTint(o.tint)
-      .setScale(o.from)
-      .setAngle(o.angle ?? 0)
-      .setAlpha(o.alpha ?? 1)
-      .setDepth(100_000);
-    if (o.normal) g.setBlendMode(Phaser.BlendModes.NORMAL);
-    if (o.delay) g.setVisible(false);
-    this.scene.tweens.add({
-      targets: g,
-      scale: o.to,
-      alpha: 0,
-      angle: (o.angle ?? 0) + (this.reducedMotion ? 0 : (o.spin ?? 0)),
-      y: y - (o.rise ?? 0),
-      duration: o.ms,
-      delay: o.delay ?? 0,
-      ease: 'Cubic.easeOut',
-      onStart: () => g.setVisible(true),
-      onComplete: () => g.setActive(false).setVisible(false),
-    });
+      .play(key);
   }
 
   /**
-   * A spell or hit effect at (x, y); `to` is the target of effects that travel (charge).
-   * The textures are 128 px, so a scale of 0.25 covers one tile.
+   * An effect on every tile of a square of `radius` tiles around (x, y), all at once, as area
+   * spells look in the pack's games. `skipCentre` leaves the caster's own tile out.
    */
+  private area(name: OtspFxName, x: number, y: number, radius: number, skipCentre = false) {
+    for (let dy = -radius; dy <= radius; dy++) {
+      for (let dx = -radius; dx <= radius; dx++) {
+        if (skipCentre && dx === 0 && dy === 0) continue;
+        // Corners left out from radius 2, so the area reads round.
+        if (radius > 1 && Math.abs(dx) === radius && Math.abs(dy) === radius) continue;
+        this.tibiaFx(name, x + dx * TILE, y + dy * TILE);
+      }
+    }
+  }
+
+  /** Stars turning over a stunned head. */
+  private stunned(x: number, y: number) {
+    for (let k = 0; k < 2; k++) {
+      this.scene.time.delayedCall(k * 180, () => this.tibiaFx('block', x, y - 22));
+    }
+  }
+
+  /** A blow landing on a creature, by element (hero and monsters alike). */
+  hit(element: Element, x: number, y: number) {
+    if (!usePrefs.getState().gfx.hitFx) return;
+    switch (element) {
+      case 'physical':
+        this.tibiaFx('blood', x, y);
+        break;
+      case 'fire':
+        this.tibiaFx('fire', x, y);
+        break;
+      case 'ice':
+        this.pixelFx('shards', x, y - 4);
+        break;
+      case 'poison':
+        this.tibiaFx('poison', x, y);
+        break;
+      case 'arcane':
+        this.tibiaFx('sparkle', x, y);
+        break;
+      case 'dark':
+        this.tibiaFx('sparkle', x, y, { tint: 0xe070c8 });
+        break;
+    }
+  }
+
+  /** A spell or hit effect at (x, y); `to` is the target of effects that travel (charge). */
   spell(kind: SpellFx, x: number, y: number, to?: { x: number; y: number }) {
     // Level up keeps its effect: it is news, not noise.
     if (!usePrefs.getState().gfx.hitFx && kind !== 'levelup' && kind !== 'teleport') return;
-    const dir = to ? Phaser.Math.RadToDeg(Math.atan2(to.y - y, to.x - x)) : 0;
     switch (kind) {
-      case 'slash': {
-        const angle = dir + Phaser.Math.Between(-30, 30);
-        this.glow('slash_03', x, y - 4, { tint: 0xffffff, from: 0.26, to: 0.36, ms: 180, angle });
-        this.glow('slash_02', x, y - 4, {
-          tint: 0xffe2a0,
-          from: 0.2,
-          to: 0.3,
-          ms: 220,
-          angle: angle + 180,
-          alpha: 0.7,
-        });
-        this.glow('star_04', x, y - 6, { tint: 0xffffff, from: 0.12, to: 0.02, ms: 160 });
-        if (!this.reducedMotion) {
-          this.sparks.setParticleTint(0xffe2a0);
-          this.sparks.explode(4, x, y - 6);
-        }
-        break;
-      }
       case 'crit':
-        this.pixelFx('blast', x, y - 8, 1.6);
-        this.glow('star_06', x, y - 6, { tint: 0xffd84a, from: 0.15, to: 0.45, ms: 280, spin: 45 });
+        this.pixelFx('blast', x, y - 6);
         break;
       case 'heavy':
-        this.pixelFx('blast', x, y - 8, 2);
-        this.glow('slash_04', x, y, { tint: 0xffb050, from: 0.3, to: 0.55, ms: 300, angle: dir });
-        this.glow('star_06', x, y, { tint: 0xffe2a0, from: 0.2, to: 0.5, ms: 260, spin: 30 });
-        this.glow('scorch_01', x, y + 8, {
-          tint: 0xff7030,
-          from: 0.2,
-          to: 0.35,
-          ms: 500,
-          alpha: 0.7,
-        });
+        this.tibiaFx('explosion', x, y);
         break;
       case 'whirl':
-        this.pixelFx('sweep', x - 14, y - 6, 1.6, true);
-        this.pixelFx('sweep', x + 14, y - 6, 1.6);
-        this.glow('twirl_01', x, y, { tint: 0xbfe4ff, from: 0.45, to: 0.6, ms: 450, spin: 540 });
-        this.glow('twirl_02', x, y, {
-          tint: 0xbfe4ff,
-          from: 0.45,
-          to: 0.6,
-          ms: 450,
-          spin: 540,
-          delay: 120,
-        });
-        this.glow('circle_05', x, y, { tint: 0x7fb8ff, from: 0.3, to: 0.7, ms: 400, alpha: 0.6 });
+        this.area('blood', x, y, 1, true);
         break;
       case 'warcry':
-        this.pixelFx('ring', x, y - 8, 2.4);
-        this.glow('circle_03', x, y, { tint: 0xff5a40, from: 0.1, to: 0.9, ms: 550 });
-        this.glow('magic_03', x, y - 18, {
-          tint: 0xffd060,
-          from: 0.2,
-          to: 0.35,
-          ms: 600,
-          spin: 90,
-        });
-        this.glow('flame_01', x, y - 8, {
-          tint: 0xff7a30,
-          from: 0.25,
-          to: 0.35,
-          ms: 500,
-          rise: 14,
-        });
+        this.tibiaFx('redRing', x, y, { scale: 2 });
+        this.area('redRing', x, y, 1, true);
         break;
       case 'charge': {
         if (!to) break;
-        const len = Math.hypot(to.x - x, to.y - y);
-        const trail = this.takeGlow()
-          .setFrame(frameOf('trace_01'))
-          .setPosition((x + to.x) / 2, (y + to.y) / 2)
-          .setTint(0x9fe0ff)
-          .setAngle(dir + 90)
-          .setScale(0.35, Math.max(0.2, len / 128))
-          .setDepth(100_000);
-        this.scene.tweens.add({
-          targets: trail,
-          alpha: 0,
-          duration: 300,
-          onComplete: () => trail.setActive(false).setVisible(false),
-        });
-        this.glow('muzzle_02', to.x, to.y, {
-          tint: 0x9fe0ff,
-          from: 0.2,
-          to: 0.4,
-          ms: 260,
-          angle: dir + 90,
-        });
-        this.pixelFx('shards', to.x, to.y - 8, 1.4);
-        // Stunned: little stars over the target.
-        for (let k = 0; k < 3; k++) {
-          this.glow('star_04', to.x - 10 + k * 10, to.y - 26, {
-            tint: 0xfff07a,
-            from: 0.12,
-            to: 0.08,
-            ms: 1200,
-            spin: 180,
-            delay: 150 + k * 60,
-          });
+        // Dust along the path and a rock bursting under the target, who is stunned.
+        const steps = Math.max(1, Math.round(Math.hypot(to.x - x, to.y - y) / TILE));
+        for (let k = 0; k < steps; k++) {
+          const f = k / steps;
+          this.tibiaFx('dust', x + (to.x - x) * f, y + (to.y - y) * f);
         }
+        this.tibiaFx('rock', to.x, to.y);
+        this.stunned(to.x, to.y);
         break;
       }
       case 'death':
-        this.pixelFx('splash', x, y - 4, 1.3);
-        this.glow('smoke_04', x, y, {
-          tint: 0x8a8494,
-          from: 0.2,
-          to: 0.45,
-          ms: 650,
-          rise: 10,
-          alpha: 0.75,
-          normal: true,
-        });
+        this.pixelFx('splash', x, y - 4);
         break;
       case 'potion':
-        this.glow('magic_05', x, y - 6, {
-          tint: 0x7aff8a,
-          from: 0.15,
-          to: 0.35,
-          ms: 500,
-          rise: 14,
-        });
+        this.tibiaFx('sparkle', x, y, { tint: 0x9dffb0 });
         break;
       case 'teleport':
-        this.pixelFx('energy', x, y - 10, 2);
-        this.glow('light_03', x, y - 8, { tint: 0x8fd8ff, from: 0.2, to: 0.8, ms: 600 });
-        this.glow('circle_03', x, y + 4, { tint: 0x8fd8ff, from: 0.1, to: 0.6, ms: 500 });
+        this.tibiaFx('sparkle', x, y, { scale: 1.5 });
         break;
       case 'aimed':
-        // A precise shot: a bright flash where the arrow lands and a spinning gold star.
-        this.pixelFx('blast', x, y - 8, 1.2);
-        this.glow('muzzle_02', x, y - 8, {
-          tint: 0xfff0c0,
-          from: 0.25,
-          to: 0.45,
-          ms: 240,
-          angle: dir + 90,
-        });
-        this.glow('star_06', x, y - 8, { tint: 0xffd84a, from: 0.12, to: 0.4, ms: 320, spin: 90 });
+        this.tibiaFx('block', x, y);
+        this.pixelFx('blast', x, y - 6);
         break;
       case 'arrowRain':
         this.arrowRain(x, y);
         break;
       case 'pin':
-        // Pinned to the ground: a ring of roots at the feet and stun stars over the head.
-        this.pixelFx('shards', x, y - 8, 1.1);
-        this.glow('circle_01', x, y + 6, {
-          tint: 0x9bd36a,
-          from: 0.35,
-          to: 0.2,
-          ms: 900,
-          alpha: 0.8,
-        });
-        for (let k = 0; k < 3; k++) {
-          this.glow('star_04', x - 10 + k * 10, y - 26, {
-            tint: 0xfff07a,
-            from: 0.12,
-            to: 0.08,
-            ms: 1100,
-            spin: 180,
-            delay: 120 + k * 60,
-          });
-        }
+        this.tibiaFx('dust', x, y);
+        this.stunned(x, y);
         break;
       case 'focus':
-        this.glow('circle_03', x, y + 4, { tint: 0x8cff9a, from: 0.1, to: 0.7, ms: 550 });
-        this.glow('symbol_01', x, y - 20, {
-          tint: 0x8cff9a,
-          from: 0.18,
-          to: 0.26,
-          ms: 800,
-          rise: 16,
-        });
-        this.glow('light_01', x, y - 8, {
-          tint: 0xc8ffd0,
-          from: 0.2,
-          to: 0.5,
-          ms: 450,
-          alpha: 0.6,
-        });
+        this.tibiaFx('glitter', x, y, { scale: 1.5 });
         break;
       case 'arcane':
-        this.pixelFx('energy', x, y - 8, 1.6);
-        this.glow('magic_04', x, y - 8, {
-          tint: 0xc58bff,
-          from: 0.2,
-          to: 0.45,
-          ms: 420,
-          spin: 120,
-        });
-        this.glow('star_06', x, y - 8, {
-          tint: 0xe6d0ff,
-          from: 0.15,
-          to: 0.35,
-          ms: 260,
-          spin: -60,
-        });
-        this.burst(x, y - 8, 0xc58bff, 8);
+        this.tibiaFx('sparkle', x, y, { tint: 0xd8b0ff });
         break;
       case 'empower':
-        this.glow('magic_02', x, y + 8, {
-          tint: 0xc58bff,
-          from: 0.3,
-          to: 0.5,
-          ms: 1000,
-          spin: 200,
-        });
-        this.glow('light_03', x, y - 8, { tint: 0xb07cff, from: 0.2, to: 0.7, ms: 700 });
-        for (let k = 0; k < 2; k++) {
-          this.glow('flame_01', x - 8 + k * 16, y - 4, {
-            tint: 0xc58bff,
-            from: 0.18,
-            to: 0.26,
-            ms: 600,
-            rise: 18,
-            delay: k * 120,
-          });
-        }
+        this.tibiaFx('sparkle', x, y, { tint: 0xd8b0ff, scale: 1.5 });
+        this.area('glitter', x, y, 1, true);
         break;
       case 'fireball':
-        this.pixelFx('blast', x, y - 8, 2.2);
-        this.glow('fire_01', x, y - 8, { tint: 0xff8a30, from: 0.25, to: 0.6, ms: 420, spin: 40 });
-        this.glow('flame_03', x, y - 10, {
-          tint: 0xffb050,
-          from: 0.25,
-          to: 0.35,
-          ms: 600,
-          rise: 18,
-        });
-        this.glow('scorch_01', x, y + 8, {
-          tint: 0xff5a20,
-          from: 0.25,
-          to: 0.4,
-          ms: 700,
-          alpha: 0.8,
-        });
-        this.burst(x, y - 8, 0xff9a3c, 12);
+        this.area('fire', x, y, 1);
+        this.tibiaFx('explosion', x, y);
         break;
       case 'frost':
-        this.pixelFx('shards', x, y - 8, 2);
-        this.glow('circle_05', x, y + 2, { tint: 0x8fe3ff, from: 0.25, to: 0.6, ms: 500 });
-        this.glow('light_03', x, y - 8, { tint: 0xd8f6ff, from: 0.2, to: 0.5, ms: 600 });
-        for (let k = 0; k < 4; k++) {
-          this.glow('star_04', x + Phaser.Math.Between(-14, 14), y + Phaser.Math.Between(-4, 6), {
-            tint: 0xbff0ff,
-            from: 0.12,
-            to: 0.04,
-            ms: 900,
-            rise: 22,
-            delay: k * 80,
-          });
-        }
+        this.area('bubbles', x, y, 1, true);
+        this.tibiaFx('ice', x, y);
         break;
-      case 'levelup': {
-        this.pixelFx('energy', x, y - 10, 2.4);
-        // A column of golden light, a rune turning under the feet, rings and rising stars.
-        const pillar = this.takeGlow()
-          .setFrame(frameOf('trace_01'))
-          .setPosition(x, y - 30)
-          .setTint(0xffd36a)
-          .setScale(0.9, 0.2)
-          .setDepth(100_000);
-        this.scene.tweens.add({
-          targets: pillar,
-          scaleY: 1.4,
-          alpha: { from: 1, to: 0 },
-          duration: 1100,
-          ease: 'Cubic.easeOut',
-          onComplete: () => pillar.setActive(false).setVisible(false),
-        });
-        this.glow('magic_02', x, y + 10, {
-          tint: 0xffe9a0,
-          from: 0.35,
-          to: 0.55,
-          ms: 1400,
-          spin: 220,
-        });
-        this.glow('light_03', x, y - 8, { tint: 0xffd36a, from: 0.2, to: 1.1, ms: 1000 });
-        for (let k = 0; k < 3; k++) {
-          this.glow('circle_03', x, y + 4, {
-            tint: 0xffc04a,
-            from: 0.1,
-            to: 0.8,
-            ms: 700,
-            delay: k * 220,
-          });
-        }
-        for (let k = 0; k < 8; k++) {
-          this.glow('star_04', x + Phaser.Math.Between(-18, 18), y + Phaser.Math.Between(-6, 10), {
-            tint: 0xfff3b0,
-            from: 0.14,
-            to: 0.05,
-            ms: 1100,
-            rise: 40,
-            spin: 180,
-            delay: 150 + k * 90,
-          });
-        }
+      case 'levelup':
+        this.tibiaFx('sparkle', x, y, { scale: 1.5 });
+        this.area('glitter', x, y, 2);
         break;
-      }
     }
   }
 
-  /** Arrows falling from the sky around (x, y), each landing with a few sparks. */
+  /** Arrows falling on random tiles around (x, y), each landing with yellow sparks. */
   private arrowRain(x: number, y: number) {
-    for (let k = 0; k < 6; k++) {
-      const tx = x + Phaser.Math.Between(-20, 20);
-      const ty = y + Phaser.Math.Between(-10, 8);
-      const arrow = this.scene.add
-        .rectangle(tx - 10, ty - 90, 2, 14, 0xe8d8b0)
-        .setAngle(-8)
-        .setDepth(100_000)
-        .setVisible(false);
-      this.scene.tweens.add({
-        targets: arrow,
-        x: tx,
-        y: ty - 6,
-        duration: 220,
-        delay: k * 55,
-        ease: 'Quad.easeIn',
-        onStart: () => arrow.setVisible(true),
-        onComplete: () => {
-          arrow.destroy();
-          this.burst(tx, ty - 4, 0xffe2a0, 3);
-        },
-      });
-    }
-    this.glow('circle_05', x, y + 4, {
-      tint: 0xffe2a0,
-      from: 0.3,
-      to: 0.6,
-      ms: 400,
-      delay: 300,
-      alpha: 0.6,
+    const tiles = [-1, 0, 1].flatMap((dx) => [-1, 0, 1].map((dy) => ({ dx, dy })));
+    Phaser.Utils.Array.Shuffle(tiles);
+    tiles.slice(0, 6).forEach(({ dx, dy }, k) => {
+      const tx = x + dx * TILE;
+      const ty = y + dy * TILE;
+      this.scene.time.delayedCall(k * 60, () =>
+        this.missile('arrow', { x: tx, y: ty - 4 * TILE }, { x: tx, y: ty }, 1, 200, () =>
+          this.tibiaFx('block', tx, ty),
+        ),
+      );
     });
   }
 
-  /**
-   * A monster's blow landing on the hero, by element: claw marks, a burst of fire, a green
-   * puff of poison, ice shards, a dark swirl or an arcane flash. Bosses add a shockwave.
-   */
+  /** A monster's blow landing on the hero, by element. Bosses add a red ring. */
   monsterHit(element: Element, x: number, y: number, boss: boolean) {
     if (!usePrefs.getState().gfx.hitFx) return;
-    switch (element) {
-      case 'physical':
-        this.pixelFx('claw', x, y - 6, 1.2, Math.random() < 0.5);
-        break;
-      case 'fire':
-        this.pixelFx('blast', x, y - 8, 1.2);
-        this.glow('flame_01', x, y - 6, { tint: 0xff8a30, from: 0.2, to: 0.28, ms: 450, rise: 14 });
-        break;
-      case 'poison':
-        this.glow('smoke_04', x, y - 6, {
-          tint: 0x8fd34a,
-          from: 0.18,
-          to: 0.38,
-          ms: 650,
-          rise: 10,
-          alpha: 0.85,
-          normal: true,
-        });
-        this.burst(x, y - 8, 0xa6e05a, 6);
-        break;
-      case 'ice':
-        this.pixelFx('shards', x, y - 8, 1.2);
-        this.glow('circle_05', x, y, { tint: 0x8fe3ff, from: 0.15, to: 0.35, ms: 350 });
-        break;
-      case 'dark':
-        this.pixelFx('claw', x, y - 6, 1.2, Math.random() < 0.5);
-        this.glow('magic_03', x, y - 8, {
-          tint: 0xe070c8,
-          from: 0.15,
-          to: 0.35,
-          ms: 450,
-          spin: -90,
-        });
-        break;
-      case 'arcane':
-        this.pixelFx('energy', x, y - 8, 1.2);
-        break;
-    }
-    if (boss) {
-      this.glow('circle_03', x, y + 6, {
-        tint: elementTint(element === 'physical' ? 'fire' : element),
-        from: 0.15,
-        to: 0.75,
-        ms: 450,
-      });
-    }
+    if (element === 'physical') this.pixelFx('claw', x, y - 4, 1, Math.random() < 0.5);
+    else this.hit(element, x, y);
+    if (boss) this.tibiaFx('redRing', x, y, { scale: 1.5 });
   }
 
   burst(x: number, y: number, color: number, count = 10) {
@@ -651,9 +381,47 @@ export class Effects {
   }
 
   /**
-   * An arrow (a thin shaft) or a magic bolt (a glowing orb, in the element's colour, with a
-   * trail of sparks) flying from `from` to `to`; `onHit` runs on arrival (the damage numbers
-   * and effects show then). `big` is for skills such as the fireball.
+   * Flies a missile of otspfx.png from `from` to `to` (tile centres), facing the nearest of
+   * its eight directions, and runs `onHit` on arrival.
+   */
+  private missile(
+    name: OtspMissileName,
+    from: { x: number; y: number },
+    to: { x: number; y: number },
+    scale: number,
+    duration: number,
+    onHit: () => void,
+    tint?: number,
+  ) {
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    // Column and row of the direction in the 3×3 block: west/north 0, centre 1, east/south 2.
+    const len = Math.hypot(dx, dy) || 1;
+    const col = Math.round(dx / len + 1);
+    const row = Math.round(dy / len + 1);
+    const cell = row * 3 + col === 4 ? 7 : row * 3 + col;
+    const shot = this.scene.add
+      .image(from.x, from.y, 'otspfx', otspMissileFirstFrame(name) + cell)
+      .setOrigin(0.75)
+      .setScale(scale)
+      .setDepth(100_000);
+    if (tint !== undefined) shot.setTint(tint);
+    this.scene.tweens.add({
+      targets: shot,
+      x: to.x,
+      y: to.y,
+      duration,
+      onComplete: () => {
+        shot.destroy();
+        onHit();
+      },
+    });
+  }
+
+  /**
+   * An arrow or a magic missile (by element) flying from `from` to `to`; `onHit` runs on
+   * arrival (the damage numbers and effects show then). `big` is for skills such as the
+   * fireball.
    */
   projectile(
     from: { x: number; y: number },
@@ -662,41 +430,17 @@ export class Effects {
     onHit: () => void,
     o: { element?: Element; big?: boolean } = {},
   ) {
-    const sx = from.x;
-    const sy = from.y - 14;
-    const tx = to.x;
-    const ty = to.y - 12;
-    const dist = Math.hypot(tx - sx, ty - sy);
-    const duration = Math.max(90, Math.min(o.big ? 340 : 260, dist * (o.big ? 2.8 : 2.2)));
-    const tint = elementTint(o.element ?? 'arcane');
-    const shot =
+    const dist = Math.hypot(to.x - from.x, to.y - from.y);
+    const duration = Math.max(80, Math.min(o.big ? 300 : 240, dist * (o.big ? 2.4 : 2)));
+    const element = o.element ?? 'arcane';
+    const name: OtspMissileName =
       kind === 'arrow'
-        ? this.scene.add
-            .rectangle(sx, sy, o.big ? 18 : 14, o.big ? 3 : 2, 0xe8d8b0)
-            .setRotation(Math.atan2(ty - sy, tx - sx))
-        : this.scene.add
-            .image(sx, sy, 'glow')
-            .setTint(tint)
-            .setScale(o.big ? 0.85 : 0.5)
-            .setBlendMode(Phaser.BlendModes.ADD);
-    shot.setDepth(100_000);
-    let trail = 0;
-    this.scene.tweens.add({
-      targets: shot,
-      x: tx,
-      y: ty,
-      duration,
-      onUpdate: () => {
-        if (kind !== 'bolt' || this.reducedMotion || ++trail % 3 !== 0) return;
-        this.sparks.setParticleTint(tint);
-        this.sparks.explode(1, shot.x, shot.y);
-      },
-      onComplete: () => {
-        shot.destroy();
-        if (kind === 'bolt') this.burst(tx, ty, tint, 6);
-        onHit();
-      },
-    });
+        ? 'arrow'
+        : element === 'arcane' || element === 'dark'
+          ? 'orb'
+          : BOLT[element];
+    const tint = name === 'orb' ? (element === 'dark' ? 0xff80e0 : 0xd8b0ff) : undefined;
+    this.missile(name, from, to, o.big ? 1.25 : 1, duration, onHit, tint);
   }
 
   ring(x: number, y: number, color: number) {

@@ -1,20 +1,15 @@
 /**
- * Character and effect sheets, built by `pnpm art`:
+ * Character sheet, built by `pnpm art`:
  *   assets/sprites/actors.png  animated characters and weapons from 0x72's DungeonTileset II
  *                              (CC0), one frame per 32×36 cell, feet on the cell's bottom
- *   assets/sprites/fx.png      spell and hit textures from Kenney's Particle Pack (CC0),
- *                              128×128 cells, white on transparent (tinted in the game)
  * and the frame numbers in assets/sprites/manifest.json, so the scene finds them by name.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
-import { FX_FRAMES as FX } from '@abismo/content';
 import { PNG } from 'pngjs';
 
 export const CELL_W = 32;
 export const CELL_H = 36;
 export const ACTOR_COLS = 16;
-export const FX_SIZE = 128;
-export const FX_COLS = 8;
 
 /** Characters of the pack used by the game (each has idle and run, some a hit frame). */
 const CHARACTERS = [
@@ -219,30 +214,4 @@ export function buildActors(assets: URL) {
   }
   writeFileSync(manifestUrl, JSON.stringify(manifest, null, 2) + '\n');
   return names.length;
-}
-
-export function buildFx(assets: URL) {
-  const rows = Math.ceil(FX.length / FX_COLS);
-  const out = new PNG({ width: FX_COLS * FX_SIZE, height: rows * FX_SIZE });
-  FX.forEach((name, i) => {
-    const src = PNG.sync.read(
-      readFileSync(new URL(`vendor/kenney-particle-pack/${name}.png`, assets)),
-    );
-    const dx = (i % FX_COLS) * FX_SIZE;
-    const dy = Math.floor(i / FX_COLS) * FX_SIZE;
-    for (let y = 0; y < FX_SIZE; y++) {
-      for (let x = 0; x < FX_SIZE; x++) {
-        const si = (y * src.width + x) * 4;
-        const di = ((dy + y) * out.width + dx + x) * 4;
-        // White texture: brightness becomes alpha, so tints and additive blending work.
-        const a = Math.round((src.data[si]! * src.data[si + 3]!) / 255);
-        out.data[di] = 255;
-        out.data[di + 1] = 255;
-        out.data[di + 2] = 255;
-        out.data[di + 3] = a;
-      }
-    }
-  });
-  writeFileSync(new URL('sprites/fx.png', assets), PNG.sync.write(out));
-  return FX.length;
 }

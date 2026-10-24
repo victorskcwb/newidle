@@ -418,7 +418,7 @@ export class Director {
             if (v.def.boss) this.showBoss(v);
             v.actor.setHp(v.hp / v.maxHp);
             v.actor.hurt();
-            if (!skillFx && !ranged) this.fx.spell('slash', v.actor.x, v.actor.y, this.hero);
+            if (!skillFx) this.fx.hit(element, v.actor.x, v.actor.y);
             if (hit.crit) this.fx.spell('crit', v.actor.x, v.actor.y);
             this.fx.number(
               v.actor.x,

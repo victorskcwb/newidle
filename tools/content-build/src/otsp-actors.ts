@@ -11,12 +11,12 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
 
-const CELL = 64;
+export const CELL = 64;
 const COLS = 16;
 const DIRS = ['up', 'right', 'down', 'left'] as const;
 type Dir = (typeof DIRS)[number];
 
-interface Thing {
+export interface Thing {
   w: number;
   h: number;
   layers: number;
@@ -75,21 +75,22 @@ function readThing(r: Reader): Thing {
   return { w, h, layers, px, py, pz, frames, sprites };
 }
 
-/** Outfits of otsp.dat by look type (items come first and are skipped). */
-function readOutfits(dat: Buffer): Map<number, Thing> {
+/** Outfits, magic effects and missiles of otsp.dat by id (items come first and are skipped). */
+export function readOtspDat(dat: Buffer) {
   const r = new Reader(dat);
   r.u32();
   const items = r.u16();
-  const outfits = r.u16();
-  r.u16();
-  r.u16();
+  const counts = [r.u16(), r.u16(), r.u16()] as const;
   for (let i = 100; i <= items; i++) readThing(r);
-  const out = new Map<number, Thing>();
-  for (let i = 1; i <= outfits; i++) out.set(i, readThing(r));
-  return out;
+  const [outfits, effects, missiles] = counts.map((n) => {
+    const out = new Map<number, Thing>();
+    for (let i = 1; i <= n; i++) out.set(i, readThing(r));
+    return out;
+  }) as [Map<number, Thing>, Map<number, Thing>, Map<number, Thing>];
+  return { outfits, effects, missiles };
 }
 
-type Rgba = Uint8ClampedArray;
+export type Rgba = Uint8ClampedArray;
 
 /** One 32×32 sprite of otsp.spr as RGBA (run-length: transparent count, coloured count). */
 function readSprite(spr: Buffer, id: number): Rgba {
@@ -116,13 +117,23 @@ function readSprite(spr: Buffer, id: number): Rgba {
   return px;
 }
 
-/** A frame of an outfit in a direction, composed from its w×h sprites (64×64 canvas). */
-function composeFrame(spr: Buffer, t: Thing, frame: number, dir: number, layer: number): Rgba {
+/**
+ * A frame of a thing in a direction (pattern x, and y for missiles), composed from its w×h
+ * sprites on a 64×64 canvas.
+ */
+export function composeFrame(
+  spr: Buffer,
+  t: Thing,
+  frame: number,
+  dir: number,
+  layer: number,
+  patternY = 0,
+): Rgba {
   const img = new Uint8ClampedArray(CELL * CELL * 4);
   for (let hh = 0; hh < t.h; hh++) {
     for (let ww = 0; ww < t.w; ww++) {
       const index =
-        ((((frame * t.pz + 0) * t.py + 0) * t.px + dir) * t.layers + layer) * t.h * t.w +
+        ((((frame * t.pz + 0) * t.py + patternY) * t.px + dir) * t.layers + layer) * t.h * t.w +
         hh * t.w +
         ww;
       const s = readSprite(spr, t.sprites[index]!);
@@ -274,7 +285,7 @@ export interface OtspFrameSet {
 
 export function buildOtspActors(assets: URL): { cells: number; looks: Record<string, unknown> } {
   const vendor = (f: string) => readFileSync(new URL(`vendor/opentibia-sprite-pack/${f}`, assets));
-  const outfits = readOutfits(vendor('otsp.dat'));
+  const { outfits } = readOtspDat(vendor('otsp.dat'));
   const spr = vendor('otsp.spr');
   const cells: Rgba[] = [];
 
