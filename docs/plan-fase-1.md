@@ -68,10 +68,10 @@ packages/protocol (Zod, compartilhado)                ──► Postgres (postgr
 
 Commits 1 a 12 prontos e testados (decisões 172 a 180). O jogo roda online com `?online=1` em desenvolvimento ou `VITE_ONLINE=1` no build. O servidor sobe com `pnpm --filter @abismo/server dev`; sem `DATABASE_URL`, ele usa PGlite em `apps/server/.data`. Falta:
 
-- **Commit 13 (deploy):** depende da escolha de hospedagem. Também falta o Dockerfile do servidor, que não dá para testar nesta máquina, porque não tem Docker.
+- **Commit 13 (deploy):** depende da escolha de hospedagem. O `apps/server/Dockerfile` está escrito (decisão 182), mas só o pacote do `pnpm deploy` foi testado, porque esta máquina não tem Docker. `docker compose --profile server up` sobe o servidor com o Postgres.
 - **Provedor de e-mail:** enquanto não houver um, o link de recuperação de senha vai para o log do servidor.
 - **Google:** as credenciais do OAuth precisam ser criadas (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`).
-- **Turnstile:** o widget no cliente e a chave (`TURNSTILE_SECRET` no servidor).
+- **Turnstile:** o widget no cliente está pronto (decisão 182); faltam as chaves (`VITE_TURNSTILE_SITE_KEY` no build do cliente e `TURNSTILE_SECRET` no servidor).
 - **Política de privacidade e termos de uso:** os textos completos, com revisão jurídica (decisão 179).
 - **`docker-compose.yml` com Postgres de verdade:** escrito, mas não testado aqui.
 

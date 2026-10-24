@@ -1,0 +1,15 @@
+**/node_modules
+**/dist
+**/.turbo
+**/.data
+**/coverage
+**/playwright-report
+**/test-results
+.git
+tools/simulator/out
+TibiaFankit
+canary-sprite-pack-main*
+opentibia_sprite_pack-master*
+sprites
+Sprites.zip
+tibia-*

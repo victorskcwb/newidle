@@ -1,5 +1,6 @@
 # Development database for the game server (decision 174). Without it, the server uses PGlite
 # in apps/server/.data. With it: DATABASE_URL=postgres://abismo:abismo@localhost:5432/abismo
+# `docker compose --profile server up` also runs the server image against this database.
 services:
   db:
     image: postgres:17-alpine
@@ -15,6 +16,20 @@ services:
       test: ['CMD-SHELL', 'pg_isready -U abismo']
       interval: 5s
       retries: 10
+
+  server:
+    profiles: [server]
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    environment:
+      DATABASE_URL: postgres://abismo:abismo@db:5432/abismo
+      CLIENT_URL: http://localhost:5173
+    ports:
+      - '8787:8787'
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   db-data:
