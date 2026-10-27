@@ -165,6 +165,17 @@ export const OTSP_MISSILES = {
 } as const;
 export type OtspMissileName = keyof typeof OTSP_MISSILES;
 
+/**
+ * Splash items of otsp.dat (fluid stains on the floor), after the missiles in otspfx.png: one
+ * cell per shape and colour, shapes in this order, each in the colours of OTSP_SPLASH_COLORS.
+ * `item` is the item id in otsp.dat; the colour is its pattern (4×2, one per fluid).
+ */
+export const OTSP_SPLASHES = { pool: 2221, drops: 2222, spray: 2224 } as const;
+export type OtspSplashName = keyof typeof OTSP_SPLASHES;
+/** Pattern of each fluid colour in the splash items. */
+export const OTSP_SPLASH_COLORS = { red: 2, orange: 3, green: 4, purple: 7 } as const;
+export type OtspSplashColor = keyof typeof OTSP_SPLASH_COLORS;
+
 /** First frame of an effect inside otspfx.png. */
 export function otspFxFirstFrame(name: OtspFxName): number {
   let n = 0;
@@ -179,6 +190,15 @@ export function otspFxFirstFrame(name: OtspFxName): number {
 export function otspMissileFirstFrame(name: OtspMissileName): number {
   const effects = Object.values(OTSP_FX).reduce((n, a) => n + a.frames, 0);
   return effects + Object.keys(OTSP_MISSILES).indexOf(name) * 9;
+}
+
+/** Frame of a splash shape in a colour inside otspfx.png. */
+export function otspSplashFrame(shape: OtspSplashName, color: OtspSplashColor): number {
+  const missiles = otspMissileFirstFrame('spear') + Object.keys(OTSP_MISSILES).length * 9;
+  const colors = Object.keys(OTSP_SPLASH_COLORS);
+  return (
+    missiles + Object.keys(OTSP_SPLASHES).indexOf(shape) * colors.length + colors.indexOf(color)
+  );
 }
 
 /** Milliseconds from the start of an animation to its impact frame (0 if it has none). */

@@ -4,6 +4,7 @@ import {
   type ContentDb,
   type Element,
   type Monster,
+  type OtspSplashColor,
   type SpriteManifest,
   type TiledMap,
   type TilePoint,
@@ -75,6 +76,13 @@ const SNAP_LAG_TICKS = 100;
 const RELAXED_LAG_TICKS = 12;
 const LOOT_PAUSE_MS = 500;
 const UI_PUBLISH_MS = 100;
+
+/** What a creature leaves on the floor: green ichor for the undead, embers for the burning. */
+function bloodOf(def: Monster): OtspSplashColor {
+  if (def.tags.includes('undead')) return 'green';
+  if (def.tags.includes('fire') || def.tags.includes('construct')) return 'orange';
+  return 'red';
+}
 
 const NAME_COLOR = { normal: '#e6e3dc', elite: '#ffb347', boss: '#ff6b6b', hero: '#9fd3ff' };
 
@@ -419,7 +427,11 @@ export class Director {
             v.actor.setHp(v.hp / v.maxHp);
             v.actor.hurt();
             if (!skillFx) this.fx.hit(element, v.actor.x, v.actor.y);
-            if (hit.crit) this.fx.spell('crit', v.actor.x, v.actor.y);
+            if (hit.crit) {
+              this.fx.spell('crit', v.actor.x, v.actor.y);
+              this.fx.critStamp(v.actor.x, v.actor.y - 8, t('fx.crit'));
+              this.fx.stain(v.actor.x, v.actor.y, bloodOf(v.def), 'spray');
+            }
             this.fx.number(
               v.actor.x,
               v.actor.y - 8,
@@ -486,6 +498,8 @@ export class Director {
         if (v.def.boss) this.showBoss(null);
         this.scene.time.delayedCall(180, () => {
           this.fx.spell('death', v.actor.x, v.actor.y);
+          this.fx.stain(v.actor.x, v.actor.y, bloodOf(v.def));
+          if (e.xp > 0) this.fx.number(v.actor.x, v.actor.y - 20, t('fx.xp', { xp: e.xp }), 'xp');
           v.actor.die(() => this.release(v));
         });
         this.log(
@@ -759,7 +773,16 @@ export class Director {
         },
       );
     } else if (e.monsters.some((m) => m.elite)) {
-      this.log(t('log.elite'), { tone: 'bad' });
+      const affixes = [...new Set(e.monsters.flatMap((m) => m.affixes))]
+        .map((id) => this.content.monsterAffixes.get(id))
+        .filter((a) => a !== undefined)
+        .map((a) => t(a.nameKey));
+      this.log(
+        affixes.length > 0
+          ? t('log.eliteAffixes', { affixes: affixes.join(', ') })
+          : t('log.elite'),
+        { tone: 'bad' },
+      );
     }
   }
 
@@ -816,16 +839,9 @@ export class Director {
       const color = m.boss
         ? NAME_COLOR.boss
         : (affixes[0]?.color ?? (m.elite ? NAME_COLOR.elite : NAME_COLOR.normal));
-      const base = `${this.monsterName(def, m.elite)} ${t('hud.level', { level: def.level })}`;
-      actor.setName(
-        affixes.length > 0
-          ? t('monster.eliteAffixes', {
-              name: base,
-              affixes: affixes.map((a) => t(a.nameKey)).join(', '),
-            })
-          : base,
-        color,
-      );
+      // Short names, as overhead names read in a crowd; level and affixes are in the log and
+      // the hunt sheet.
+      actor.setName(this.monsterName(def, m.elite), color);
       actor.setOverhead(usePrefs.getState().gfx.names);
       actor.place(spot);
       actor.face(this.hero.x, this.hero.y);
@@ -942,10 +958,7 @@ export class Director {
     actor.setLook(monsterLook(this.scene, this.manifest, def), anims);
     actor.reset(false);
     actor.speed = WANDER_SPEED;
-    actor.setName(
-      `${this.monsterName(def, false)} ${t('hud.level', { level: def.level })}`,
-      NAME_COLOR.normal,
-    );
+    actor.setName(this.monsterName(def, false), NAME_COLOR.normal);
     actor.setOverhead(usePrefs.getState().gfx.names);
     actor.place(spot);
     if (animate) actor.spawn();

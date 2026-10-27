@@ -75,19 +75,20 @@ function readThing(r: Reader): Thing {
   return { w, h, layers, px, py, pz, frames, sprites };
 }
 
-/** Outfits, magic effects and missiles of otsp.dat by id (items come first and are skipped). */
+/** Items, outfits, magic effects and missiles of otsp.dat by id. */
 export function readOtspDat(dat: Buffer) {
   const r = new Reader(dat);
   r.u32();
-  const items = r.u16();
+  const itemCount = r.u16();
   const counts = [r.u16(), r.u16(), r.u16()] as const;
-  for (let i = 100; i <= items; i++) readThing(r);
+  const items = new Map<number, Thing>();
+  for (let i = 100; i <= itemCount; i++) items.set(i, readThing(r));
   const [outfits, effects, missiles] = counts.map((n) => {
     const out = new Map<number, Thing>();
     for (let i = 1; i <= n; i++) out.set(i, readThing(r));
     return out;
   }) as [Map<number, Thing>, Map<number, Thing>, Map<number, Thing>];
-  return { outfits, effects, missiles };
+  return { items, outfits, effects, missiles };
 }
 
 export type Rgba = Uint8ClampedArray;

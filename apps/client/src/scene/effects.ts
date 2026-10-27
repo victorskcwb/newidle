@@ -4,10 +4,13 @@ import {
   hitFxFirstFrame,
   otspFxFirstFrame,
   otspMissileFirstFrame,
+  otspSplashFrame,
   type Element,
   type HitFxName,
   type OtspFxName,
   type OtspMissileName,
+  type OtspSplashColor,
+  type OtspSplashName,
   type Rarity,
 } from '@abismo/content';
 import Phaser from 'phaser';
@@ -99,17 +102,22 @@ export function createHitFxAnimations(scene: Phaser.Scene) {
   }
 }
 
-export type NumberKind = 'damage' | 'crit' | 'heal' | 'mana' | 'miss' | 'taken';
+export type NumberKind = 'damage' | 'crit' | 'heal' | 'mana' | 'miss' | 'taken' | 'xp';
 
 /** `null` colour: the element's. Physical hits keep white, gold crits and red damage taken. */
 const NUMBER_STYLE: Record<NumberKind, { color: string | null; size: number }> = {
-  damage: { color: null, size: 12 },
-  crit: { color: null, size: 16 },
-  heal: { color: '#7cf07c', size: 12 },
-  mana: { color: '#6fb6ff', size: 12 },
+  damage: { color: null, size: 14 },
+  crit: { color: null, size: 18 },
+  heal: { color: '#7cf07c', size: 14 },
+  mana: { color: '#6fb6ff', size: 14 },
   miss: { color: '#c8c4d4', size: 11 },
-  taken: { color: null, size: 12 },
+  taken: { color: null, size: 14 },
+  xp: { color: '#f2ecff', size: 12 },
 };
+
+/** How long a stain stays on the floor before fading, and how many at most. */
+const STAIN_MS = 12_000;
+const MAX_STAINS = 24;
 const PHYSICAL_COLOR: Partial<Record<NumberKind, string>> = { crit: '#ffd84a', taken: '#ff6b5e' };
 
 /**
@@ -125,6 +133,8 @@ export class Effects {
   }[] = [];
   private sparks: Phaser.GameObjects.Particles.ParticleEmitter;
   private anims: Phaser.GameObjects.Sprite[] = [];
+  private stains: Phaser.GameObjects.Image[] = [];
+  private critLabel: Phaser.GameObjects.Text | null = null;
   reducedMotion = false;
 
   constructor(private scene: Phaser.Scene) {
@@ -148,7 +158,7 @@ export class Effects {
         fontSize: '11px',
         color: '#ffffff',
         stroke: '#000000',
-        strokeThickness: 3,
+        strokeThickness: 4,
         resolution: 4,
       })
       .setOrigin(0.5, 1)
@@ -169,19 +179,94 @@ export class Effects {
       .setColor(color)
       // Damage taken has a dark red outline, so a fire hit on the hero never reads as one
       // dealt by the hero.
-      .setStroke(kind === 'taken' ? '#4a0000' : '#000000', 3)
+      .setStroke(kind === 'taken' ? '#4a0000' : '#000000', 4)
       .setFontSize(style.size)
       .setPosition(x + Phaser.Math.Between(-6, 6), y - 14)
       .setAlpha(1)
-      .setScale(kind === 'crit' ? 1.3 : 1);
-    this.scene.tweens.add({
+      .setScale(kind === 'crit' ? 1.5 : 1);
+    // Numbers pop and hold a moment before drifting up, so a big hit can be read.
+    this.scene.tweens.chain({
       targets: t,
-      y: t.y - 22,
-      alpha: 0,
-      scale: 1,
-      duration: 750,
-      ease: 'Cubic.easeOut',
+      tweens: [
+        { scale: 1, duration: 120, ease: 'Back.easeOut' },
+        {
+          y: t.y - (kind === 'xp' ? 18 : 24),
+          alpha: 0,
+          duration: kind === 'xp' ? 1100 : 750,
+          delay: kind === 'crit' || kind === 'xp' ? 250 : 120,
+          ease: 'Cubic.easeIn',
+        },
+      ],
       onComplete: () => t.setActive(false).setVisible(false),
+    });
+  }
+
+  /** A red "CRIT" stamped over a critical hit; one at a time, the newest wins. */
+  critStamp(x: number, y: number, text: string) {
+    if (!usePrefs.getState().gfx.numbers) return;
+    this.critLabel ??= this.scene.add
+      .text(0, 0, '', {
+        fontFamily: 'system-ui, "Segoe UI", Roboto, sans-serif',
+        fontStyle: 'bold italic',
+        fontSize: '16px',
+        color: '#ff3b2f',
+        stroke: '#2a0000',
+        strokeThickness: 5,
+        resolution: 4,
+      })
+      .setOrigin(0.5, 1)
+      .setDepth(100_002);
+    const label = this.critLabel;
+    this.scene.tweens.killTweensOf(label);
+    label
+      .setText(text)
+      .setActive(true)
+      .setVisible(true)
+      .setPosition(x, y - 30)
+      .setAlpha(1)
+      .setScale(2.2)
+      .setAngle(-8);
+    this.scene.tweens.chain({
+      targets: label,
+      tweens: [
+        { scale: 1, angle: -4, duration: 140, ease: 'Back.easeOut' },
+        { alpha: 0, y: label.y - 8, duration: 300, delay: 350 },
+      ],
+      onComplete: () => label.setActive(false).setVisible(false),
+    });
+  }
+
+  /**
+   * A stain left on the floor at (x, y) (a kill's blood, by colour), under the actors. It
+   * fades after a while; the oldest goes first when there are too many.
+   */
+  stain(x: number, y: number, color: OtspSplashColor, shape?: OtspSplashName) {
+    if (!usePrefs.getState().gfx.hitFx) return;
+    const pick: OtspSplashName = shape ?? (Math.random() < 0.6 ? 'pool' : 'drops');
+    let img = this.stains.find((s) => !s.active);
+    if (!img && this.stains.length >= MAX_STAINS) {
+      img = this.stains.reduce((a, b) => ((a.getData('at') as number) < b.getData('at') ? a : b));
+    }
+    if (!img) {
+      img = this.scene.add.image(0, 0, 'otspfx', 0).setOrigin(0.75).setDepth(1);
+      this.stains.push(img);
+    }
+    const stain = img;
+    this.scene.tweens.killTweensOf(stain);
+    stain
+      .setFrame(otspSplashFrame(pick, color))
+      .setActive(true)
+      .setVisible(true)
+      .setAlpha(0.9)
+      .setFlipX(Math.random() < 0.5)
+      .setPosition(x + Phaser.Math.Between(-4, 4), y + 6)
+      .setData('at', this.scene.time.now);
+    this.scene.tweens.add({
+      targets: stain,
+      alpha: 0,
+      delay: STAIN_MS,
+      duration: 1500,
+      onComplete: () => stain.setActive(false).setVisible(false),
     });
   }
 
