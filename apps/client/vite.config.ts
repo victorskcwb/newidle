@@ -4,6 +4,9 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  // Where the game is served: '/' by default, '/newidle/' on GitHub Pages (BASE_PATH in
+  // .github/workflows/pages.yml). Game files are loaded with relative paths, so they follow it.
+  base: process.env.BASE_PATH ?? '/',
   plugins: [
     react(),
     // Installable app (milestone 2): manifest + service worker that precaches the game,
