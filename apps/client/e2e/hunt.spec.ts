@@ -85,3 +85,23 @@ test('in town the merchant sells potions and the smith forges an item', async ({
   await expect(page.getByTestId('forge')).toContainText('Forjado!');
   expect(errors).toEqual([]);
 });
+
+test('the hunt analyzer counts the session and freezes when the hero goes back', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await createHero(page);
+  await expect(page.getByTestId('event-log')).toContainText('derrotado!', { timeout: 45_000 });
+  await page.getByTestId('nav-analyzer').click();
+  const analyzer = page.getByTestId('hunt-analyzer');
+  await expect(analyzer).toBeVisible();
+  await expect(analyzer.getByTestId('analyzer-hunt')).not.toHaveText('0');
+  await expect(analyzer.getByTestId('analyzer-xp')).not.toHaveText('0');
+  await expect(analyzer).toContainText('/h', { timeout: 30_000 });
+  await page.evaluate(() =>
+    (window as unknown as { abismo: { returnToTown(): void } }).abismo.returnToTown(),
+  );
+  await expect(analyzer).toContainText('encerrada');
+  expect(errors).toEqual([]);
+});

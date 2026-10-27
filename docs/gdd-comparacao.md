@@ -34,6 +34,7 @@ Decididos em 2026-10-18 conforme a coluna "Recomendação" (decisão 140).
 | Metas diárias e semanal (6.1, 6.2)                                                   | decisão 75                                                           |
 | Feedback visual e sonoro, acessibilidade, modo gráfico (9)                           | decisões 76, 107, 118, 130, 133                                      |
 | Taxas por hora visíveis (9)                                                          | ficha de taxas no mapa de caçadas                                    |
+| Relatório da sessão de caçada (Fase 4, item 5)                                       | analisador de caçada, decisão 185                                    |
 | Decisões de estratégia na caçada (1.2)                                               | dificuldade por caçada (decisão 168), regras por habilidade (169)    |
 | Elementos e resistências (3.3)                                                       | dos monstros (decisão 170) e do herói, por afixos (171)              |
 

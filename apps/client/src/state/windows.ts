@@ -10,11 +10,11 @@ export interface WinPos {
   y: number;
 }
 
-export type WindowId = 'inventory' | 'log';
+export type WindowId = 'inventory' | 'log' | 'analyzer';
 
 export interface Layout {
   pos: Partial<Record<WindowId, WinPos>>;
-  open: Record<WindowId, boolean>;
+  open: { inventory: boolean; log: boolean; analyzer?: boolean };
 }
 
 const POS_KEY = 'abismo.windows';
@@ -48,19 +48,25 @@ export function presetLayout(id: PresetId): Layout {
   const bottomLeft = { x: 8, y: Math.max(64, h - 280) };
   switch (id) {
     case 'default':
-      return { pos: { inventory: right, log: bottomLeft }, open: { inventory: false, log: true } };
+      return {
+        pos: { inventory: right, log: bottomLeft, analyzer: { x: Math.max(8, w - 308), y: 64 } },
+        open: { inventory: false, log: true, analyzer: false },
+      };
     case 'hunt':
       return {
-        pos: { log: { x: 8, y: Math.max(64, h - 230) } },
-        open: { inventory: false, log: true },
+        pos: {
+          log: { x: 8, y: Math.max(64, h - 230) },
+          analyzer: { x: Math.max(8, w - 308), y: 64 },
+        },
+        open: { inventory: false, log: true, analyzer: true },
       };
     case 'loot':
       return {
         pos: { inventory: right, log: { x: 8, y: 170 } },
-        open: { inventory: true, log: true },
+        open: { inventory: true, log: true, analyzer: false },
       };
     case 'clean':
-      return { pos: {}, open: { inventory: false, log: false } };
+      return { pos: {}, open: { inventory: false, log: false, analyzer: false } };
   }
 }
 
@@ -85,12 +91,14 @@ export const useWindows = create<WindowsState>((set, get) => ({
     const ui = useUi.getState();
     if (ui.backpackOpen !== layout.open.inventory) ui.toggleBackpack();
     if (ui.logWindow !== layout.open.log) ui.toggleLogWindow();
+    // Layouts saved before the analyzer existed leave it as it is.
+    if (layout.open.analyzer !== undefined) ui.setAnalyzerWindow(layout.open.analyzer);
   },
   saveMine: () => {
     const ui = useUi.getState();
     write(MINE_KEY, {
       pos: get().pos,
-      open: { inventory: ui.backpackOpen, log: ui.logWindow },
+      open: { inventory: ui.backpackOpen, log: ui.logWindow, analyzer: ui.analyzerWindow },
     } satisfies Layout);
   },
   mine: () => read<Layout>(MINE_KEY),

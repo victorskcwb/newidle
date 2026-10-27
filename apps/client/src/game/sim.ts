@@ -102,6 +102,7 @@ export class GameSim {
   private ratesTimer: ReturnType<typeof setTimeout> | null = null;
   private snapshots = new Map<number, Snapshot>();
   private listeners = new Set<(s: SimSignal) => void>();
+  private taps = new Set<(events: GameEvent[]) => void>();
   private backlog: SimSignal[] = [];
   private changeListeners = new Set<() => void>();
   private ratesClient: RatesClient | null = null;
@@ -182,6 +183,12 @@ export class GameSim {
     // Events from before the scene existed (e.g. the first startHunt) are delivered now.
     for (const signal of this.backlog.splice(0)) listener(signal);
     return () => this.listeners.delete(listener);
+  }
+
+  /** Sees every batch of events as it happens, without taking the scene's backlog. */
+  tapEvents(listener: (events: GameEvent[]) => void): () => void {
+    this.taps.add(listener);
+    return () => this.taps.delete(listener);
   }
 
   onChange(listener: () => void): () => void {
@@ -546,6 +553,7 @@ export class GameSim {
   }
 
   private emit(signal: SimSignal) {
+    if (signal.kind === 'events') for (const tap of this.taps) tap(signal.events);
     if (this.listeners.size === 0) {
       this.backlog.push(signal);
       return;

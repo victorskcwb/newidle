@@ -1,6 +1,7 @@
 import { huntOf } from '@abismo/engine';
 import { TICKS_PER_SECOND } from '@abismo/engine';
 import { useEffect } from 'react';
+import { useReport } from '../state/report.ts';
 import type { GameSim } from '../game/sim.ts';
 import { sfx } from '../audio/sfx.ts';
 import { t } from '../i18n.ts';
@@ -10,6 +11,7 @@ import { useUi, type Screen } from '../state/store.ts';
 import { BackpackPanel } from './BackpackPanel.tsx';
 import { ConnectionBanner } from './ConnectionBanner.tsx';
 import { EventLog } from './EventLog.tsx';
+import { HuntAnalyzer } from './HuntAnalyzer.tsx';
 import { Hud } from './Hud.tsx';
 import { LevelUpBanner } from './LevelUpBanner.tsx';
 import { NpcDialog } from './NpcDialog.tsx';
@@ -84,6 +86,12 @@ function Game() {
   const hunt =
     huntOf(sim.state, sim.content) ?? [...sim.content.hunts.values()].find((h) => h.startUnlocked)!;
   const Current = screen ? SCREENS[screen] : null;
+  // The hunt analyzer adds up every batch of events; after a reload mid-hunt it counts from now.
+  useEffect(() => {
+    const report = useReport.getState();
+    if (!report.report && sim.state.hunt) report.restart(sim.state.hunt.huntId, sim.state.tick);
+    return sim.tapEvents((events) => useReport.getState().add(events, sim.content));
+  }, [sim]);
   return (
     <>
       {/* A new map (another hunt) or new device prefs rebuild the scene from the state. */}
@@ -101,6 +109,7 @@ function Game() {
       <div className="hud">
         <Hud />
         <EventLog />
+        <HuntAnalyzer />
         <Tips />
       </div>
       {backpackOpen && <BackpackPanel />}

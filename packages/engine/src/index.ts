@@ -11,6 +11,7 @@ export * from './skillRules.ts';
 export * from './constants.ts';
 export * from './hash.ts';
 export * from './hunt.ts';
+export * from './huntReport.ts';
 export * from './intents.ts';
 export * from './intent.ts';
 export * from './items.ts';

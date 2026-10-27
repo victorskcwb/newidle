@@ -2171,6 +2171,46 @@ input[type='range'] {
   padding: 1px 0;
 }
 
+.analyzer {
+  display: grid;
+  gap: 3px;
+  font-size: 12px;
+}
+
+.analyzer-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+  color: var(--accent);
+}
+
+.analyzer-row {
+  display: grid;
+  grid-template-columns: 14px 1fr auto 72px;
+  align-items: center;
+  gap: 6px;
+}
+
+.analyzer-value {
+  font: 600 12px var(--font-pixel);
+  text-align: right;
+}
+
+.analyzer-rate {
+  font-size: 11px;
+  text-align: right;
+}
+
+.analyzer-loot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .float-win .inv-layout .grid {
   max-height: 40vh;
 }

@@ -62,6 +62,9 @@ interface UiState {
   /** The log window (it starts open). */
   logWindow: boolean;
   toggleLogWindow: () => void;
+  /** The hunt analyzer window. */
+  analyzerWindow: boolean;
+  setAnalyzerWindow: (open: boolean) => void;
   toggleBackpack: () => void;
   setHover: (hover: { item: ItemInstance; x: number; y: number } | null) => void;
   hideLevelUp: () => void;
@@ -69,6 +72,8 @@ interface UiState {
 }
 
 const LOG_LIMIT = 60;
+/** Phones dock windows to the bottom, where the log and the analyzer would cover each other. */
+const oneDocked = () => typeof window !== 'undefined' && window.innerWidth <= 700;
 let logId = 0;
 
 export const useUi = create<UiState>((set) => ({
@@ -84,6 +89,7 @@ export const useUi = create<UiState>((set) => ({
   levelUp: null,
   npc: null,
   logWindow: typeof window === 'undefined' || window.innerWidth > 700,
+  analyzerWindow: false,
   hover: null,
   simVersion: 0,
   setPresented: (presented) => set({ presented }),
@@ -100,7 +106,14 @@ export const useUi = create<UiState>((set) => ({
   hideLevelUp: () => set({ levelUp: null }),
   openNpc: (npc) => set({ npc, screen: null, backpackOpen: false, hover: null }),
   setHover: (hover) => set({ hover }),
-  toggleLogWindow: () => set((s) => ({ logWindow: !s.logWindow })),
+  toggleLogWindow: () =>
+    set((s) =>
+      !s.logWindow && oneDocked()
+        ? { logWindow: true, analyzerWindow: false }
+        : { logWindow: !s.logWindow },
+    ),
+  setAnalyzerWindow: (analyzerWindow) =>
+    set(analyzerWindow && oneDocked() ? { analyzerWindow, logWindow: false } : { analyzerWindow }),
   toggleBackpack: () =>
     set((s) => ({ backpackOpen: !s.backpackOpen, selectedUid: null, hover: null })),
   bump: () => set((s) => ({ simVersion: s.simVersion + 1 })),

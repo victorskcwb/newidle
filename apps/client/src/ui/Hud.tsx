@@ -223,7 +223,7 @@ function BossBar() {
 }
 
 interface NavEntry {
-  screen: Screen | 'backpack' | 'log';
+  screen: Screen | 'backpack' | 'log' | 'analyzer';
   icon: string;
   label: string;
   badge?: string | number;
@@ -234,6 +234,7 @@ function NavButton({ entry }: { entry: NavEntry }) {
   const openScreen = useUi((s) => s.openScreen);
   const toggleBackpack = useUi((s) => s.toggleBackpack);
   const toggleLogWindow = useUi((s) => s.toggleLogWindow);
+  const setAnalyzerWindow = useUi((s) => s.setAnalyzerWindow);
   return (
     <button
       type="button"
@@ -243,7 +244,9 @@ function NavButton({ entry }: { entry: NavEntry }) {
           ? toggleBackpack()
           : entry.screen === 'log'
             ? toggleLogWindow()
-            : openScreen(entry.screen)
+            : entry.screen === 'analyzer'
+              ? setAnalyzerWindow(!entry.active)
+              : openScreen(entry.screen)
       }
       aria-label={entry.label}
       title={entry.label}
@@ -265,6 +268,7 @@ function TopBar() {
   const p = useUi((s) => s.presented);
   const backpackOpen = useUi((s) => s.backpackOpen);
   const logWindow = useUi((s) => s.logWindow);
+  const analyzerWindow = useUi((s) => s.analyzerWindow);
   const s = sim.state;
   const hero = s.hero;
   const claimable = claimableQuests(s) + (sim.loginDue() ? 1 : 0);
@@ -304,6 +308,7 @@ function TopBar() {
     { screen: 'altar', icon: 'altar', label: t('screen.altar'), badge: altarBadge },
     { screen: 'filter', icon: 'filter', label: t('top.filter') },
     { screen: 'log', icon: 'log', label: t('top.log'), active: logWindow },
+    { screen: 'analyzer', icon: 'xp', label: t('top.analyzer'), active: analyzerWindow },
     { screen: 'settings', icon: 'settings', label: t('top.settings') },
   ];
   return (
