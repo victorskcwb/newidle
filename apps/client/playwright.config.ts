@@ -7,6 +7,10 @@ export default defineConfig({
   testDir: 'e2e',
   timeout: 120_000,
   workers: 1,
+  // CI runners are slower and timing-sensitive tests can miss once; a retry tells a flake
+  // from a real failure (the report lists retried tests as flaky).
+  retries: process.env.CI ? 2 : 0,
+  reporter: process.env.CI ? [['line'], ['html', { open: 'never' }]] : 'list',
   // The game picks its language from the browser; the tests check Portuguese texts.
   use: { baseURL: `http://localhost:${WEB_PORT}`, locale: 'pt-BR' },
   projects: [{ name: 'mobile-chromium', use: { ...devices['Pixel 7'], locale: 'pt-BR' } }],
