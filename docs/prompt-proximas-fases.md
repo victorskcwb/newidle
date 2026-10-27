@@ -78,27 +78,27 @@ Resumo da análise de tráfego (capturas passivas da conta do Victor) e do códi
 
 ### Sistemas que eles têm e o Abismo não tem
 
-| Área | Sistema | Referência |
-| --- | --- | --- |
-| Conta | Login por e-mail e Google, 2FA, lista de sessões, uma conexão por conta, anti-bot | Ambos |
-| Social | Outros jogadores visíveis andando na cidade | Ambos |
-| Social | Chat global com avisos do sistema (chefe caiu, drop raro), mutar, fixar | Ambos |
-| Social | Amigos, party, guilda com cargos | Ambos |
-| Social | Transmissão ao vivo da caçada de outro jogador | Ravox |
-| Economia | Mercado entre jogadores com taxa por faixa de preço, histórico, alertas de preço | Ambos |
-| Economia | Correio, troca direta, banco | Ambos |
-| Economia | Gastos de ouro de longo prazo (barras de ouro a partir de 2 bilhões no Arvorn) | Arvorn |
-| Competição | Chefe mundial com horário marcado e fila que abre 10 min antes; o chat anuncia quem deu mais dano | Arvorn |
-| Competição | Ranking, arena com ondas e duelos | Ravox |
-| Retenção | Comissões diárias por caçada ("mate N de X e entregue 1 material"), troca paga | Arvorn |
-| Retenção | Votação em site de ranking de idles a cada 12 h, com prêmios por sequência de dias | Ambos |
-| Retenção | Relatório de caçada: XP/h, ouro/h, gastos, lucro/h | Ravox |
-| Retenção | Exportar e importar a barra de ações (jogadores trocam builds no Discord) | Ravox |
-| Combate | 4ª dificuldade "hardcore" e níveis "plus" com entrada paga em ouro | Arvorn |
-| Combate | Combate espacial no servidor (posições, alcance, área com formato) | Ambos |
-| Monetização | Premium (8 h de offline, conforto) | Arvorn |
-| Monetização | Moeda paga, loja, passe de temporada de 50 níveis com trilha grátis e paga | Ravox |
-| Monetização | Cosméticos: outfits, montarias, auras, títulos | Ambos |
+| Área        | Sistema                                                                                           | Referência |
+| ----------- | ------------------------------------------------------------------------------------------------- | ---------- |
+| Conta       | Login por e-mail e Google, 2FA, lista de sessões, uma conexão por conta, anti-bot                 | Ambos      |
+| Social      | Outros jogadores visíveis andando na cidade                                                       | Ambos      |
+| Social      | Chat global com avisos do sistema (chefe caiu, drop raro), mutar, fixar                           | Ambos      |
+| Social      | Amigos, party, guilda com cargos                                                                  | Ambos      |
+| Social      | Transmissão ao vivo da caçada de outro jogador                                                    | Ravox      |
+| Economia    | Mercado entre jogadores com taxa por faixa de preço, histórico, alertas de preço                  | Ambos      |
+| Economia    | Correio, troca direta, banco                                                                      | Ambos      |
+| Economia    | Gastos de ouro de longo prazo (barras de ouro a partir de 2 bilhões no Arvorn)                    | Arvorn     |
+| Competição  | Chefe mundial com horário marcado e fila que abre 10 min antes; o chat anuncia quem deu mais dano | Arvorn     |
+| Competição  | Ranking, arena com ondas e duelos                                                                 | Ravox      |
+| Retenção    | Comissões diárias por caçada ("mate N de X e entregue 1 material"), troca paga                    | Arvorn     |
+| Retenção    | Votação em site de ranking de idles a cada 12 h, com prêmios por sequência de dias                | Ambos      |
+| Retenção    | Relatório de caçada: XP/h, ouro/h, gastos, lucro/h                                                | Ravox      |
+| Retenção    | Exportar e importar a barra de ações (jogadores trocam builds no Discord)                         | Ravox      |
+| Combate     | 4ª dificuldade "hardcore" e níveis "plus" com entrada paga em ouro                                | Arvorn     |
+| Combate     | Combate espacial no servidor (posições, alcance, área com formato)                                | Ambos      |
+| Monetização | Premium (8 h de offline, conforto)                                                                | Arvorn     |
+| Monetização | Moeda paga, loja, passe de temporada de 50 níveis com trilha grátis e paga                        | Ravox      |
+| Monetização | Cosméticos: outfits, montarias, auras, títulos                                                    | Ambos      |
 
 ### Números de referência (para calibrar a ordem de grandeza, não para copiar)
 
@@ -131,12 +131,14 @@ Cada fase tem entregáveis e critérios de aceite. Ao fim de cada fase: atualize
 **Objetivo:** o jogo passa a rodar no servidor; o cliente vira uma tela. Resolve o conflito C1 e destrava todas as fases seguintes.
 
 Decisões a levar ao Victor no plano (com uma recomendação sua para cada):
+
 - Banco de dados. O Victor trabalha com MongoDB; avalie Mongo vs Postgres para este caso (estado de jogo por personagem, mercado transacional depois) e recomende.
 - Framework do servidor em Node (o servidor **precisa** ser Node/TypeScript para importar `packages/engine` sem reescrever; decisão C2).
 - Hospedagem e deploy (o Victor usa Docker).
 - Login com Google e e-mail; 2FA agora ou depois.
 
 Entregáveis:
+
 1. **`apps/server`** em Node + TypeScript, importando `@abismo/engine` e `@abismo/content` diretamente.
 2. **Contas:** cadastro e login por e-mail e senha (hash forte, ex.: argon2id), login com Google, sessões com expiração e lista de sessões ativas (derrubar uma sessão), recuperação de senha, limite de tentativas. Personagens por conta.
 3. **Protocolo** numa WebSocket, documentado em `docs/protocolo.md`:
